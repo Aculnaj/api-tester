@@ -2,7 +2,7 @@
 
 ## Description
 
-This repository contains the web-based client-side portion of a tool designed to generate text and images via API calls. The tool is intentionally kept simple, utilizing only Plain HTML, CSS, and JavaScript [1] to execute directly within a browser. It requires no server-side installation or complex application structure and can be used simply by opening the local files.
+This repository contains the web-based client-side portion of a tool designed to generate text and images via API calls. The tool is intentionally kept simple, utilizing only Plain HTML, CSS, and JavaScript [1] to execute directly within a browser. It requires no server-side installation or complex application structure and can be used simply by opening the local files. **It can also be accessed online at https://aculnaj.github.io/api-tester.**
 
 ## Files
 
@@ -29,3 +29,4 @@ The tool is based on Plain HTML, CSS, and JavaScript for simplicity and direct b
 2.  Open the `index.html` file in a modern web browser.
 3.  Enter the required information (such as API Key, URL, Model) into the form fields.
 4.  Use the generation functions.
+5.  Alternatively, access the hosted version directly at **https://aculnaj.github.io/api-tester**.
