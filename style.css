@@ -1,0 +1,656 @@
+:root {
+    --font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell, "Open Sans", "Helvetica Neue", sans-serif;
+
+    /* Light Theme (Default) */
+    --bg-color: #f9f9f9;
+    --text-color: #333;
+    --text-color-muted: #555;
+    --border-color: #ccc;
+    --input-bg-color: #fff;
+    --input-border-color: #ccc;
+    --input-text-color: #333;
+    --button-bg-color: #4e54c8;
+    --button-bg-gradient-start: #4e54c8;
+    --button-bg-gradient-end: #8f94fb;
+    --button-text-color: #fff;
+    --button-hover-bg-gradient-start: #8f94fb;
+    --button-hover-bg-gradient-end: #4e54c8;
+    --output-bg-color: #eee;
+    --output-border-color: #ccc;
+    --stats-bg-color: #f0f0f0;
+    --stats-border-color: #e0e0e0;
+    --hr-color: #eee;
+    --link-color: #007bff;
+    --error-color: #dc3545;
+    --success-color: #28a745;
+    --shadow-color: rgba(0, 0, 0, 0.1);
+    --shadow-color-hover: rgba(0, 0, 0, 0.15);
+}
+
+body.dark-mode {
+    --bg-color: #1e1e1e;
+    --text-color: #e0e0e0;
+    --text-color-muted: #aaa;
+    --border-color: #444;
+    --input-bg-color: #2a2a2a;
+    --input-border-color: #555;
+    --input-text-color: #e0e0e0;
+    --button-bg-color: #5a61d1;
+    --button-bg-gradient-start: #5a61d1;
+    --button-bg-gradient-end: #9fa5fc;
+    --button-text-color: #fff;
+    --button-hover-bg-gradient-start: #9fa5fc;
+    --button-hover-bg-gradient-end: #5a61d1;
+    --output-bg-color: #2c2c2c;
+    --output-border-color: #444;
+    --stats-bg-color: #333;
+    --stats-border-color: #555;
+    --hr-color: #333;
+    --link-color: #58a6ff;
+    --error-color: #f87171;
+    --success-color: #4ade80;
+    --shadow-color: rgba(0, 0, 0, 0.3);
+    --shadow-color-hover: rgba(0, 0, 0, 0.4);
+}
+
+body {
+    font-family: var(--font-family);
+    padding: 20px;
+    max-width: 700px; /* Increased max-width for better layout */
+    margin: 40px auto;
+    border: 1px solid var(--border-color);
+    border-radius: 12px; /* Softer radius */
+    background-color: var(--bg-color);
+    color: var(--text-color);
+    transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+h1 {
+    text-align: center;
+    color: var(--text-color);
+    margin-bottom: 30px; /* More space below h1 */
+}
+
+label {
+    display: block;
+    margin-top: 20px; /* Increased margin-top */
+    margin-bottom: 8px; /* Increased margin-bottom */
+    font-weight: 600; /* Slightly bolder */
+    color: var(--text-color-muted);
+}
+
+select,
+input[type="text"],
+input[type="password"],
+input[type="number"],
+input[type="file"],
+textarea {
+    width: 100%;
+    padding: 12px; /* Increased padding */
+    margin-bottom: 15px;
+    border: 1px solid var(--input-border-color);
+    border-radius: 6px; /* Softer radius */
+    box-sizing: border-box;
+    background-color: var(--input-bg-color);
+    color: var(--input-text-color);
+    transition: border-color 0.3s ease, background-color 0.3s ease, color 0.3s ease;
+}
+
+select:focus,
+input[type="text"]:focus,
+input[type="password"]:focus,
+input[type="number"]:focus,
+textarea:focus {
+    outline: none;
+    border-color: var(--button-bg-gradient-end); /* Accent color on focus */
+    box-shadow: 0 0 0 2px var(--button-bg-gradient-start-alpha, rgba(78, 84, 200, 0.25));
+}
+
+/* Style for file input button */
+input[type="file"] {
+    padding: 0;
+}
+input[type="file"]::file-selector-button {
+    font-weight: bold;
+    color: var(--button-text-color);
+    background-image: linear-gradient(45deg, var(--button-bg-gradient-start), var(--button-bg-gradient-end));
+    padding: 10px 15px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    margin-right: 10px;
+    transition: background-image 0.2s ease;
+}
+input[type="file"]::file-selector-button:hover {
+    background-image: linear-gradient(45deg, var(--button-hover-bg-gradient-start), var(--button-hover-bg-gradient-end));
+}
+
+
+textarea {
+    min-height: 100px; /* Ensure textarea has decent height */
+    resize: vertical; /* Allow vertical resize */
+}
+
+button {
+    width: 100%;
+    background-color: var(--button-bg-color);
+    background-image: linear-gradient(45deg, var(--button-bg-gradient-start), var(--button-bg-gradient-end));
+    color: var(--button-text-color);
+    padding: 12px 20px; /* Adjusted padding */
+    border: none;
+    border-radius: 30px;
+    font-size: 1rem;
+    font-weight: 600; /* Bolder */
+    cursor: pointer;
+    box-shadow: 0 4px 12px var(--shadow-color);
+    transition: transform 0.2s ease, box-shadow 0.2s ease, background-image 0.2s ease;
+    margin-top: 10px; /* Added some margin-top */
+}
+
+button:hover {
+    background-image: linear-gradient(45deg, var(--button-hover-bg-gradient-start), var(--button-hover-bg-gradient-end));
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px var(--shadow-color-hover);
+}
+
+button:active {
+    transform: translateY(0);
+    box-shadow: 0 4px 12px var(--shadow-color);
+}
+
+button.copy-btn {
+    width: auto;
+    padding: 6px 12px;
+    font-size: 0.85rem;
+    margin-top: 10px;
+}
+
+hr {
+    border: none;
+    border-top: 1px solid var(--hr-color);
+    margin: 30px 0; /* Increased margin */
+}
+
+#base-url-container,
+#audio-options-container,
+#voice-options-container,
+#image-options-container,
+#model-container {
+    margin-top: 10px;
+    padding: 15px;
+    background-color: var(--output-bg-color); /* Use a subtle background for sections */
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    margin-bottom: 20px;
+}
+
+#output-area {
+    margin-top: 20px;
+    padding: 20px; /* Increased padding */
+    border: 1px dashed var(--output-border-color);
+    background-color: var(--output-bg-color);
+    border-radius: 8px; /* Softer radius */
+    display: none;
+    word-wrap: break-word;
+    text-align: left; /* Default to left for content */
+    transition: background-color 0.3s ease, border-color 0.3s ease;
+    color: var(--text-color); /* Ensure text color is set explicitly */
+}
+
+#output-area p#output-text {
+    text-align: left;
+    white-space: pre-wrap; /* Preserve whitespace and wrap */
+    color: var(--text-color); /* Ensure text color is consistent */
+    background-color: transparent !important; /* Override any inherited backgrounds */
+}
+
+#output-area img#output-image {
+    display: block; /* For centering if needed, or managing layout */
+    margin: 10px auto; /* Center image */
+    max-height: 400px; /* Limit image height */
+    border-radius: 6px;
+    background-color: transparent !important; /* For transparency around images */
+}
+
+#output-area audio#output-audio {
+    width: 100%;
+    margin-top: 10px;
+    background-color: var(--output-bg-color); /* Match container */
+}
+
+#output-area a#download-audio {
+    display: inline-block;
+    margin-top: 10px;
+    color: var(--link-color);
+    text-decoration: none;
+}
+#output-area a#download-audio:hover {
+    text-decoration: underline;
+}
+
+
+#stats-area {
+    margin-top: 15px;
+    padding: 15px;
+    border: 1px solid var(--stats-border-color);
+    background-color: var(--stats-bg-color);
+    border-radius: 8px;
+    display: none;
+    font-size: 0.9em;
+    transition: background-color 0.3s ease, border-color 0.3s ease;
+    color: var(--text-color-muted); /* Ensure stats text has appropriate color */
+}
+
+#stats-area span {
+    display: block; /* Each stat on a new line for clarity */
+    margin-bottom: 5px;
+    color: var(--text-color); /* Ensure text is visible */
+}
+#stats-area span:last-child {
+    margin-bottom: 0;
+}
+
+
+.generation-type-selector {
+    margin-bottom: 20px;
+    padding: 15px;
+    background-color: var(--output-bg-color); /* Consistent section background */
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    display: flex; /* Use flex to align the main label and radio groups */
+    flex-wrap: wrap; /* Allow wrapping if needed */
+    align-items: center; /* Align items vertically */
+}
+
+.generation-type-selector .main-label {
+    margin-right: 15px; /* Space after the main "Generation Type:" label */
+    margin-bottom: 0; /* Remove bottom margin if flex is handling alignment */
+    font-weight: 600; /* Keep it distinct */
+    color: var(--text-color-muted);
+    align-self: center; /* Align with the button group */
+}
+
+/* Adjustments for segmented button appearance */
+.generation-type-selector .radio-group {
+    display: inline-block; /* Allow segments to sit side-by-side */
+    margin-right: 0;       /* Remove original margin */
+    margin-left: -1px;     /* Overlap borders for segmented effect */
+    /* margin-bottom: 0; is already fine */
+}
+
+.generation-type-selector .radio-group:first-of-type {
+    margin-left: 0; /* No left overlap for the first segment */
+}
+
+/* Hide the actual radio input */
+.generation-type-selector .radio-group input[type="radio"] {
+    opacity: 0;
+    position: absolute;
+    width: 0;
+    height: 0;
+}
+
+.generation-type-selector .radio-group label {
+    display: inline-block; /* Make label behave like a button part */
+    padding: 8px 16px;
+    border: 1px solid var(--border-color);
+    background-color: var(--input-bg-color); /* Default button segment appearance */
+    color: var(--text-color);
+    cursor: pointer;
+    transition: background-color 0.2s ease, color 0.2s ease, border-color 0.2s ease;
+    
+    /* Resetting potentially conflicting previous label styles */
+    margin-left: 0; 
+    font-weight: normal;
+    margin-top: 0;
+    margin-bottom: 0;
+}
+
+/* Apply border-radius to the first and last segments' labels */
+.generation-type-selector .radio-group:first-of-type label {
+    border-top-left-radius: 6px;
+    border-bottom-left-radius: 6px;
+}
+
+.generation-type-selector .radio-group:last-of-type label {
+    border-top-right-radius: 6px;
+    border-bottom-right-radius: 6px;
+}
+
+/* Focus style for accessibility, applied to the label */
+.generation-type-selector .radio-group input[type="radio"]:focus + label {
+    outline: 2px solid var(--button-bg-gradient-end);
+    outline-offset: 1px;
+    position: relative; /* Ensure outline is drawn on top */
+    z-index: 1;
+}
+
+/* Checked state: style the label when its corresponding radio is checked */
+.generation-type-selector .radio-group input[type="radio"]:checked + label {
+    background-color: var(--button-bg-gradient-end); /* Active state background */
+    color: var(--button-text-color);
+    border-color: var(--button-bg-gradient-end); /* Match active background */
+    position: relative; /* Ensure it's drawn on top if borders overlap */
+    z-index: 2; /* Higher z-index for checked/active segment */
+}
+
+/* Remove the default accent color for the (now hidden) radio, not strictly needed but clean */
+/* .generation-type-selector .radio-group input[type="radio"] {
+    accent-color: var(--button-bg-gradient-end); No longer needed as it's hidden
+} */
+
+.size-inputs {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.size-inputs input[type="number"] {
+    width: 80px; /* Smaller width for size inputs */
+    margin-bottom: 0;
+}
+
+.size-inputs span {
+    color: var(--text-color-muted);
+}
+
+.enable-quality-container {
+    display: flex;
+    align-items: center;
+    margin-bottom: 10px;
+}
+
+.enable-quality-container input[type="checkbox"] {
+    margin-right: 8px;
+    accent-color: var(--button-bg-gradient-end);
+}
+
+.enable-quality-title {
+    font-size: 1em; /* Match label font-size */
+    font-weight: 600;
+    color: var(--text-color-muted);
+    margin: 0; /* Remove default h3 margin */
+}
+
+/* Theming for recorder controls */
+#recorder-controls button {
+    margin-bottom: 5px;
+}
+
+#recording-preview {
+    margin-top: 10px;
+}
+
+/* Error specific styling */
+#output-area.error-active {
+    border-color: var(--error-color);
+}
+
+#output-text span[style*="color: red;"] { /* Target the inline styled error span */
+    color: var(--error-color) !important; /* Ensure this overrides inline style */
+}
+
+/* Centering the copy button for errors */
+#output-text[data-contains-error="true"] {
+    text-align: center;
+}
+
+/* Hide unnecessary default browser features */
+select,
+button,
+input,
+textarea {
+    -webkit-appearance: none; /* Safari and Chrome */
+    -moz-appearance: none; /* Firefox */
+    appearance: none;
+}
+
+select {
+    background-image: url('data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22292.4%22%20height%3D%22292.4%22%3E%3Cpath%20fill%3D%22%23007CB2%22%20d%3D%22M287%2069.4a17.6%2017.6%200%200%200-13-5.4H18.4c-5%200-9.3%201.8-12.9%205.4A17.6%2017.6%200%200%200%200%2082.2c0%205%201.8%209.3%205.4%2012.9l128%20127.9c3.6%203.6%207.8%205.4%2012.8%205.4s9.2-1.8%2012.8-5.4L287%2095c3.5-3.5%205.4-7.8%205.4-12.8%200-5-1.9-9.2-5.5-12.8z%22%2F%3E%3C%2Fsvg%3E');
+    background-repeat: no-repeat;
+    background-position: right 1rem center;
+    background-size: 0.65em auto;
+    padding-right: 2.5rem; /* Make space for the arrow */
+}
+/* For dark mode, the SVG fill color needs to change */
+body.dark-mode select {
+    background-image: url('data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22292.4%22%20height%3D%22292.4%22%3E%3Cpath%20fill%3D%22%23AAAAAA%22%20d%3D%22M287%2069.4a17.6%2017.6%200%200%200-13-5.4H18.4c-5%200-9.3%201.8-12.9%205.4A17.6%2017.6%200%200%200%200%2082.2c0%205%201.8%209.3%205.4%2012.9l128%20127.9c3.6%203.6%207.8%205.4%2012.8%205.4s9.2-1.8%2012.8-5.4L287%2095c3.5-3.5%205.4-7.8%205.4-12.8%200-5-1.9-9.2-5.5-12.8z%22%2F%3E%3C%2Fsvg%3E');
+}
+
+/* Modern Switch/Slider for Enable Quality */
+.switch {
+    position: relative;
+    display: inline-block;
+    width: 40px;
+    height: 22px;
+    margin-left: 12px;
+    vertical-align: middle;
+}
+.switch input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+}
+.slider {
+    position: absolute;
+    cursor: pointer;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background-color: var(--border-color);
+    border-radius: 22px;
+    transition: background-color 0.2s;
+}
+.slider:before {
+    position: absolute;
+    content: "";
+    height: 18px;
+    width: 18px;
+    left: 2px;
+    bottom: 2px;
+    background-color: var(--input-bg-color);
+    border-radius: 50%;
+    transition: transform 0.2s, background-color 0.2s;
+    box-shadow: 0 1px 3px var(--shadow-color);
+}
+.switch input:checked + .slider {
+    background-color: var(--button-bg-gradient-end);
+}
+.switch input:checked + .slider:before {
+    transform: translateX(18px);
+    background-color: var(--button-text-color);
+}
+/* Focus style for accessibility */
+.switch input:focus + .slider {
+    box-shadow: 0 0 0 2px var(--button-bg-gradient-end);
+}
+
+/* Theme Switch (Dark/Light) */
+.theme-switch-label {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    cursor: pointer;
+    user-select: none;
+}
+.theme-switch-text {
+    font-size: 1.2em;
+    color: var(--text-color-muted);
+    transition: color 0.2s;
+}
+.theme-switch {
+    position: relative;
+    display: inline-block;
+    width: 44px;
+    height: 24px;
+    vertical-align: middle;
+}
+.theme-switch input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+}
+.theme-slider {
+    position: absolute;
+    cursor: pointer;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background-color: var(--border-color);
+    border-radius: 24px;
+    transition: background-color 0.2s;
+}
+.theme-slider:before {
+    position: absolute;
+    content: "";
+    height: 20px;
+    width: 20px;
+    left: 2px;
+    bottom: 2px;
+    background-color: var(--input-bg-color);
+    border-radius: 50%;
+    transition: transform 0.2s, background-color 0.2s;
+    box-shadow: 0 1px 3px var(--shadow-color);
+}
+.theme-switch input:checked + .theme-slider {
+    background-color: var(--button-bg-gradient-end);
+}
+.theme-switch input:checked + .theme-slider:before {
+    transform: translateX(20px);
+    background-color: var(--button-text-color);
+}
+.theme-switch input:focus + .theme-slider {
+    box-shadow: 0 0 0 2px var(--button-bg-gradient-end);
+}
+.theme-switch-label .theme-switch-text:first-child {
+    color: #888;
+}
+.theme-switch input:checked ~ .theme-switch-text:last-child {
+    color: var(--button-bg-gradient-end);
+}
+.theme-switch input:not(:checked) ~ .theme-switch-text:first-child {
+    color: var(--button-bg-gradient-end);
+}
+
+/* Theme Mode Button Group (System, Light, Dark) */
+.theme-mode-group {
+    display: flex;
+    gap: 4px;
+    align-items: center;
+}
+.theme-mode-btn {
+    background: var(--input-bg-color);
+    color: var(--text-color-muted);
+    border: 1.5px solid var(--border-color);
+    border-radius: 6px;
+    font-size: 1.2em;
+    padding: 4px 10px;
+    cursor: pointer;
+    transition: background 0.2s, color 0.2s, border-color 0.2s;
+    outline: none;
+}
+.theme-mode-btn.active {
+    background: var(--button-bg-gradient-end);
+    color: var(--button-text-color);
+    border-color: var(--button-bg-gradient-end);
+    font-weight: bold;
+}
+.theme-mode-btn:focus {
+    box-shadow: 0 0 0 2px var(--button-bg-gradient-end);
+    z-index: 1;
+}
+
+/* Forceful rules for dark mode to override any inline styles */
+body.dark-mode #output-area,
+body.dark-mode #output-area * {
+    background-color: var(--output-bg-color) !important;
+    color: var(--text-color) !important;
+}
+
+body.dark-mode #output-area span[style*="color"],
+body.dark-mode #output-area strong {
+    color: var(--text-color) !important;
+}
+
+body.dark-mode #stats-area,
+body.dark-mode #stats-area * {
+    background-color: var(--stats-bg-color) !important;
+    color: var(--text-color) !important;
+}
+
+/* Force dark styling on model output content */
+body.dark-mode .model-response {
+    background-color: var(--output-bg-color) !important;
+    color: var(--text-color) !important;
+}
+
+/* Container for Payload Toggle Buttons */
+.payload-buttons-container {
+    display: flex;
+    gap: 10px; /* Space between buttons */
+    margin-bottom: 10px;
+}
+
+/* Styling for individual payload toggle buttons */
+.payload-toggle-btn {
+    flex: 1; /* Make buttons share space equally */
+    padding: 8px 12px;
+    background-color: var(--input-bg-color);
+    color: var(--text-color-muted);
+    border: 1px solid var(--border-color);
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 0.9em;
+    text-align: center;
+    transition: background-color 0.2s, color 0.2s, border-color 0.2s;
+}
+
+.payload-toggle-btn:hover {
+    border-color: var(--button-bg-gradient-end);
+    color: var(--text-color);
+}
+
+.payload-toggle-btn.active {
+    background-color: var(--button-bg-gradient-end);
+    color: var(--button-text-color);
+    border-color: var(--button-bg-gradient-end);
+}
+
+/* Styling for payload display areas */
+.payload-display {
+    margin-top: 0; /* Removed top margin as buttons have bottom margin */
+    padding: 15px;
+    border: 1px solid var(--border-color);
+    background-color: var(--input-bg-color);
+    color: var(--input-text-color); /* Ensure text is readable */
+    border-radius: 4px;
+    white-space: pre-wrap;
+    word-break: break-all;
+    font-size: 0.85em;
+    max-height: 300px; /* Limit height and make scrollable */
+    overflow: auto;    /* Add scrollbars if content overflows */
+}
+
+/* Container for Download Buttons */
+.download-buttons-container {
+    display: flex;         /* Use flexbox */
+    justify-content: center; /* Center items horizontally */
+    align-items: center;    /* Align items vertically */
+    gap: 10px;            /* Space between buttons if both are shown */
+    margin-top: 15px;      /* Space above the buttons */
+}
+
+#output-area a#download-audio,
+#output-area a#download-image-btn {
+    /* display: inline-block; No longer strictly needed with flex, but doesn't hurt */
+    /* margin: 0 5px; Replaced by gap in the container */
+    color: var(--link-color);
+    text-decoration: none;
+    padding: 6px 12px;
+    border: 1px solid var(--link-color);
+    border-radius: 4px;
+    transition: background-color 0.2s, color 0.2s;
+}
+
+#output-area a#download-audio:hover,
+#output-area a#download-image-btn:hover {
+    text-decoration: none;
+    background-color: var(--link-color);
+    color: var(--button-text-color);
+}

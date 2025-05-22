@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>API Tester</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div style="position: absolute; top: 10px; right: 20px;">
+        <div class="theme-mode-group">
+            <button id="theme-btn-system" class="theme-mode-btn" title="System Theme">🌙</button>
+            <button id="theme-btn-light" class="theme-mode-btn" title="Light Theme">☀️</button>
+            <button id="theme-btn-dark" class="theme-mode-btn" title="Dark Theme">🌑</button>
+        </div>
+    </div>
+    <h1>API Tester</h1>
+
+    <label for="provider-select">Provider:</label>
+    <select id="provider-select">
+        <option value="openai_compatible" selected>OpenAI Compatible</option>
+        <option value="openai">OpenAI</option>
+        <option value="deepseek">Deepseek</option>
+        <option value="voidai_api">voidai API</option>
+        <option value="claude">Claude</option>
+        <option value="openrouter">OpenRouter</option>
+    </select>
+
+    <div id="base-url-container" style="display: none;">
+        <label for="base-url-input">Base URL:</label>
+        <input type="text" id="base-url-input" placeholder="Enter Base URL">
+    </div>
+
+    <label for="api-key-input">API Key:</label>
+    <input type="password" id="api-key-input" placeholder="Enter your API Key"> <!-- Changed type to password for basic masking -->
+
+    <hr style="margin: 20px 0;"> <!-- Separator -->
+
+    <div class="generation-type-selector"> 
+        <label class="main-label">Generation Type:</label>
+        <div class="radio-group">
+            <input type="radio" id="generation-type-text" name="generation-type" value="text" checked>
+            <label for="generation-type-text">Text</label>
+        </div>
+        <div class="radio-group">
+            <input type="radio" id="generation-type-image" name="generation-type" value="image">
+            <label for="generation-type-image">Image</label>
+        </div>
+        <div class="radio-group">
+            <input type="radio" id="generation-type-audio" name="generation-type" value="audio">
+            <label for="generation-type-audio">Audio</label>
+        </div>
+    </div>
+    <!-- Audio Type for Audio Generation (Audio only) -->
+    <div id="audio-options-container" style="display: none; margin-top: 10px;">
+        <label for="audio-type-select">Audio Type:</label>
+        <select id="audio-type-select">
+            <option value="tts" selected>Text-to-Speech (TTS)</option>
+            <option value="stt">Speech-to-Text (STT)</option>
+        </select>
+        <div id="stt-input-container" style="display: none; margin-top: 10px;">
+            <label for="audio-file-input">Audio File:</label>
+            <input type="file" id="audio-file-input" accept="audio/*">
+        </div>
+        <div id="recorder-controls" style="display:none; margin-top:10px;">
+            <button type="button" id="record-btn">Start Recording</button>
+            <audio id="recording-preview" controls style="display:none; width:100%; margin-top:5px;"></audio>
+        </div>
+    </div>
+
+    <!-- Voice field for TTS -->
+    <div id="voice-options-container" style="display:none; margin-top:10px;">
+        <label for="voice-input">Voice:</label>
+        <input type="text" id="voice-input" placeholder="Enter voice name">
+    </div>
+    <!-- Voice field for TTS -->
+
+    <div id="image-options-container"> <!-- Hidden by default -->
+        <div class="enable-quality-container">
+            <label class="enable-quality-title" for="enable-quality-checkbox">
+                <span>Enable Quality</span>
+                <span class="switch">
+                    <input type="checkbox" id="enable-quality-checkbox">
+                    <span class="slider"></span>
+                </span>
+            </label>
+        </div>
+        <div id="quality-options-container" style="margin-bottom: 10px;">
+            <label for="quality-select">Image Quality:</label>
+            <select id="quality-select">
+                <option value="low">Low</option>
+                <option value="medium" selected>Medium</option>
+                <option value="high">High</option>
+                <option value="auto">Auto</option>
+                <option value="standard">Standard</option>
+                <option value="hd">hd</option>
+                <option value="custom">Custom</option>
+            </select>
+            <!-- Custom quality text input, hidden by default -->
+            <input type="text" id="custom-quality-input" placeholder="Enter custom quality" style="display:none; margin-top:5px;">
+        </div>
+         <label>Image Size (Width x Height):</label>
+         <div class="size-inputs">
+            <input type="number" id="image-width-input" placeholder="Width" value="1024" min="1">
+            <span>x</span>
+            <input type="number" id="image-height-input" placeholder="Height" value="1024" min="1">
+         </div>
+         <small>Note: Most models only support specific resolutions (e.g., 1024x1024, 512x512). Check provider documentation.</small>
+    </div>
+
+
+    <div id="model-container" style="margin-top: 10px;">
+        <label for="model-input">Model Name:</label>
+        <input type="text" id="model-input" placeholder="e.g., gpt-4o, dall-e-3, claude-3-opus-20240229, tts-1, whisper-1">
+    </div>
+    <label for="prompt-input" id="prompt-label">Prompt / Image Description:</label> <!-- Label will be updated by JS -->
+    <textarea id="prompt-input" rows="4" placeholder="Enter text prompt or image description..."></textarea>
+
+    <button id="send-button">Generate</button> <!-- Changed button text -->
+
+    <div id="output-area" style="margin-top: 20px; padding: 15px; border: 1px dashed #ccc; background-color: #eee; border-radius: 4px; display: none; white-space: pre-wrap; /* Preserve whitespace and wrap */">
+        <!-- AI response / Image / Status will be displayed here -->
+        <p id="output-text"></p>
+        <img id="output-image" src="" alt="Generated Image" style="max-width: 100%; display: none;">
+        <audio id="output-audio" controls preload="metadata" style="width:100%; display:none;"></audio>
+        <div class="download-buttons-container">
+            <a id="download-image-btn" href="" download style="display:none;">Download Image</a> 
+            <a id="download-audio" href="" download style="display:none;">Download Audio</a>
+        </div>
+    </div>
+
+    <div id="stats-area" style="margin-top: 10px; padding: 10px; border: 1px solid #e0e0e0; background-color: #f0f0f0; border-radius: 4px; display: none; font-size: 0.9em;">
+        <!-- Stats will be displayed here -->
+    </div>
+
+    <div id="payload-container" style="margin-top: 15px; display: none;">
+        <div class="payload-buttons-container">
+            <button id="toggle-payload-btn" class="payload-toggle-btn">Show Request</button>
+            <button id="toggle-response-btn" class="payload-toggle-btn">Show Response</button>
+        </div>
+        <pre id="payload-display-area" class="payload-display" style="display: none;"></pre>
+        <pre id="response-display-area" class="payload-display" style="display: none;"></pre>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
