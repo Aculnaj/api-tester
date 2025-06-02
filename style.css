@@ -218,6 +218,14 @@ hr {
     background-color: var(--output-bg-color); /* Match container */
 }
 
+#output-area video#output-video {
+    width: 100%;
+    margin-top: 10px;
+    background-color: var(--output-bg-color); /* Match container */
+    border-radius: 6px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+}
+
 #output-area a#download-audio {
     display: inline-block;
     margin-top: 10px;
@@ -649,8 +657,77 @@ body.dark-mode .model-response {
 }
 
 #output-area a#download-audio:hover,
-#output-area a#download-image-btn:hover {
+#output-area a#download-image-btn:hover,
+#output-area a#download-video-btn:hover {
     text-decoration: none;
     background-color: var(--link-color);
     color: var(--button-text-color);
+}
+
+/* Video Generation Styles */
+.form-group {
+    margin-bottom: 15px;
+}
+
+.checkbox-group {
+    margin-bottom: 15px;
+}
+
+.checkbox-group label {
+    display: flex;
+    align-items: center;
+    cursor: pointer;
+    font-weight: 500;
+    margin-top: 0;
+    margin-bottom: 0;
+}
+
+.checkbox-group input[type="checkbox"] {
+    margin-right: 8px;
+    transform: scale(1.2);
+    accent-color: var(--button-bg-gradient-end);
+}
+
+/* Enable Aspect Ratio Container (matching Enable Quality style) */
+.enable-aspect-ratio-container {
+    display: flex;
+    align-items: center;
+    margin-bottom: 10px;
+}
+
+.enable-aspect-ratio-title {
+    font-size: 1em;
+    font-weight: 600;
+    color: var(--text-color-muted);
+    margin: 0;
+    display: flex;
+    align-items: center;
+    cursor: pointer;
+}
+
+#aspect-ratio-group {
+    margin-left: 20px;
+    padding: 10px;
+    border-left: 3px solid var(--button-bg-gradient-end);
+    background-color: rgba(78, 84, 200, 0.05);
+    border-radius: 0 5px 5px 0;
+    transition: all 0.3s ease;
+}
+
+body.dark-mode #aspect-ratio-group {
+    background-color: rgba(154, 160, 252, 0.1);
+}
+
+#aspect-ratio-group.disabled {
+    opacity: 0.5;
+    pointer-events: none;
+}
+
+#output-area a#download-video-btn {
+    color: var(--link-color);
+    text-decoration: none;
+    padding: 6px 12px;
+    border: 1px solid var(--link-color);
+    border-radius: 4px;
+    transition: background-color 0.2s, color 0.2s;
 }

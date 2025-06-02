@@ -12,6 +12,7 @@
             <button id="theme-btn-system" class="theme-mode-btn" title="System Theme">🌙</button>
             <button id="theme-btn-light" class="theme-mode-btn" title="Light Theme">☀️</button>
             <button id="theme-btn-dark" class="theme-mode-btn" title="Dark Theme">🌑</button>
+            <button id="open-new-window-btn" class="theme-mode-btn" title="Open New Window" style="margin-left: 10px;">➕</button>
         </div>
     </div>
     <h1>API Tester</h1>
@@ -50,6 +51,10 @@
             <input type="radio" id="generation-type-audio" name="generation-type" value="audio">
             <label for="generation-type-audio">Audio</label>
         </div>
+        <div class="radio-group">
+            <input type="radio" id="generation-type-video" name="generation-type" value="video">
+            <label for="generation-type-video">Video</label>
+        </div>
     </div>
     <!-- Audio Type for Audio Generation (Audio only) -->
     <div id="audio-options-container" style="display: none; margin-top: 10px;">
@@ -65,6 +70,33 @@
         <div id="recorder-controls" style="display:none; margin-top:10px;">
             <button type="button" id="record-btn">Start Recording</button>
             <audio id="recording-preview" controls style="display:none; width:100%; margin-top:5px;"></audio>
+        </div>
+    </div>
+
+    <!-- Video Type for Video Generation -->
+    <div id="video-options-container" style="display: none; margin-top: 10px;">
+        <div class="enable-aspect-ratio-container">
+            <label class="enable-aspect-ratio-title" for="video-aspect-ratio-enabled">
+                <span>Enable Aspect Ratio</span>
+                <span class="switch">
+                    <input type="checkbox" id="video-aspect-ratio-enabled" onchange="toggleAspectRatio()">
+                    <span class="slider"></span>
+                </span>
+            </label>
+        </div>
+        <div class="form-group" id="aspect-ratio-group" style="display: none;">
+            <label for="video-aspect-ratio">Aspect Ratio:</label>
+            <select id="video-aspect-ratio">
+                <option value="16:9">16:9 (Widescreen)</option>
+                <option value="9:16">9:16 (Portrait)</option>
+                <option value="1:1">1:1 (Square)</option>
+                <option value="4:3">4:3 (Standard)</option>
+                <option value="21:9">21:9 (Ultrawide)</option>
+            </select>
+        </div>
+        <div class="form-group">
+            <label for="video-duration">Duration (seconds):</label>
+            <input type="number" id="video-duration" min="1" max="60" value="5" placeholder="Duration in seconds">
         </div>
     </div>
 
@@ -123,9 +155,13 @@
         <p id="output-text"></p>
         <img id="output-image" src="" alt="Generated Image" style="max-width: 100%; display: none;">
         <audio id="output-audio" controls preload="metadata" style="width:100%; display:none;"></audio>
+        <video id="output-video" controls preload="metadata" style="width:100%; max-height: 400px; display:none;">
+            Your browser does not support the video tag.
+        </video>
         <div class="download-buttons-container">
-            <a id="download-image-btn" href="" download style="display:none;">Download Image</a> 
+            <a id="download-image-btn" href="" download style="display:none;">Download Image</a>
             <a id="download-audio" href="" download style="display:none;">Download Audio</a>
+            <a id="download-video-btn" href="" download style="display:none;">Download Video</a>
         </div>
     </div>
 

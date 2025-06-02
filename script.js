@@ -35,10 +35,33 @@ const voiceInput = document.getElementById('voice-input');
 const recorderControls = document.getElementById('recorder-controls');
 const recordBtn = document.getElementById('record-btn');
 const recordingPreview = document.getElementById('recording-preview');
+
+// Video generation elements
+const generationTypeVideo = document.getElementById('generation-type-video');
+const videoOptionsContainer = document.getElementById('video-options-container');
+const videoAspectRatioEnabled = document.getElementById('video-aspect-ratio-enabled');
+const videoAspectRatioSelect = document.getElementById('video-aspect-ratio');
+const aspectRatioGroup = document.getElementById('aspect-ratio-group');
+const videoDurationInput = document.getElementById('video-duration');
+const outputVideo = document.getElementById('output-video');
+const downloadVideoBtn = document.getElementById('download-video-btn');
 let recordedChunks = [];
 let mediaRecorder;
 let lastRequestPayload = null; // Variable to store the last request payload
 let lastApiResponse = null;    // Variable to store the last API response
+
+// Function to toggle aspect ratio visibility for video generation
+function toggleAspectRatio() {
+    const aspectRatioEnabled = videoAspectRatioEnabled.checked;
+    
+    if (aspectRatioEnabled) {
+        aspectRatioGroup.style.display = 'block';
+        aspectRatioGroup.classList.remove('disabled');
+    } else {
+        aspectRatioGroup.style.display = 'none';
+        aspectRatioGroup.classList.add('disabled');
+    }
+}
 const payloadContainer = document.getElementById('payload-container');
 const togglePayloadBtn = document.getElementById('toggle-payload-btn');
 const payloadDisplayArea = document.getElementById('payload-display-area');
@@ -109,6 +132,9 @@ const LAST_IMAGE_WIDTH_KEY = 'lastImageWidth';
 const LAST_IMAGE_HEIGHT_KEY = 'lastImageHeight';
 const LAST_AUDIO_TYPE_KEY = 'lastAudioType';
 const LAST_VOICE_KEY = 'lastVoice';
+const LAST_VIDEO_DURATION_KEY = 'lastVideoDuration';
+const LAST_VIDEO_ASPECT_RATIO_ENABLED_KEY = 'lastVideoAspectRatioEnabled';
+const LAST_VIDEO_ASPECT_RATIO_KEY = 'lastVideoAspectRatio';
 
 const THEME_SETTING_KEY = 'userTheme'; // 'system', 'light', 'dark'
 
@@ -317,6 +343,19 @@ async function loadGeneralSettings() {
 
     if (voiceInput) voiceInput.value = await getStoredValue(LAST_VOICE_KEY) || 'alloy';
 
+    // Load video settings
+    if (videoDurationInput) videoDurationInput.value = await getStoredValue(LAST_VIDEO_DURATION_KEY) || '5';
+    
+    const lastVideoAspectRatioEnabled = await getStoredValue(LAST_VIDEO_ASPECT_RATIO_ENABLED_KEY);
+    if (videoAspectRatioEnabled) {
+        videoAspectRatioEnabled.checked = typeof lastVideoAspectRatioEnabled === 'boolean' ? lastVideoAspectRatioEnabled : false;
+    }
+    
+    const lastVideoAspectRatio = await getStoredValue(LAST_VIDEO_ASPECT_RATIO_KEY);
+    if (videoAspectRatioSelect) {
+        videoAspectRatioSelect.value = lastVideoAspectRatio || '16:9';
+    }
+
     toggleGenerationOptions(); // Update UI based on loaded settings
     toggleBaseUrlInput(); // Ensure base URL visibility
 }
@@ -335,6 +374,11 @@ async function saveGeneralSettings() {
     if (imageHeightInput) await setStoredValue(LAST_IMAGE_HEIGHT_KEY, imageHeightInput.value);
     if (audioTypeSelect) await setStoredValue(LAST_AUDIO_TYPE_KEY, audioTypeSelect.value);
     if (voiceInput) await setStoredValue(LAST_VOICE_KEY, voiceInput.value);
+    
+    // Save video settings
+    if (videoDurationInput) await setStoredValue(LAST_VIDEO_DURATION_KEY, videoDurationInput.value);
+    if (videoAspectRatioEnabled) await setStoredValue(LAST_VIDEO_ASPECT_RATIO_ENABLED_KEY, videoAspectRatioEnabled.checked);
+    if (videoAspectRatioSelect) await setStoredValue(LAST_VIDEO_ASPECT_RATIO_KEY, videoAspectRatioSelect.value);
 }
 
 // Function to show or hide the Base URL input based on the selected provider
@@ -402,6 +446,15 @@ function toggleGenerationOptions() {
         }
     }
 
+    // Video Options
+    const showVideo = generationType === 'video';
+    videoOptionsContainer.style.display = showVideo ? 'block' : 'none';
+    
+    if (showVideo) {
+        promptInput.style.display = 'block';
+        document.getElementById('prompt-label').textContent = 'Video Description:';
+    }
+
 
     // Text Options
     if (showText) {
@@ -426,6 +479,9 @@ function toggleGenerationOptions() {
           // STT: model before audio file/recorder inputs
           audioOptionsContainer.insertBefore(modelContainer, sttInputContainer);
       }
+  } else if (showVideo) {
+      // Video: model at the beginning of video options
+      videoOptionsContainer.insertBefore(modelContainer, videoOptionsContainer.firstElementChild);
   } else {
       modelContainerOriginalParent.insertBefore(modelContainer, modelContainerOriginalNextSibling);
   }
@@ -437,13 +493,113 @@ document.querySelectorAll('input[name="generation-type"]').forEach(radio => {
 });
 audioTypeSelect.addEventListener('change', toggleGenerationOptions);
 
+// Microphone permission status
+let microphonePermissionStatus = 'prompt'; // 'granted', 'denied', 'prompt'
+
+// Function to check microphone permission status
+async function checkMicrophonePermission() {
+    try {
+        // Check if the browser supports permissions API
+        if (navigator.permissions && navigator.permissions.query) {
+            const permissionStatus = await navigator.permissions.query({ name: 'microphone' });
+            microphonePermissionStatus = permissionStatus.state;
+            
+            // Listen for permission changes
+            permissionStatus.onchange = () => {
+                microphonePermissionStatus = permissionStatus.state;
+                updateMicrophoneUI();
+            };
+            
+            return microphonePermissionStatus;
+        } else {
+            // For browsers that don't support permissions API, we can't check proactively
+            return 'prompt';
+        }
+    } catch (error) {
+        console.error('Error checking microphone permission:', error);
+        return 'prompt';
+    }
+}
+
+// Function to request microphone permission proactively
+async function requestMicrophonePermission() {
+    try {
+        // The getUserMedia call will trigger the permission prompt
+        const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+        
+        // If we get here, permission was granted
+        microphonePermissionStatus = 'granted';
+        
+        // Stop the tracks immediately since we're just checking permission
+        stream.getTracks().forEach(track => track.stop());
+        
+        updateMicrophoneUI();
+        return true;
+    } catch (error) {
+        // Permission denied or other error
+        microphonePermissionStatus = 'denied';
+        updateMicrophoneUI();
+        console.error('Microphone permission error:', error);
+        return false;
+    }
+}
+
+// Function to update UI based on microphone permission status
+function updateMicrophoneUI() {
+    // Create status element if it doesn't exist
+    let micStatusEl = document.getElementById('mic-status');
+    if (!micStatusEl && recorderControls) {
+        micStatusEl = document.createElement('div');
+        micStatusEl.id = 'mic-status';
+        micStatusEl.style.marginBottom = '8px';
+        recorderControls.insertBefore(micStatusEl, recordBtn);
+    }
+    
+    // Update the status message and styling
+    if (micStatusEl) {
+        if (microphonePermissionStatus === 'granted') {
+            micStatusEl.innerHTML = '🎤 <span style="color: green;">Microphone access granted</span>';
+            recordBtn.disabled = false;
+        } else if (microphonePermissionStatus === 'denied') {
+            micStatusEl.innerHTML = '🚫 <span style="color: red;">Microphone access denied</span> <button id="retry-mic-btn">Request Access</button>';
+            recordBtn.disabled = true;
+            
+            // Add event listener to retry button
+            const retryBtn = document.getElementById('retry-mic-btn');
+            if (retryBtn) {
+                retryBtn.onclick = () => {
+                    requestMicrophonePermission();
+                };
+            }
+        } else {
+            // prompt state
+            micStatusEl.innerHTML = '🎤 <span style="color: orange;">Microphone permission needed</span> <button id="request-mic-btn">Allow Microphone</button>';
+            recordBtn.disabled = false;
+            
+            // Add event listener to request button
+            const requestBtn = document.getElementById('request-mic-btn');
+            if (requestBtn) {
+                requestBtn.onclick = () => {
+                    requestMicrophonePermission();
+                };
+            }
+        }
+    }
+}
+
 // Single button recorder toggle
 recordBtn.addEventListener('click', async () => {
     if (!mediaRecorder || mediaRecorder.state === 'inactive') {
         // Start recording
         recordedChunks = [];
         try {
+            // Request microphone access
             const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+            
+            // Update permission status since it was successful
+            microphonePermissionStatus = 'granted';
+            updateMicrophoneUI();
+            
             mediaRecorder = new MediaRecorder(stream);
             mediaRecorder.ondataavailable = e => {
                 if (e.data.size > 0) recordedChunks.push(e.data);
@@ -455,11 +611,16 @@ recordBtn.addEventListener('click', async () => {
                 recordingPreview.style.display = 'block';
                 // Update record button label
                 recordBtn.textContent = 'Start Recording';
+                
+                // Stop all tracks to release the microphone
+                stream.getTracks().forEach(track => track.stop());
             };
             mediaRecorder.start();
             recordBtn.textContent = 'Stop Recording';
             recordingPreview.style.display = 'none';
         } catch (err) {
+            microphonePermissionStatus = 'denied';
+            updateMicrophoneUI();
             displayError('Microphone access denied or unavailable.');
         }
     } else {
@@ -530,6 +691,10 @@ function clearOutput() {
     outputAudio.src = '';
     downloadAudio.style.display = 'none';
     downloadAudio.href = '';
+    outputVideo.style.display = 'none';
+    outputVideo.src = '';
+    downloadVideoBtn.style.display = 'none';
+    downloadVideoBtn.href = '';
     outputArea.style.display = 'none';
     outputArea.style.borderColor = '#ccc';
     statsArea.style.display = 'none'; // Hide stats area too
@@ -1144,6 +1309,158 @@ async function callSttApi(provider, apiKey, baseUrl, model, file) {
         statsArea.style.display = 'none'; // Hide stats on error
     }
 }
+
+// --- API Call Logic for Video Generation ---
+async function callVideoApi(provider, apiKey, baseUrl, model, prompt) {
+    clearOutput();
+    outputText.innerHTML = 'Generating video...';
+    outputArea.style.display = 'block';
+    statsArea.style.display = 'none';
+
+    const aspectRatioEnabled = videoAspectRatioEnabled.checked;
+    const aspectRatio = videoAspectRatioSelect.value;
+    const duration = parseInt(videoDurationInput.value);
+
+    let apiUrl = '';
+    let headers = {};
+    let body = {};
+
+    // Configure based on provider for direct API calls
+    switch (provider) {
+        case 'openai':
+            // OpenAI doesn't have video generation yet, show placeholder
+            displayError('OpenAI does not currently support video generation. Try using a different provider or a compatible service.');
+            return;
+        case 'openai_compatible':
+            if (!baseUrl) return displayError('Base URL is required for OpenAI Compatible video generation.');
+            const cleanBaseUrl = baseUrl.endsWith('/') ? baseUrl.slice(0, -1) : baseUrl;
+            apiUrl = `${cleanBaseUrl}/videos/generations`;
+            headers = { 'Content-Type': 'application/json', 'Authorization': `Bearer ${apiKey}` };
+            body = { model: model, prompt: prompt, duration: duration };
+            if (aspectRatioEnabled) {
+                body.aspect_ratio = aspectRatio;
+            }
+            break;
+        case 'voidai_api':
+            apiUrl = 'https://api.voidai.app/v1/videos/generations';
+            headers = { 'Content-Type': 'application/json', 'Authorization': `Bearer ${apiKey}` };
+            body = { model: model, prompt: prompt, duration: duration };
+            if (aspectRatioEnabled) {
+                body.aspect_ratio = aspectRatio;
+            }
+            break;
+        case 'deepseek':
+            displayError('Deepseek does not currently support video generation. Try using a different provider.');
+            return;
+        case 'claude':
+            displayError('Claude does not currently support video generation. Try using a different provider.');
+            return;
+        case 'openrouter':
+            // OpenRouter might have video models available
+            apiUrl = 'https://openrouter.ai/api/v1/videos/generations';
+            headers = { 'Content-Type': 'application/json', 'Authorization': `Bearer ${apiKey}` };
+            body = { model: model, prompt: prompt, duration: duration };
+            if (aspectRatioEnabled) {
+                body.aspect_ratio = aspectRatio;
+            }
+            break;
+        default:
+            return displayError('Video generation is not supported for the selected provider. Try OpenAI Compatible, voidai API, or OpenRouter.');
+    }
+
+    // Store payload before sending
+    lastRequestPayload = JSON.stringify(body, null, 2);
+    payloadContainer.style.display = 'block';
+
+    // Record start time for timing stats
+    const startTime = performance.now();
+    
+    try {
+        const response = await fetch(apiUrl, {
+            method: 'POST',
+            headers: headers,
+            body: JSON.stringify(body)
+        });
+
+        const endTime = performance.now();
+        const durationInSeconds = ((endTime - startTime) / 1000).toFixed(2);
+
+        const responseClone = response.clone();
+        let data;
+        try {
+            data = await response.json();
+            lastApiResponse = JSON.stringify(data, null, 2);
+        } catch (jsonError) {
+            console.error("Failed to parse JSON response:", jsonError);
+            const textResponse = await responseClone.text();
+            lastApiResponse = `Response was not valid JSON:\n${textResponse}`;
+            data = null;
+        }
+
+        console.log("Video API Response Data:", data);
+
+        if (!response.ok) {
+            const errorMsg = data?.error?.message || lastApiResponse || `HTTP Error ${response.status}`;
+            throw new Error(`API Error (${response.status}): ${errorMsg}`);
+        }
+
+        if (!data) {
+            throw new Error("Received OK response but failed to parse JSON content.");
+        }
+
+        // Extract video URL and show stats
+        if (data.data && data.data.length > 0) {
+            const item = data.data[0];
+            let videoUrl = '';
+            
+            if (item.url) {
+                videoUrl = item.url;
+                outputText.innerHTML = `Video generated successfully by ${model}.`;
+                outputVideo.src = videoUrl;
+                outputVideo.style.display = 'block';
+                outputArea.style.borderColor = '#ccc';
+                downloadVideoBtn.href = videoUrl;
+                downloadVideoBtn.download = `video-${model}-${Date.now()}.mp4`;
+                downloadVideoBtn.style.display = 'inline-block';
+            } else {
+                throw new Error('Could not find video URL in API response.');
+            }
+
+            // Display stats
+            let statsHtml = `
+                <span><strong>Generation Time:</strong> ${durationInSeconds}s</span>
+                <span><strong>Duration:</strong> ${duration}s</span>
+                <span><strong>Model:</strong> ${model}</span>
+            `;
+            
+            // Add aspect ratio if enabled
+            if (aspectRatioEnabled) {
+                statsHtml += `<span><strong>Aspect Ratio:</strong> ${aspectRatio}</span>`;
+            }
+
+            // Add provider-specific data
+            if (data.created) {
+                statsHtml += `<span><strong>Created:</strong> ${new Date(data.created * 1000).toLocaleString()}</span>`;
+            }
+            
+            // Check for usage data if available
+            if (data.usage && data.usage.prompt_tokens) {
+                statsHtml += `<span><strong>Prompt Tokens:</strong> ${data.usage.prompt_tokens}</span>`;
+            }
+            
+            statsArea.innerHTML = statsHtml;
+            statsArea.style.display = 'block';
+            
+        } else {
+            throw new Error('Could not find video data in API response.');
+        }
+
+    } catch (error) {
+        displayError(error.message);
+        statsArea.style.display = 'none';
+    }
+}
+
 // --- Main Event Listener ---
 sendButton.addEventListener('click', async () => {
     // Save current provider's credentials and general settings before sending
@@ -1187,6 +1504,11 @@ sendButton.addEventListener('click', async () => {
             if (!file) return displayError('Please upload or record an audio file for STT.');
             callSttApi(provider, apiKey, baseUrl, model, file);
         }
+    } else if (generationType === 'video') {
+        if (!prompt) return displayError('Please enter a video description.');
+        const duration = parseInt(videoDurationInput.value);
+        if (!duration || duration < 1 || duration > 60) return displayError('Please enter a valid duration (1-60 seconds).');
+        callVideoApi(provider, apiKey, baseUrl, model, prompt);
     } else {
         displayError('Invalid generation type selected.');
     }
@@ -1250,6 +1572,10 @@ document.addEventListener('DOMContentLoaded', async () => {
     toggleBaseUrlInput(); // From original code
     toggleGenerationOptions(); // From original code
     
+    // Check microphone permission on load and update UI
+    await checkMicrophonePermission();
+    updateMicrophoneUI();
+    
     // Add input/change listeners to save settings as they are modified
     apiKeyInput.addEventListener('input', () => saveProviderCredentials(providerSelect.value));
     if (baseUrlInput) { // Check if exists
@@ -1294,4 +1620,25 @@ document.addEventListener('DOMContentLoaded', async () => {
     });
     if (voiceInput) voiceInput.addEventListener('input', saveGeneralSettings);
 
+    // Video settings event listeners
+    if (videoDurationInput) videoDurationInput.addEventListener('input', saveGeneralSettings);
+    if (videoAspectRatioEnabled) videoAspectRatioEnabled.addEventListener('change', async () => {
+        await saveGeneralSettings();
+        toggleAspectRatio(); // Update UI when aspect ratio is toggled
+    });
+    if (videoAspectRatioSelect) videoAspectRatioSelect.addEventListener('change', saveGeneralSettings);
+
+    // New Window Button Listener
+    const newWindowBtn = document.getElementById('open-new-window-btn');
+    if (newWindowBtn && window.electronAPI && window.electronAPI.send) {
+        newWindowBtn.addEventListener('click', () => {
+            window.electronAPI.send('open-new-window');
+        });
+    } else if (newWindowBtn) {
+        // Fallback or warning if not in Electron context or API not available
+        newWindowBtn.addEventListener('click', () => {
+            alert('This feature is only available in the Electron app.');
+        });
+        console.warn('New window button present, but Electron API for sending messages is not available.');
+    }
 });
