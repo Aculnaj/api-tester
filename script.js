@@ -787,7 +787,7 @@ async function callTextApi(provider, apiKey, baseUrl, model, prompt) {
         if (!response.ok) {
             // If response was not ok, lastApiResponse already contains text/JSON error
             const errorMsg = data?.error?.message || data?.detail || lastApiResponse || `HTTP Error ${response.status}`;
-            throw new Error(`API Error (${response.status}): ${errorMsg}`);
+            throw new Error(errorMsg);
         }
 
         // If response is ok but data parsing failed earlier
@@ -919,7 +919,7 @@ async function callImageApi(provider, apiKey, baseUrl, model, prompt) {
 
         if (!response.ok) {
             const errorMsg = data?.error?.message || lastApiResponse || `HTTP Error ${response.status}`;
-            throw new Error(`API Error (${response.status}): ${errorMsg}`);
+            throw new Error(errorMsg);
         }
 
         if (!data) {
@@ -1025,7 +1025,7 @@ async function callImageApi(provider, apiKey, baseUrl, model, prompt) {
                 
                 if (!retryResponse.ok) {
                     const errMsg2 = retryData?.error?.message || lastApiResponse || `HTTP Error ${retryResponse.status}`;
-                    throw new Error(`API Error (${retryResponse.status}): ${errMsg2}`);
+                    throw new Error(errMsg2);
                 }
                 
                 if (!retryData) {
@@ -1133,7 +1133,7 @@ async function callTtsApi(provider, apiKey, baseUrl, model, text, voice) {
         if (!response.ok) {
             const msg = await response.text();
             lastApiResponse = `TTS API Error (${response.status}):\n${msg}`;
-            throw new Error(`TTS API Error (${response.status}): ${msg}`);
+            throw new Error(msg);
         } else {
             // Successful audio response
             lastApiResponse = `Status: ${response.status} ${response.statusText}\nContent-Type: ${response.headers.get('Content-Type') || 'N/A'}\nContent-Length: ${response.headers.get('Content-Length') || 'N/A'}`;
@@ -1253,7 +1253,7 @@ async function callSttApi(provider, apiKey, baseUrl, model, file) {
 
         if (!response.ok) {
             const errText = data?.text || data?.transcript || lastApiResponse || `HTTP Error ${response.status}`;
-            throw new Error(`STT API Error (${response.status}): ${errText}`);
+            throw new Error(errText);
         }
 
         if (!data) {
@@ -1308,6 +1308,225 @@ async function callSttApi(provider, apiKey, baseUrl, model, file) {
         displayError(err.message);
         statsArea.style.display = 'none'; // Hide stats on error
     }
+}
+
+// --- Universal Video URL Extraction Function ---
+function extractVideoUrl(responseData) {
+    console.log('Extracting video URL from response:', responseData);
+    
+    if (!responseData) {
+        console.error('No response data provided to extractVideoUrl');
+        return null;
+    }
+    
+    // Collection of all found URLs with priority scoring
+    const foundUrls = [];
+    
+    // Recursive function to find all URLs in the response
+    function findAllUrls(obj, path = '', depth = 0) {
+        if (depth > 10) return; // Prevent infinite recursion
+        
+        if (typeof obj === 'string') {
+            // Check if it's a valid URL
+            if (isValidUrl(obj)) {
+                const priority = calculateUrlPriority(obj, path);
+                foundUrls.push({ url: obj, path: path, priority: priority });
+                console.log(`Found URL at ${path}: ${obj} (priority: ${priority})`);
+            }
+        } else if (Array.isArray(obj)) {
+            obj.forEach((item, index) => {
+                findAllUrls(item, `${path}[${index}]`, depth + 1);
+            });
+        } else if (obj && typeof obj === 'object') {
+            Object.entries(obj).forEach(([key, value]) => {
+                const newPath = path ? `${path}.${key}` : key;
+                findAllUrls(value, newPath, depth + 1);
+            });
+        }
+    }
+    
+    // Helper function to check if a string is a valid URL
+    function isValidUrl(string) {
+        try {
+            // Must be a URL starting with http/https
+            if (!string.startsWith('http://') && !string.startsWith('https://')) {
+                return false;
+            }
+            new URL(string);
+            return true;
+        } catch (_) {
+            return false;
+        }
+    }
+    
+    // Function to calculate URL priority based on context and content
+    function calculateUrlPriority(url, path) {
+        let priority = 0;
+        const pathLower = path.toLowerCase();
+        const urlLower = url.toLowerCase();
+        
+        // High priority: video-specific fields
+        if (pathLower.includes('video_url') || pathLower.includes('videourl')) {
+            priority += 100;
+        }
+        
+        // High priority: video-related field names
+        if (pathLower.includes('video') && pathLower.includes('url')) {
+            priority += 90;
+        }
+        
+        // Medium-high priority: common video response structures
+        if (pathLower.includes('data') && pathLower.includes('url')) {
+            priority += 80;
+        }
+        
+        if (pathLower.includes('result') && pathLower.includes('url')) {
+            priority += 75;
+        }
+        
+        if (pathLower.includes('output') && (pathLower.includes('url') || pathLower === 'output')) {
+            priority += 70;
+        }
+        
+        // Medium priority: general URL fields
+        if (pathLower.endsWith('url') || pathLower === 'url') {
+            priority += 60;
+        }
+        
+        // URL content analysis
+        // Very high priority: obvious video file extensions
+        if (/\.(mp4|avi|mov|webm|mkv|m4v|3gp|flv|wmv)(\?|$)/i.test(url)) {
+            priority += 200;
+        }
+        
+        // High priority: video-related domains or paths
+        if (/\/video|\/v\/|\/watch|\/media|\/stream/i.test(url)) {
+            priority += 50;
+        }
+        
+        // Medium priority: common video hosting patterns
+        if (/youtube|vimeo|cloudinary|amazonaws|blob:|streamable/i.test(url)) {
+            priority += 40;
+        }
+        
+        // Low priority: might be thumbnails or other media
+        if (/thumbnail|thumb|preview|poster|image/i.test(pathLower)) {
+            priority -= 30;
+        }
+        
+        // Bonus for secure URLs
+        if (url.startsWith('https://')) {
+            priority += 5;
+        }
+        
+        return priority;
+    }
+    
+    // Find all URLs in the response
+    findAllUrls(responseData);
+    
+    if (foundUrls.length === 0) {
+        console.error('No URLs found in response. Available fields:', Object.keys(responseData));
+        return null;
+    }
+    
+    // Sort URLs by priority (highest first)
+    foundUrls.sort((a, b) => b.priority - a.priority);
+    
+    console.log('All found URLs with priorities:', foundUrls);
+    
+    // Return the highest priority URL
+    const bestUrl = foundUrls[0];
+    console.log(`Selected best URL: ${bestUrl.url} from path: ${bestUrl.path} (priority: ${bestUrl.priority})`);
+    
+    return bestUrl.url;
+}
+
+// --- Video Download Setup Function ---
+function setupVideoDownload(videoUrl, model) {
+    const fileName = `video-${model}-${Date.now()}.mp4`;
+    
+    // Get the download button and clear any existing listeners
+    const downloadBtn = document.getElementById('download-video-btn');
+    
+    // Clone the button to remove all event listeners, then replace it
+    const newDownloadBtn = downloadBtn.cloneNode(true);
+    downloadBtn.parentNode.replaceChild(newDownloadBtn, downloadBtn);
+    
+    // Make sure the button is visible and properly styled
+    newDownloadBtn.style.display = 'inline-block';
+    newDownloadBtn.textContent = 'Download Video';
+    newDownloadBtn.disabled = false;
+    
+    newDownloadBtn.addEventListener('click', async (e) => {
+        e.preventDefault();
+        
+        try {
+            // Show download status
+            const originalText = newDownloadBtn.textContent;
+            newDownloadBtn.textContent = 'Downloading...';
+            newDownloadBtn.disabled = true;
+            
+            // Fetch the video
+            const response = await fetch(videoUrl, {
+                method: 'GET',
+                headers: {
+                    'Accept': 'video/*',
+                }
+            });
+            
+            if (!response.ok) {
+                throw new Error(`Failed to fetch video: ${response.status} ${response.statusText}`);
+            }
+            
+            // Get the video blob
+            const blob = await response.blob();
+            
+            // Create download link
+            const downloadUrl = URL.createObjectURL(blob);
+            const tempLink = document.createElement('a');
+            tempLink.href = downloadUrl;
+            tempLink.download = fileName;
+            tempLink.style.display = 'none';
+            
+            // Trigger download
+            document.body.appendChild(tempLink);
+            tempLink.click();
+            document.body.removeChild(tempLink);
+            
+            // Cleanup
+            setTimeout(() => {
+                URL.revokeObjectURL(downloadUrl);
+            }, 1000);
+            
+            // Reset button
+            newDownloadBtn.textContent = originalText;
+            newDownloadBtn.disabled = false;
+            
+        } catch (error) {
+            console.error('Download failed:', error);
+            
+            // Fallback: try to open in new tab
+            console.log('Attempting fallback download method...');
+            const tempLink = document.createElement('a');
+            tempLink.href = videoUrl;
+            tempLink.download = fileName;
+            tempLink.target = '_blank';
+            tempLink.rel = 'noopener noreferrer';
+            tempLink.style.display = 'none';
+            
+            document.body.appendChild(tempLink);
+            tempLink.click();
+            document.body.removeChild(tempLink);
+            
+            // Reset button
+            newDownloadBtn.textContent = 'Download Video';
+            newDownloadBtn.disabled = false;
+            
+            // Show user-friendly message
+            outputText.innerHTML += '<br><small style="color: orange;">Note: Direct download failed, opened video in new tab. You can right-click and "Save as..." to download.</small>';
+        }
+    });
 }
 
 // --- API Call Logic for Video Generation ---
@@ -1401,31 +1620,26 @@ async function callVideoApi(provider, apiKey, baseUrl, model, prompt) {
 
         if (!response.ok) {
             const errorMsg = data?.error?.message || lastApiResponse || `HTTP Error ${response.status}`;
-            throw new Error(`API Error (${response.status}): ${errorMsg}`);
+            throw new Error(errorMsg);
         }
 
         if (!data) {
             throw new Error("Received OK response but failed to parse JSON content.");
         }
 
-        // Extract video URL and show stats
-        if (data.data && data.data.length > 0) {
-            const item = data.data[0];
-            let videoUrl = '';
+        // Extract video URL and show stats - improved to handle multiple response formats
+        let videoUrl = extractVideoUrl(data);
+        
+        if (videoUrl) {
+            outputText.innerHTML = `Video generated successfully by ${model}.`;
+            outputVideo.src = videoUrl;
+            outputVideo.style.display = 'block';
+            outputArea.style.borderColor = '#ccc';
             
-            if (item.url) {
-                videoUrl = item.url;
-                outputText.innerHTML = `Video generated successfully by ${model}.`;
-                outputVideo.src = videoUrl;
-                outputVideo.style.display = 'block';
-                outputArea.style.borderColor = '#ccc';
-                downloadVideoBtn.href = videoUrl;
-                downloadVideoBtn.download = `video-${model}-${Date.now()}.mp4`;
-                downloadVideoBtn.style.display = 'inline-block';
-            } else {
-                throw new Error('Could not find video URL in API response.');
-            }
-
+            // Setup proper video download
+            setupVideoDownload(videoUrl, model);
+            downloadVideoBtn.style.display = 'inline-block';
+            
             // Display stats
             let statsHtml = `
                 <span><strong>Generation Time:</strong> ${durationInSeconds}s</span>
@@ -1452,7 +1666,7 @@ async function callVideoApi(provider, apiKey, baseUrl, model, prompt) {
             statsArea.style.display = 'block';
             
         } else {
-            throw new Error('Could not find video data in API response.');
+            throw new Error('Could not find video URL in API response. Response structure: ' + JSON.stringify(data, null, 2));
         }
 
     } catch (error) {
