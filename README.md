@@ -19,7 +19,6 @@ It's designed for developers and enthusiasts who need a reliable and feature-ric
 *   **Persistent History**: Your request history is saved locally, allowing you to revisit and reuse previous prompts.
 *   **Customizable Themes**: Switch between light and dark themes to match your preference.
 *   **Real-time Streaming**: View responses from language models as they are being generated.
-*   **Built-in Server**: A local Express.js server handles API requests, keeping all traffic on your machine.
 
 ---
 
