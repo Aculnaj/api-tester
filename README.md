@@ -23,15 +23,6 @@ It's designed for developers and enthusiasts who need a reliable and feature-ric
 
 ---
 
-## 🛠️ Tech Stack
-
-*   **Framework**: [Electron](https://www.electronjs.org/)
-*   **Backend Logic**: [Node.js](https://nodejs.org/) with an [Express.js](https://expressjs.com/) server
-*   **Frontend**: HTML, CSS, Vanilla JavaScript
-*   **Configuration Storage**: [electron-store](https://github.com/sindresorhus/electron-store)
-
----
-
 ## 🚀 Getting Started
 
 ### Prerequisites
