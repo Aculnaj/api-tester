@@ -1,58 +1,39 @@
-# API Tester Desktop
+# Simple AI Generation Tool (Web-Based)
 
-**API Tester Desktop** is a powerful, local-first API testing application built with Electron. It provides a seamless, multi-window interface for interacting with various generative AI models, including text, image, audio, and video generation.
+## Description
 
-It's designed for developers and enthusiasts who need a reliable and feature-rich tool to test and experiment with different AI provider APIs without leaving their desktop.
+This repository contains the web-based client-side portion of a tool designed to generate text and images via API calls. The tool is intentionally kept simple, utilizing only Plain HTML, CSS, and JavaScript [1] to execute directly within a browser. It requires no server-side installation or complex application structure and can be used simply by opening the local files. It can also be accessed online at https://aculnaj.github.io/api-tester.
 
----
+## Files
 
-## ✨ Features
+The web part consists of the following files [1]:
 
-*   **Multi-Provider Support**: Natively supports APIs from OpenAI, Anthropic (Claude), and DeepSeek.
-*   **Multi-Modal Generation**:
-    *   **Text Generation**: Craft and send prompts to advanced language models.
-    *   **Image Generation**: Create images from text descriptions.
-    *   **Audio Generation**: Synthesize speech from text.
-    *   **Video Generation**: Generate video clips from prompts (provider-dependent).
-*   **Secure, Local API Key Storage**: API keys are stored securely on your local machine using `electron-store`. They are never synced to the cloud.
-*   **Multi-Window Interface**: Open multiple testing windows simultaneously to compare models or work on different tasks in parallel.
-*   **Persistent History**: Your request history is saved locally, allowing you to revisit and reuse previous prompts.
-*   **Customizable Themes**: Switch between light and dark themes to match your preference.
-*   **Real-time Streaming**: View responses from language models as they are being generated.
+*   `index.html`: The main structure of the user interface.
+*   `style.css`: Contains the styling rules for the appearance.
+*   `script.js`: Handles the dynamic functionality, API calls, and displaying results.
 
----
+## Functionality
 
-## 🚀 Getting Started
+*   Performs API calls for both text and image generation [1].
+*   Allows selection from several AI providers, including OpenAI, Deepseek, OpenAI Compatible, Claude, and OpenRouter [1].
+*   Displays the generated text or image (or errors) directly on the page [1].
+*   For text generation, provides a switch to enable or disable response streaming. When enabled, text appears incrementally as it's received from the API. When disabled, the full response is shown after completion.
+*   Displays basic performance statistics (Time, Tokens/Sec, Token Counts) for text generation if the API response includes usage data [1].
+*   Includes basic input validation (checks for missing API key, model, prompt, Base URL, and proper numeric inputs) [1].
 
-### Prerequisites
+## Technology
 
-*   [Node.js](https://nodejs.org/en/download/) (which includes npm) installed on your system.
-*   API keys from the AI providers you wish to use (OpenAI, Anthropic, etc.).
+The tool is based on Plain HTML, CSS, and JavaScript for simplicity and direct browser execution [1].
 
-### Installation & Setup
+## Usage
 
-1.  **Clone the repository:**
-    ```bash
-    git clone https://github.com/your-username/api-tester-desktop.git
-    cd api-tester-desktop
-    ```
+Access the hosted version directly at **https://aculnaj.github.io/api-tester**.
 
-2.  **Install dependencies:**
-    ```bash
-    npm install
-    ```
-
-3.  **Run the application:**
-    ```bash
-    npm start
-    ```
-
-4.  **Set API Keys:**
-    *   The first time you run the application, you will be prompted to enter your API keys.
-    *   You can update them at any time through the "Settings" menu.
-
----
-
-## License
-
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+__Alternatively:__
+1.  Download the `index.html`, `style.css`, and `script.js` files.
+2.  Open the `index.html` file in a modern web browser.
+3.  Select a provider from the dropdown menu (e.g., OpenAI, Deepseek, etc.) [1].
+4.  Enter the required information (such as API Key, URL, Model) into the form fields [1].
+5.  Select the generation type (Text or Image) [1].
+6.  If "Text" generation is selected, an "Enable Streaming" switch will appear. Toggle this to control whether the response is displayed word by word or all at once.
+7.  Use the generation functions.
