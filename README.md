@@ -1,7 +1,5 @@
 # API Tester Desktop
 
-![API Tester Screenshot](placeholder.png) <!-- TODO: Replace with actual screenshot -->
-
 **API Tester Desktop** is a powerful, local-first API testing application built with Electron. It provides a seamless, multi-window interface for interacting with various generative AI models, including text, image, audio, and video generation.
 
 It's designed for developers and enthusiasts who need a reliable and feature-rich tool to test and experiment with different AI provider APIs without leaving their desktop.
