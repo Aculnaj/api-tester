@@ -33,29 +33,25 @@ async function initializeStore() {
     }
 
     // IPC handlers for electron-store (and theme)
-    console.log('[Main Process] Attempting to register get-store-value IPC handler.');
     ipcMain.handle('get-store-value', (event, key) => {
       const value = storeInstance.get(key);
       // console.log(`[Main Process] IPC Handler: get-store-value for key: ${key}, returning:`, value);
       return value;
     });
-    console.log('[Main Process] Successfully registered get-store-value IPC handler.');
+    console.log('[Main Process] Registered get-store-value IPC handler.');
 
-    console.log('[Main Process] Attempting to register set-store-value IPC handler.');
     ipcMain.handle('set-store-value', (event, key, value) => {
       storeInstance.set(key, value);
       // console.log(`[Main Process] IPC Handler: set-store-value for key: ${key}, value:`, value);
     });
-    console.log('[Main Process] Successfully registered set-store-value IPC handler.');
+    console.log('[Main Process] Registered set-store-value IPC handler.');
 
-    console.log('[Main Process] Attempting to register delete-store-value IPC handler.');
     ipcMain.handle('delete-store-value', (event, key) => {
       storeInstance.delete(key);
       // console.log(`[Main Process] IPC Handler: delete-store-value for key: ${key}`);
     });
-    console.log('[Main Process] Successfully registered delete-store-value IPC handler.');
+    console.log('[Main Process] Registered delete-store-value IPC handler.');
 
-    console.log('[Main Process] Attempting to register get-theme-preference IPC handler.');
     ipcMain.handle('get-theme-preference', () => {
       const theme = storeInstance.get('userTheme', 'system');
       let shouldUseDark = nativeTheme.shouldUseDarkColors;
@@ -64,9 +60,8 @@ async function initializeStore() {
       console.log('[Main Process] IPC Handler: get-theme-preference. Returning:', { theme, shouldUseDark }); // Corrected log
       return { theme, shouldUseDark };
     });
-    console.log('[Main Process] Successfully registered get-theme-preference IPC handler.');
+    console.log('[Main Process] Registered get-theme-preference IPC handler.');
 
-    console.log('[Main Process] Attempting to register set-theme-preference IPC handler.');
     ipcMain.handle('set-theme-preference', (event, theme) => {
       storeInstance.set('userTheme', theme);
       console.log(`[Main Process] IPC Handler: set-theme-preference. User theme set to: ${theme}`);
@@ -88,9 +83,9 @@ async function initializeStore() {
       });
       return { theme, shouldUseDark: newShouldUseDark };
     });
-    console.log('[Main Process] Successfully registered set-theme-preference IPC handler.');
+    console.log('[Main Process] Registered set-theme-preference IPC handler.');
 
-    console.log('[Main Process] IPC handlers set up');
+    console.log('[Main Process] All core IPC handlers set up.');
   } catch (error) {
     console.error('[Main Process] Error in initializeStore():', error);
   }
@@ -106,39 +101,45 @@ expressApp.use(express.json());
 // Video generation endpoint
 expressApp.post('/videos/generations', async (req, res) => {
   try {
+    // Retrieve model, prompt, aspect_ratio, and duration from req.body
     const { model, prompt, aspect_ratio, duration } = req.body;
-    
-    console.log('Video generation request:', {
+
+    console.log('Video generation request received:', {
       model,
       prompt,
       aspect_ratio,
-      duration
+      duration,
     });
-    
-    // Here you would integrate with your actual video generation API
-    // This is a placeholder implementation that returns a sample response
-    const requestBody = {
-      model: model,
-      prompt: prompt,
-      duration: duration
-    };
-    
-    // Add aspect ratio if provided
-    if (aspect_ratio) {
-      requestBody.aspect_ratio = aspect_ratio;
-    }
-    
+
+    // Array of sample video URLs
+    const sampleVideos = [
+      'https://sample-videos.com/video123/mp4/720/big_buck_bunny_720p_1mb.mp4',
+      'https://sample-videos.com/video123/mp4/480/big_buck_bunny_480p_1mb.mp4',
+      'https://jsoncompare.org/LearningContainer/SampleFiles/Video/MP4/sample-mp4-file.mp4',
+      // Add more diverse URLs if needed for testing different video types/sources
+    ];
+
+    // Select a video URL pseudo-randomly
+    const selectedVideoUrl = sampleVideos[Math.floor(Math.random() * sampleVideos.length)];
+
+    console.log(`Selected placeholder video URL: ${selectedVideoUrl}`);
+
     // Simulate API processing time
-    await new Promise(resolve => setTimeout(resolve, 2000));
-    
-    // For now, return a placeholder response
-    // In a real implementation, you would call your video generation API here
+    await new Promise(resolve => setTimeout(resolve, 1500 + Math.random() * 1000)); // Simulate some delay
+
+    // Modified videoResponse object to include input parameters
     const videoResponse = {
       data: [{
-        url: 'https://sample-videos.com/zip/10/mp4/SampleVideo_1280x720_1mb.mp4' // Placeholder video URL
+        url: selectedVideoUrl, // Use the dynamically selected URL
+        source: 'placeholder-service',
+        requested_model: model,
+        requested_duration: duration,
+        requested_aspect_ratio: aspect_ratio || 'N/A' // Use 'N/A' if aspect_ratio is not provided
       }],
       usage: {
-        prompt_tokens: prompt.length
+        prompt_tokens: prompt ? prompt.length : 0, // Simple placeholder usage, check if prompt exists
+        // Arbitrary calculation for generation_units
+        generation_units: (duration || 1) * (aspect_ratio === '16:9' ? 2 : 1)
       },
       created: Math.floor(Date.now() / 1000)
     };
@@ -146,7 +147,7 @@ expressApp.post('/videos/generations', async (req, res) => {
     res.json(videoResponse);
     
   } catch (error) {
-    console.error('Error in video generation:', error);
+    console.error('Error in placeholder video generation:', error);
     res.status(500).json({
       error: {
         message: error.message || 'Failed to generate video'
@@ -235,16 +236,22 @@ function createWindow() {
 
   // Send initial theme information to the new window
   // This ensures new windows also get the correct theme immediately
-  const currentThemeSetting = storeInstance.get('userTheme', 'system');
-  let shouldUseDark = nativeTheme.shouldUseDarkColors;
-  if (currentThemeSetting === 'light') shouldUseDark = false;
-  if (currentThemeSetting === 'dark') shouldUseDark = true;
-  
   newWindow.webContents.on('did-finish-load', () => {
+    // Re-evaluate the correct theme state at the moment the window is ready
+    const themeToSend = storeInstance.get('userTheme', 'system');
+    let shouldUseDarkToSend = nativeTheme.shouldUseDarkColors; // Get current OS state
+    if (themeToSend === 'light') {
+      shouldUseDarkToSend = false;
+    } else if (themeToSend === 'dark') {
+      shouldUseDarkToSend = true;
+    }
+    // If themeToSend is 'system', shouldUseDarkToSend already holds the correct OS state.
+
     newWindow.webContents.send('theme-updated', {
-      theme: currentThemeSetting,
-      shouldUseDark: shouldUseDark
+      theme: themeToSend,
+      shouldUseDark: shouldUseDarkToSend
     });
+    console.log('[Main Process] Sent initial theme-updated to new window:', { theme: themeToSend, shouldUseDark: shouldUseDarkToSend });
   });
 
   return newWindow; // Return the new window instance

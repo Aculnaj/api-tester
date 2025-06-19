@@ -1,4 +1,4 @@
-// Get references to the relevant HTML elements
+// --- DOM Element References ---
 const providerSelect = document.getElementById('provider-select');
 const apiKeyInput = document.getElementById('api-key-input');
 const baseUrlContainer = document.getElementById('base-url-container');
@@ -7,37 +7,40 @@ const modelInput = document.getElementById('model-input');
 const promptInput = document.getElementById('prompt-input');
 const sendButton = document.getElementById('send-button');
 const outputArea = document.getElementById('output-area');
-const outputText = document.getElementById('output-text'); // Specific element for text
-const outputImage = document.getElementById('output-image'); // Specific element for image
-const generationTypeText = document.getElementById('generation-type-text');
-const generationTypeImage = document.getElementById('generation-type-image');
+const outputText = document.getElementById('output-text');
+const outputImage = document.getElementById('output-image');
+const statsArea = document.getElementById('stats-area');
+const enableStreamingCheckbox = document.getElementById('enable-streaming-checkbox');
+const loadingIndicator = document.getElementById('loading-indicator');
+
+// Generation Type Radios
+const generationTypeRadios = document.querySelectorAll('input[name="generation-type"]');
+
+// Image Options
 const imageOptionsContainer = document.getElementById('image-options-container');
 const qualityOptionsContainer = document.getElementById('quality-options-container');
 const qualitySelect = document.getElementById('quality-select');
 const enableQualityCheckbox = document.getElementById('enable-quality-checkbox');
 const enableQualityContainer = document.querySelector('.enable-quality-container');
-const customQualityInput = document.getElementById('custom-quality-input'); // New
+const customQualityInput = document.getElementById('custom-quality-input');
 const imageWidthInput = document.getElementById('image-width-input');
 const imageHeightInput = document.getElementById('image-height-input');
-const statsArea = document.getElementById('stats-area');
+const downloadImageBtn = document.getElementById('download-image-btn');
 
-// Audio generation elements
-const generationTypeAudio = document.getElementById('generation-type-audio');
+// Audio Options
 const audioOptionsContainer = document.getElementById('audio-options-container');
 const audioTypeSelect = document.getElementById('audio-type-select');
 const sttInputContainer = document.getElementById('stt-input-container');
 const audioFileInput = document.getElementById('audio-file-input');
-const outputAudio = document.getElementById('output-audio');
-const downloadAudio = document.getElementById('download-audio');
-const downloadImageBtn = document.getElementById('download-image-btn'); // New button for image download
 const voiceOptionsContainer = document.getElementById('voice-options-container');
 const voiceInput = document.getElementById('voice-input');
 const recorderControls = document.getElementById('recorder-controls');
 const recordBtn = document.getElementById('record-btn');
 const recordingPreview = document.getElementById('recording-preview');
+const outputAudio = document.getElementById('output-audio');
+const downloadAudio = document.getElementById('download-audio');
 
-// Video generation elements
-const generationTypeVideo = document.getElementById('generation-type-video');
+// Video Options
 const videoOptionsContainer = document.getElementById('video-options-container');
 const videoAspectRatioEnabled = document.getElementById('video-aspect-ratio-enabled');
 const videoAspectRatioSelect = document.getElementById('video-aspect-ratio');
@@ -45,35 +48,38 @@ const aspectRatioGroup = document.getElementById('aspect-ratio-group');
 const videoDurationInput = document.getElementById('video-duration');
 const outputVideo = document.getElementById('output-video');
 const downloadVideoBtn = document.getElementById('download-video-btn');
-let recordedChunks = [];
-let mediaRecorder;
-let lastRequestPayload = null; // Variable to store the last request payload
-let lastApiResponse = null;    // Variable to store the last API response
 
-// Function to toggle aspect ratio visibility for video generation
-function toggleAspectRatio() {
-    const aspectRatioEnabled = videoAspectRatioEnabled.checked;
-    
-    if (aspectRatioEnabled) {
-        aspectRatioGroup.style.display = 'block';
-        aspectRatioGroup.classList.remove('disabled');
-    } else {
-        aspectRatioGroup.style.display = 'none';
-        aspectRatioGroup.classList.add('disabled');
-    }
-}
+// Text Generation Options
+const textGenerationOptions = document.getElementById('text-generation-options');
+const systemPromptInput = document.getElementById('system-prompt-input');
+const temperatureInput = document.getElementById('temperature-input');
+const temperatureValue = document.getElementById('temperature-value');
+const topPInput = document.getElementById('top-p-input');
+const topPValue = document.getElementById('top-p-value');
+const maxTokensInput = document.getElementById('max-tokens-input');
+const uploadTextBtn = document.getElementById('upload-text-btn');
+
+// Payload/Response Display
 const payloadContainer = document.getElementById('payload-container');
 const togglePayloadBtn = document.getElementById('toggle-payload-btn');
 const payloadDisplayArea = document.getElementById('payload-display-area');
-const toggleResponseBtn = document.getElementById('toggle-response-btn');     // New
-const responseDisplayArea = document.getElementById('response-display-area'); // New
+const toggleResponseBtn = document.getElementById('toggle-response-btn');
+const responseDisplayArea = document.getElementById('response-display-area');
 
-// Model container reposition support
+// Model Container
 const modelContainer = document.getElementById('model-container');
-const modelContainerOriginalParent = modelContainer.parentNode;
-const modelContainerOriginalNextSibling = modelContainer.nextElementSibling;
 
-// --- Storage Helpers (with fallback to localStorage when not in Electron) ---
+// --- STATE VARIABLES ---
+let recordedChunks = [];
+let mediaRecorder;
+let lastRequestPayload = null;
+let lastApiResponse = null;
+let microphonePermissionStatus = 'prompt'; // 'granted', 'denied', 'prompt'
+
+// --- STORAGE HELPERS ---
+// These functions handle getting and setting values in Electron store or localStorage.
+// They are used by the settings persistence functions.
+
 async function getStoredValue(key) {
     // Try Electron Store first
     if (window.electronAPI && window.electronAPI.getStoreValue) {
@@ -118,8 +124,9 @@ async function setStoredValue(key, value) {
     }
 }
 
+// --- SETTINGS PERSISTENCE ---
+// Functions for loading and saving user settings and API credentials.
 
-// --- Settings Persistence ---
 const API_CREDENTIALS_KEY_PREFIX = 'apiCredentials';
 const LAST_PROVIDER_KEY = 'lastProvider';
 const LAST_MODEL_KEY = 'lastModel';
@@ -135,151 +142,12 @@ const LAST_VOICE_KEY = 'lastVoice';
 const LAST_VIDEO_DURATION_KEY = 'lastVideoDuration';
 const LAST_VIDEO_ASPECT_RATIO_ENABLED_KEY = 'lastVideoAspectRatioEnabled';
 const LAST_VIDEO_ASPECT_RATIO_KEY = 'lastVideoAspectRatio';
-
-const THEME_SETTING_KEY = 'userTheme'; // 'system', 'light', 'dark'
-
-// Helper function for browser-based theme storage
-function saveThemeToLocalStorage(theme) {
-    try {
-        localStorage.setItem(THEME_SETTING_KEY, theme);
-        return true;
-    } catch (e) {
-        console.error('Failed to save theme to localStorage:', e);
-        return false;
-    }
-}
-
-// Helper function to get theme from browser storage
-function getThemeFromLocalStorage() {
-    try {
-        return localStorage.getItem(THEME_SETTING_KEY) || 'system';
-    } catch (e) {
-        console.error('Failed to get theme from localStorage:', e);
-        return 'system';
-    }
-}
-
-// Function to determine if dark mode should be used based on system preference
-function getSystemDarkMode() {
-    return window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
-}
-
-// Listen for system color scheme changes
-function setupSystemThemeListener(callback) {
-    if (window.matchMedia) {
-        const matcher = window.matchMedia('(prefers-color-scheme: dark)');
-        matcher.addEventListener('change', (e) => {
-            callback(e.matches);
-        });
-    }
-}
-
-async function applyTheme(themeToApply, osShouldUseDark) {
-    console.log('Applying theme:', { themeToApply, osShouldUseDark });
-    if (themeToApply === 'system') {
-        document.body.classList.toggle('dark-mode', osShouldUseDark);
-    } else if (themeToApply === 'dark') {
-        document.body.classList.add('dark-mode');
-    } else { // 'light'
-        document.body.classList.remove('dark-mode');
-    }
-
-    // Theme mode buttons
-    const btnSystem = document.getElementById('theme-btn-system');
-    const btnLight = document.getElementById('theme-btn-light');
-    const btnDark = document.getElementById('theme-btn-dark');
-    if (btnSystem && btnLight && btnDark) {
-        btnSystem.classList.remove('active');
-        btnLight.classList.remove('active');
-        btnDark.classList.remove('active');
-        if (themeToApply === 'system') btnSystem.classList.add('active');
-        else if (themeToApply === 'light') btnLight.classList.add('active');
-        else btnDark.classList.add('active');
-    }
-}
-
-async function initializeTheme() {
-    // Setup for when we're in Electron environment
-    if (window.electronAPI && window.electronAPI.onThemeUpdated && window.electronAPI.setThemePreference && window.electronAPI.getThemePreference) {
-        console.log('Initializing theme in Electron environment');
-        
-        // Listen for theme updates from main process
-        window.electronAPI.onThemeUpdated(({ theme, shouldUseDark }) => {
-            console.log('Renderer: theme-updated received from main:', { theme, shouldUseDark });
-            applyTheme(theme, shouldUseDark);
-        });
-
-        // Get initial theme state from main process
-        let initialThemeState;
-        try {
-            initialThemeState = await window.electronAPI.getThemePreference();
-            if (initialThemeState) {
-                console.log('Renderer: Initial theme state received:', initialThemeState);
-                applyTheme(initialThemeState.theme, initialThemeState.shouldUseDark);
-            } else {
-                console.warn('Renderer: Did not receive initial theme state.');
-                applyTheme('system', getSystemDarkMode());
-            }
-        } catch (error) {
-            console.error('Renderer: Error getting initial theme preference:', error);
-            applyTheme('system', getSystemDarkMode());
-        }
-
-        // Theme mode button logic for Electron
-        const btnSystem = document.getElementById('theme-btn-system');
-        const btnLight = document.getElementById('theme-btn-light');
-        const btnDark = document.getElementById('theme-btn-dark');
-        if (btnSystem && btnLight && btnDark) {
-            btnSystem.onclick = async () => {
-                await window.electronAPI.setThemePreference('system');
-            };
-            btnLight.onclick = async () => {
-                await window.electronAPI.setThemePreference('light');
-            };
-            btnDark.onclick = async () => {
-                await window.electronAPI.setThemePreference('dark');
-            };
-        }
-    }
-    // Setup for when we're in a browser (no Electron)
-    else {
-        console.log('Initializing theme in browser environment');
-        
-        // Get initial theme from localStorage
-        const savedTheme = getThemeFromLocalStorage();
-        const isDarkMode = getSystemDarkMode();
-        
-        // Apply the initial theme
-        applyTheme(savedTheme, isDarkMode);
-        
-        // Setup system theme change listener
-        setupSystemThemeListener((isDark) => {
-            if (getThemeFromLocalStorage() === 'system') {
-                applyTheme('system', isDark);
-            }
-        });
-        
-        // Theme mode button logic for browser
-        const btnSystem = document.getElementById('theme-btn-system');
-        const btnLight = document.getElementById('theme-btn-light');
-        const btnDark = document.getElementById('theme-btn-dark');
-        if (btnSystem && btnLight && btnDark) {
-            btnSystem.onclick = () => {
-                saveThemeToLocalStorage('system');
-                applyTheme('system', getSystemDarkMode());
-            };
-            btnLight.onclick = () => {
-                saveThemeToLocalStorage('light');
-                applyTheme('light', false);
-            };
-            btnDark.onclick = () => {
-                saveThemeToLocalStorage('dark');
-                applyTheme('dark', true);
-            };
-        }
-    }
-}
-
+const LAST_STREAMING_ENABLED_KEY = 'lastStreamingEnabled';
+const LAST_SYSTEM_PROMPT_KEY = 'lastSystemPrompt';
+const LAST_TEMPERATURE_KEY = 'lastTemperature';
+const LAST_TOP_P_KEY = 'lastTopP';
+const LAST_MAX_TOKENS_KEY = 'lastMaxTokens';
+// Loads API credentials for the given provider from storage.
 async function loadProviderCredentials(provider) {
     if (!provider) return;
     const credentials = await getStoredValue(`${API_CREDENTIALS_KEY_PREFIX}.${provider}`);
@@ -297,6 +165,7 @@ async function loadProviderCredentials(provider) {
     toggleBaseUrlInput(); // Ensure visibility is correct after loading
 }
 
+// Saves API credentials for the given provider to storage.
 async function saveProviderCredentials(provider) {
     if (!provider) return;
     const apiKey = apiKeyInput.value;
@@ -304,6 +173,7 @@ async function saveProviderCredentials(provider) {
     await setStoredValue(`${API_CREDENTIALS_KEY_PREFIX}.${provider}`, { apiKey, baseUrl });
 }
 
+// Loads general application settings from storage.
 async function loadGeneralSettings() {
     const lastProvider = await getStoredValue(LAST_PROVIDER_KEY);
     if (lastProvider) providerSelect.value = lastProvider;
@@ -321,12 +191,12 @@ async function loadGeneralSettings() {
     if (enableQualityCheckbox) { // Check if exists
         enableQualityCheckbox.checked = typeof lastEnableQuality === 'boolean' ? lastEnableQuality : true; // Default to true
     }
-    
+
     const lastQuality = await getStoredValue(LAST_IMAGE_QUALITY_KEY);
     if (qualitySelect) { // Check if exists
         qualitySelect.value = lastQuality || 'standard'; // Default quality
     }
-    
+
     const lastCustomQuality = await getStoredValue(LAST_CUSTOM_IMAGE_QUALITY_KEY);
     if (customQualityInput) { // Check if exists
         customQualityInput.value = lastCustomQuality || '';
@@ -335,7 +205,7 @@ async function loadGeneralSettings() {
 
     if (imageWidthInput) imageWidthInput.value = await getStoredValue(LAST_IMAGE_WIDTH_KEY) || '1024';
     if (imageHeightInput) imageHeightInput.value = await getStoredValue(LAST_IMAGE_HEIGHT_KEY) || '1024';
-    
+
     const lastAudioType = await getStoredValue(LAST_AUDIO_TYPE_KEY);
     if (audioTypeSelect) { // Check if exists
          audioTypeSelect.value = lastAudioType || 'tts';
@@ -345,28 +215,46 @@ async function loadGeneralSettings() {
 
     // Load video settings
     if (videoDurationInput) videoDurationInput.value = await getStoredValue(LAST_VIDEO_DURATION_KEY) || '5';
-    
+
     const lastVideoAspectRatioEnabled = await getStoredValue(LAST_VIDEO_ASPECT_RATIO_ENABLED_KEY);
     if (videoAspectRatioEnabled) {
         videoAspectRatioEnabled.checked = typeof lastVideoAspectRatioEnabled === 'boolean' ? lastVideoAspectRatioEnabled : false;
     }
-    
+
     const lastVideoAspectRatio = await getStoredValue(LAST_VIDEO_ASPECT_RATIO_KEY);
     if (videoAspectRatioSelect) {
         videoAspectRatioSelect.value = lastVideoAspectRatio || '16:9';
     }
 
+    const lastStreamingEnabled = await getStoredValue(LAST_STREAMING_ENABLED_KEY);
+    if (enableStreamingCheckbox) {
+        // Default to true if not found in storage (current behavior is streaming on)
+        enableStreamingCheckbox.checked = typeof lastStreamingEnabled === 'boolean' ? lastStreamingEnabled : true;
+    }
+
+    // Load text generation settings
+    systemPromptInput.value = await getStoredValue(LAST_SYSTEM_PROMPT_KEY) || '';
+    const lastTemp = await getStoredValue(LAST_TEMPERATURE_KEY);
+    temperatureInput.value = lastTemp !== undefined ? lastTemp : 1;
+    temperatureValue.textContent = parseFloat(temperatureInput.value).toFixed(1);
+    const lastTopP = await getStoredValue(LAST_TOP_P_KEY);
+    topPInput.value = lastTopP !== undefined ? lastTopP : 1;
+    topPValue.textContent = parseFloat(topPInput.value).toFixed(2);
+    maxTokensInput.value = await getStoredValue(LAST_MAX_TOKENS_KEY) || '';
+
+
     toggleGenerationOptions(); // Update UI based on loaded settings
     toggleBaseUrlInput(); // Ensure base URL visibility
 }
 
+// Saves general application settings to storage.
 async function saveGeneralSettings() {
     await setStoredValue(LAST_PROVIDER_KEY, providerSelect.value);
     await setStoredValue(LAST_MODEL_KEY, modelInput.value);
     await setStoredValue(LAST_PROMPT_KEY, promptInput.value);
     const generationType = document.querySelector('input[name="generation-type"]:checked');
     if (generationType) await setStoredValue(LAST_GENERATION_TYPE_KEY, generationType.value);
-    
+
     if (enableQualityCheckbox) await setStoredValue(LAST_ENABLE_QUALITY_KEY, enableQualityCheckbox.checked);
     if (qualitySelect) await setStoredValue(LAST_IMAGE_QUALITY_KEY, qualitySelect.value);
     if (customQualityInput) await setStoredValue(LAST_CUSTOM_IMAGE_QUALITY_KEY, customQualityInput.value);
@@ -374,12 +262,100 @@ async function saveGeneralSettings() {
     if (imageHeightInput) await setStoredValue(LAST_IMAGE_HEIGHT_KEY, imageHeightInput.value);
     if (audioTypeSelect) await setStoredValue(LAST_AUDIO_TYPE_KEY, audioTypeSelect.value);
     if (voiceInput) await setStoredValue(LAST_VOICE_KEY, voiceInput.value);
-    
+    if (enableStreamingCheckbox) await setStoredValue(LAST_STREAMING_ENABLED_KEY, enableStreamingCheckbox.checked); // Added for streaming toggle
+
+
     // Save video settings
     if (videoDurationInput) await setStoredValue(LAST_VIDEO_DURATION_KEY, videoDurationInput.value);
     if (videoAspectRatioEnabled) await setStoredValue(LAST_VIDEO_ASPECT_RATIO_ENABLED_KEY, videoAspectRatioEnabled.checked);
     if (videoAspectRatioSelect) await setStoredValue(LAST_VIDEO_ASPECT_RATIO_KEY, videoAspectRatioSelect.value);
+
+    // Save text generation settings
+    await setStoredValue(LAST_SYSTEM_PROMPT_KEY, systemPromptInput.value);
+    await setStoredValue(LAST_TEMPERATURE_KEY, temperatureInput.value);
+    await setStoredValue(LAST_TOP_P_KEY, topPInput.value);
+    await setStoredValue(LAST_MAX_TOKENS_KEY, maxTokensInput.value);
 }
+
+// --- THEME MANAGEMENT ---
+const THEME_KEY = 'user-theme';
+
+// Applies the selected theme ('light', 'dark', or 'system')
+function applyTheme(theme) {
+    // Determine if dark mode should be active
+    const isDarkMode = theme === 'dark' || (theme === 'system' && window.matchMedia('(prefers-color-scheme: dark)').matches);
+    
+    // Toggle the 'dark-mode' class on the body
+    document.body.classList.toggle('dark-mode', isDarkMode);
+
+    // Update the UI of the theme buttons
+    document.querySelectorAll('.theme-mode-btn').forEach(btn => {
+        btn.classList.remove('active');
+    });
+    const activeBtn = document.querySelector(`.theme-mode-btn[data-theme-mode="${theme}"]`);
+    if (activeBtn) {
+        activeBtn.classList.add('active');
+    }
+}
+
+// Saves the user's theme preference
+function saveTheme(theme) {
+    setStoredValue(THEME_KEY, theme);
+}
+
+// Initializes the theme based on stored preference or system settings
+async function initializeTheme() {
+    // Use 'system' as the default theme
+    const savedTheme = await getStoredValue(THEME_KEY) || 'system';
+    
+    // Apply the theme on initial load
+    applyTheme(savedTheme);
+
+    // Add event listeners to all theme buttons
+    document.querySelectorAll('.theme-mode-btn[data-theme-mode]').forEach(btn => {
+        btn.addEventListener('click', () => {
+            const theme = btn.getAttribute('data-theme-mode');
+            applyTheme(theme);
+            saveTheme(theme);
+
+            // If in Electron, notify the main process
+            if (window.electronAPI && window.electronAPI.setThemePreference) {
+                window.electronAPI.setThemePreference(theme);
+            }
+        });
+    });
+
+    // Listen for changes in the system's color scheme preference
+    window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', async () => {
+        const currentTheme = await getStoredValue(THEME_KEY) || 'system';
+        // Re-apply the theme only if the current setting is 'system'
+        if (currentTheme === 'system') {
+            applyTheme('system');
+        }
+    });
+
+    // Handle theme synchronization with the Electron main process
+    if (window.electronAPI) {
+        // Listen for theme updates pushed from the main process
+        window.electronAPI.onThemeUpdated(({ theme }) => {
+            console.log('Renderer received theme update from main:', theme);
+            applyTheme(theme);
+        });
+
+        // Fetch the initial theme preference from the main process on startup
+        try {
+            const initialState = await window.electronAPI.getThemePreference();
+            if (initialState && initialState.theme) {
+                applyTheme(initialState.theme);
+            }
+        } catch (err) {
+            console.error("Error getting initial theme from Electron main:", err);
+        }
+    }
+}
+
+// --- UI MANIPULATION ---
+// Functions that control the visibility and state of UI elements.
 
 // Function to show or hide the Base URL input based on the selected provider
 function toggleBaseUrlInput() {
@@ -390,111 +366,75 @@ function toggleBaseUrlInput() {
     }
 }
 
-// Add an event listener to the provider select dropdown
-providerSelect.addEventListener('change', async () => {
-    // Save credentials for the PREVIOUS provider
-    // To get the previous provider, we need to be careful as the value has already changed.
-    // This is a bit tricky. A better way would be to store the previous value before it changes.
-    // For now, we'll rely on loading to implicitly handle this,
-    // but saving on 'input' for API key/base URL is more robust.
-    // Let's call saveGeneralSettings which saves the new provider.
-    await saveGeneralSettings();
-    await loadProviderCredentials(providerSelect.value);
-    toggleBaseUrlInput(); // Original line, good to keep
-});
-
-// Function to show/hide image-specific options
-function toggleGenerationOptions() {
-    // Hide voice input by default on every switch
-    voiceOptionsContainer.style.display = 'none';
-    const generationType = document.querySelector('input[name="generation-type"]:checked').value;
-    const showText = generationType === 'text'; // Determine text mode early for reposition logic
-
-    // Image Options
-    const showImage = generationType === 'image';
-    imageOptionsContainer.style.display = showImage ? 'block' : 'none';
-    if (enableQualityContainer) {
-        enableQualityContainer.style.display = showImage ? 'block' : 'none';
-    }
-    if (qualityOptionsContainer) {
-        qualityOptionsContainer.style.display = (showImage && enableQualityCheckbox.checked) ? 'block' : 'none';
-    }
-    if (customQualityInput) {
-        customQualityInput.style.display = (showImage && enableQualityCheckbox.checked && qualitySelect.value === 'custom') ? 'block' : 'none';
-    }
-
-    // Audio Options
-    const showAudio = generationType === 'audio';
-    audioOptionsContainer.style.display = showAudio ? 'block' : 'none';
-
-    if (showAudio) {
-        const audioType = audioTypeSelect.value;
-        if (audioType === 'tts') {
-            // For TTS: show text prompt, hide file input & recorder, show voice input
-            promptInput.style.display = 'block';
-            sttInputContainer.style.display = 'none';
-            recorderControls.style.display = 'none';
-            voiceOptionsContainer.style.display = 'block';
-            document.getElementById('prompt-label').textContent = 'Text to Speak:';
-        } else {
-            // For STT: show file input & recorder, hide text prompt & voice input
-            sttInputContainer.style.display = 'block';
-            recorderControls.style.display = 'block';
-            promptInput.style.display = 'none';
-            voiceOptionsContainer.style.display = 'none';
-            document.getElementById('prompt-label').textContent = 'Upload or Record Audio:';
-        }
-    }
-
-    // Video Options
-    const showVideo = generationType === 'video';
-    videoOptionsContainer.style.display = showVideo ? 'block' : 'none';
+// Function to toggle aspect ratio visibility for video generation
+function toggleAspectRatio() {
+    const aspectRatioEnabled = videoAspectRatioEnabled.checked;
     
-    if (showVideo) {
-        promptInput.style.display = 'block';
-        document.getElementById('prompt-label').textContent = 'Video Description:';
+    if (aspectRatioEnabled) {
+        aspectRatioGroup.style.display = 'block';
+        aspectRatioGroup.classList.remove('disabled');
+    } else {
+        aspectRatioGroup.style.display = 'none';
+        aspectRatioGroup.classList.add('disabled');
     }
-
-
-    // Text Options
-    if (showText) {
-        promptInput.style.display = 'block';
-        document.getElementById('prompt-label').textContent = 'Prompt:';
-    }
-
-    // Reset prompt label for image when selected
-    if (generationType === 'image') {
-        promptInput.style.display = 'block';
-        document.getElementById('prompt-label').textContent = 'Prompt / Image Description:';
-    }
-  // Reposition Model Name field based on generation type
-  if (showImage) {
-      imageOptionsContainer.insertBefore(modelContainer, enableQualityContainer);
-  } else if (showAudio) {
-      // Different placement based on Audio Type (TTS vs STT)
-      if (audioTypeSelect.value === 'tts') {
-          // TTS: model before voice input
-          voiceOptionsContainer.parentNode.insertBefore(modelContainer, voiceOptionsContainer);
-      } else {
-          // STT: model before audio file/recorder inputs
-          audioOptionsContainer.insertBefore(modelContainer, sttInputContainer);
-      }
-  } else if (showVideo) {
-      // Video: model at the beginning of video options
-      videoOptionsContainer.insertBefore(modelContainer, videoOptionsContainer.firstElementChild);
-  } else {
-      modelContainerOriginalParent.insertBefore(modelContainer, modelContainerOriginalNextSibling);
-  }
 }
 
-// Add event listeners to radio buttons to toggle image options
-document.querySelectorAll('input[name="generation-type"]').forEach(radio => {
-    radio.addEventListener('change', toggleGenerationOptions);
-});
-audioTypeSelect.addEventListener('change', toggleGenerationOptions);
+// --- UI MANIPULATION (Refactored) ---
 
-// Microphone permission status
-let microphonePermissionStatus = 'prompt'; // 'granted', 'denied', 'prompt'
+// Main function to control UI visibility based on generation type
+function toggleGenerationOptions() {
+    const generationType = document.querySelector('input[name="generation-type"]:checked')?.value;
+    if (!generationType) return;
+
+    // Hide all advanced option groups first
+    textGenerationOptions.style.display = 'none';
+    imageOptionsContainer.style.display = 'none';
+    audioOptionsContainer.style.display = 'none';
+    videoOptionsContainer.style.display = 'none';
+
+    // Always show prompt input, but hide for STT
+    promptInput.style.display = 'block';
+    uploadTextBtn.style.display = 'inline-block';
+
+
+    // Configure UI based on the selected generation type
+    switch (generationType) {
+        case 'text':
+            textGenerationOptions.style.display = 'block';
+            document.getElementById('prompt-label').textContent = 'Prompt:';
+            break;
+        case 'image':
+            imageOptionsContainer.style.display = 'block';
+            document.getElementById('prompt-label').textContent = 'Prompt / Image Description:';
+            // Also manage sub-options visibility
+            qualityOptionsContainer.style.display = enableQualityCheckbox.checked ? 'block' : 'none';
+            customQualityInput.style.display = (enableQualityCheckbox.checked && qualitySelect.value === 'custom') ? 'block' : 'none';
+            break;
+        case 'audio':
+            audioOptionsContainer.style.display = 'block';
+            const audioType = audioTypeSelect.value;
+            if (audioType === 'tts') {
+                voiceOptionsContainer.style.display = 'block';
+                sttInputContainer.style.display = 'none';
+                recorderControls.style.display = 'none';
+                document.getElementById('prompt-label').textContent = 'Text to Speak:';
+            } else { // STT
+                voiceOptionsContainer.style.display = 'none';
+                sttInputContainer.style.display = 'block';
+                recorderControls.style.display = 'block';
+                promptInput.style.display = 'none';
+                uploadTextBtn.style.display = 'none';
+                document.getElementById('prompt-label').textContent = 'Upload or Record Audio:';
+            }
+            break;
+        case 'video':
+            videoOptionsContainer.style.display = 'block';
+            document.getElementById('prompt-label').textContent = 'Video Description:';
+            toggleAspectRatio(); // Ensure aspect ratio visibility is correct
+            break;
+    }
+}
+
 
 // Function to check microphone permission status
 async function checkMicrophonePermission() {
@@ -587,67 +527,11 @@ function updateMicrophoneUI() {
     }
 }
 
-// Single button recorder toggle
-recordBtn.addEventListener('click', async () => {
-    if (!mediaRecorder || mediaRecorder.state === 'inactive') {
-        // Start recording
-        recordedChunks = [];
-        try {
-            // Request microphone access
-            const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-            
-            // Update permission status since it was successful
-            microphonePermissionStatus = 'granted';
-            updateMicrophoneUI();
-            
-            mediaRecorder = new MediaRecorder(stream);
-            mediaRecorder.ondataavailable = e => {
-                if (e.data.size > 0) recordedChunks.push(e.data);
-            };
-            mediaRecorder.onstop = () => {
-                const blob = new Blob(recordedChunks, { type: 'audio/webm' });
-                const url = URL.createObjectURL(blob);
-                recordingPreview.src = url;
-                recordingPreview.style.display = 'block';
-                // Update record button label
-                recordBtn.textContent = 'Start Recording';
-                
-                // Stop all tracks to release the microphone
-                stream.getTracks().forEach(track => track.stop());
-            };
-            mediaRecorder.start();
-            recordBtn.textContent = 'Stop Recording';
-            recordingPreview.style.display = 'none';
-        } catch (err) {
-            microphonePermissionStatus = 'denied';
-            updateMicrophoneUI();
-            displayError('Microphone access denied or unavailable.');
-        }
-    } else {
-        // Stop recording
-        mediaRecorder.stop();
-    }
-});
-enableQualityCheckbox.addEventListener('change', () => {
-    if (qualityOptionsContainer) {
-        qualityOptionsContainer.style.display = enableQualityCheckbox.checked ? 'block' : 'none';
-    }
-    if (customQualityInput) {
-        customQualityInput.style.display = 'none';
-    }
-});
 
-// Show/hide custom quality input when 'custom' option is selected
-qualitySelect.addEventListener('change', () => {
-    if (enableQualityCheckbox.checked && qualitySelect.value === 'custom' && customQualityInput) {
-        customQualityInput.style.display = 'block';
-    } else if (customQualityInput) {
-        customQualityInput.style.display = 'none';
-    }
-});
+// --- HELPER FUNCTIONS ---
+// Utility functions used by other parts of the script.
 
-
-// --- Helper to display errors ---
+// Displays an error message in the output area.
 function displayError(message) {
     console.error('Error:', message);
 
@@ -680,7 +564,7 @@ function displayError(message) {
     outputArea.style.borderColor = 'red';
 }
 
-// --- Clear Output ---
+// Clears the output area, stats, and resets payload/response displays.
 function clearOutput() {
     outputText.innerHTML = '';
     outputImage.style.display = 'none';
@@ -708,53 +592,132 @@ function clearOutput() {
     toggleResponseBtn.classList.remove('active');
     lastRequestPayload = null; // Reset stored payload
     lastApiResponse = null;    // Reset stored response
+    if (loadingIndicator) hideLoader(); // Ensure loader is hidden
 }
 
-// --- API Call Logic for Text ---
+// --- LOADER FUNCTIONS ---
+// Functions to show and hide the loading indicator.
+function showLoader() {
+    if (loadingIndicator) loadingIndicator.style.display = 'flex';
+}
+
+function hideLoader() {
+    if (loadingIndicator) loadingIndicator.style.display = 'none';
+}
+
+// --- API RESPONSE HELPER ---
+// Handles common API response processing tasks like JSON parsing and error checking.
+async function handleApiResponse(response) {
+    // Clone the response to read JSON and still have response object available if needed
+    const responseClone = response.clone();
+    let data;
+    try {
+        data = await response.json();
+        lastApiResponse = JSON.stringify(data, null, 2); // Store the successful JSON response
+    } catch (jsonError) {
+        console.error("Failed to parse JSON response:", jsonError);
+        const textResponse = await responseClone.text(); // Try getting text if JSON fails
+        lastApiResponse = `Response was not valid JSON:\n${textResponse}`; // Store raw text response
+        // If response.ok is true, but JSON parsing failed, we still want to throw an error
+        // because we expected JSON. If response.ok is false, the error thrown below will include this.
+        if (response.ok) {
+            throw new Error("Received OK response but failed to parse JSON content. Raw response: " + textResponse);
+        }
+        data = null; // Indicate that data parsing failed
+    }
+
+    if (!response.ok) {
+        // If response was not ok, lastApiResponse (set above) contains text/JSON error details if available
+        // Otherwise, construct a generic error.
+        const errorMsg = data?.error?.message || data?.detail || (typeof lastApiResponse === 'string' && lastApiResponse.startsWith('Response was not valid JSON:') ? lastApiResponse : null) || `HTTP Error ${response.status}`;
+        throw new Error(errorMsg);
+    }
+
+    // If response is ok but data parsing failed earlier (and wasn't caught by the explicit throw above)
+    // This case should ideally be covered, but as a safeguard:
+    if (data === null && response.ok) {
+         throw new Error("Received OK response but failed to parse JSON content, and data is null.");
+    }
+    return data;
+}
+
+
+// --- API CALLS ---
+// Functions responsible for making API calls to different providers and generation types.
+
+// Handles text generation API calls.
 async function callTextApi(provider, apiKey, baseUrl, model, prompt) {
+    showLoader(); // Show loader at the start
     clearOutput();
     outputText.innerHTML = 'Sending text request...';
     outputArea.style.display = 'block';
 
     let apiUrl = '';
     let headers = {};
-    let body = {};
+    const streamEnabled = enableStreamingCheckbox ? enableStreamingCheckbox.checked : true;
+
+    // Construct messages array
+    const messages = [];
+    if (systemPromptInput.value.trim()) {
+        messages.push({ role: 'system', content: systemPromptInput.value.trim() });
+    }
+    messages.push({ role: 'user', content: prompt });
+
+    // Base body
+    let body = {
+        model: model,
+        messages: messages,
+        stream: streamEnabled
+    };
+
+    // Add optional parameters if they have values
+    if (temperatureInput.value) body.temperature = parseFloat(temperatureInput.value);
+    if (topPInput.value) body.top_p = parseFloat(topPInput.value);
+    if (maxTokensInput.value) body.max_tokens = parseInt(maxTokensInput.value, 10);
+
 
     // Configure based on provider
     switch (provider) {
         case 'openai':
             apiUrl = 'https://api.openai.com/v1/chat/completions';
             headers = { 'Content-Type': 'application/json', 'Authorization': `Bearer ${apiKey}` };
-            body = { model: model, messages: [{ role: 'user', content: prompt }], stream: false };
             break;
         case 'deepseek':
             apiUrl = 'https://api.deepseek.com/chat/completions';
             headers = { 'Content-Type': 'application/json', 'Authorization': `Bearer ${apiKey}` };
-            body = { model: model, messages: [{ role: 'user', content: prompt }], stream: false };
+            body.stream = false; // Override for Deepseek
             break;
         case 'openai_compatible':
-            if (!baseUrl) return displayError('Base URL is required for OpenAI Compatible provider.');
+            if (!baseUrl) {
+                hideLoader();
+                return displayError('Base URL is required for OpenAI Compatible provider.');
+            }
             const cleanBaseUrl = baseUrl.endsWith('/') ? baseUrl.slice(0, -1) : baseUrl;
             apiUrl = `${cleanBaseUrl}/chat/completions`;
             headers = { 'Content-Type': 'application/json', 'Authorization': `Bearer ${apiKey}` };
-            body = { model: model, messages: [{ role: 'user', content: prompt }], stream: false };
             break;
         case 'claude':
             apiUrl = 'https://api.anthropic.com/v1/messages';
             headers = { 'Content-Type': 'application/json', 'x-api-key': apiKey, 'anthropic-version': '2023-06-01' };
-            body = { model: model, max_tokens: 1024, messages: [{ role: 'user', content: prompt }] };
+            // Claude has a different body structure
+            body = {
+                model: model,
+                system: systemPromptInput.value.trim() || undefined,
+                messages: [{ role: 'user', content: prompt }],
+                max_tokens: parseInt(maxTokensInput.value, 10) || 4096,
+                temperature: parseFloat(temperatureInput.value),
+                top_p: parseFloat(topPInput.value)
+            };
+            delete body.stream; // Claude doesn't use the 'stream' property here
             break;
         case 'openrouter':
             apiUrl = 'https://openrouter.ai/api/v1/chat/completions';
             headers = { 'Content-Type': 'application/json', 'Authorization': `Bearer ${apiKey}` };
-            body = { model: model, messages: [{ role: 'user', content: prompt }], stream: false };
-            break;
-        case 'voidai_api':
-            apiUrl = 'https://api.voidai.app/v1/chat/completions';
-            headers = { 'Content-Type': 'application/json', 'Authorization': `Bearer ${apiKey}` };
-            body = { model: model, messages: [{ role: 'user', content: prompt }], stream: false };
+            // OpenRouter uses a standard body, but we can disable stream for safety
+            body.stream = false;
             break;
         default:
+            hideLoader();
             return displayError('Unknown provider selected for text generation.');
     }
 
@@ -769,81 +732,148 @@ async function callTextApi(provider, apiKey, baseUrl, model, prompt) {
         const endTime = performance.now(); // Record end time
         const durationInSeconds = (endTime - startTime) / 1000;
 
-        // Clone the response to read JSON and still have response object available if needed
-        const responseClone = response.clone();
-        let data;
-        try {
-            data = await response.json(); 
-            lastApiResponse = JSON.stringify(data, null, 2); // Store the successful JSON response
-        } catch (jsonError) {
-            console.error("Failed to parse JSON response:", jsonError);
-            const textResponse = await responseClone.text(); // Try getting text if JSON fails
-            lastApiResponse = `Response was not valid JSON:\n${textResponse}`;
-            data = null; // Indicate that data parsing failed
-        }
-        
-        console.log("Text API Response Data:", data);
+        if (body.stream && (provider === 'openai' || provider === 'openai_compatible')) {
+            if (!response.ok) {
+                // Attempt to parse error from stream-initialization HTTP error
+                let errorData;
+                try {
+                    errorData = await response.json();
+                    lastApiResponse = JSON.stringify(errorData, null, 2);
+                } catch (e) {
+                    const errorText = await response.text();
+                    lastApiResponse = `Stream connection error: ${response.status}\n${errorText}`;
+                    errorData = { error: { message: `Stream connection error: ${response.status}. ${errorText}` } };
+                }
+                throw new Error(errorData.error?.message || `Stream connection error: ${response.status}`);
+            }
+            // Handle streaming response
+            const reader = response.body.getReader();
+            const decoder = new TextDecoder("utf-8");
+            outputText.innerHTML = `<strong>${model}:</strong><br>`; // Initialize output area
+            outputArea.style.borderColor = '#ccc'; // Reset border color
+            let contentBuffer = "";
+            let accumulatedResponse = "";
 
-        if (!response.ok) {
-            // If response was not ok, lastApiResponse already contains text/JSON error
-            const errorMsg = data?.error?.message || data?.detail || lastApiResponse || `HTTP Error ${response.status}`;
-            throw new Error(errorMsg);
-        }
+            async function processStream() {
+                while (true) {
+                    const { done, value } = await reader.read();
+                    if (done) {
+                        statsArea.innerHTML = `<span><strong>Time:</strong> ${durationInSeconds.toFixed(2)}s</span><br><span>Stream complete. Usage data is typically not available for streamed responses.</span>`;
+                        statsArea.style.display = 'block';
+                        // Ensure any final buffered content is displayed (though typically not needed with SSE)
+                        if (accumulatedResponse.startsWith("data: ")) { // Check if remaining buffer is a data line
+                            // Process final chunk if any - similar to loop logic
+                             const jsonStr = accumulatedResponse.substring(6).trim();
+                             if (jsonStr && jsonStr !== "[DONE]") {
+                                 try {
+                                     const parsed = JSON.parse(jsonStr);
+                                     if (parsed.choices && parsed.choices[0] && parsed.choices[0].delta && parsed.choices[0].delta.content) {
+                                         const textChunk = parsed.choices[0].delta.content;
+                                         outputText.innerHTML += textChunk.replace(/\n/g, '<br>');
+                                     }
+                                 } catch (e) {
+                                     console.warn("Error parsing final streamed JSON chunk:", e, "Chunk:", jsonStr);
+                                 }
+                             }
+                        }
+                        break;
+                    }
 
-        // If response is ok but data parsing failed earlier
-        if (!data) {
-             throw new Error("Received OK response but failed to parse JSON content.");
-        }
+                    accumulatedResponse += decoder.decode(value, { stream: true });
+                    let lines = accumulatedResponse.split('\n');
+                    accumulatedResponse = lines.pop() || ""; // Keep incomplete line for next chunk, ensure it's a string
 
-        // Extract content
-        let aiContent = '';
-        if (provider === 'claude') {
-            if (data.content && data.content.length > 0 && data.content[0].text) aiContent = data.content[0].text;
-            else throw new Error('Could not find text content in Claude response.');
-        } else { // OpenAI/Compatible/Deepseek/OpenRouter
-            if (data.choices && data.choices.length > 0 && data.choices[0].message && data.choices[0].message.content) aiContent = data.choices[0].message.content;
-            else throw new Error('Could not find message content in API response.');
-        }
+                    for (const line of lines) {
+                        if (line.startsWith("data: ")) {
+                            const jsonStr = line.substring(6).trim();
+                            if (jsonStr === "[DONE]") {
+                                statsArea.innerHTML = `<span><strong>Time:</strong> ${durationInSeconds.toFixed(2)}s</span><br><span>Stream finished. Usage data for streamed responses may differ or be unavailable.</span>`;
+                                statsArea.style.display = 'block';
+                                return; // Exit processing loop
+                            }
+                            try {
+                                const parsed = JSON.parse(jsonStr);
+                                if (parsed.choices && parsed.choices[0] && parsed.choices[0].delta && parsed.choices[0].delta.content) {
+                                    const textChunk = parsed.choices[0].delta.content;
+                                    contentBuffer += textChunk;
+                                    outputText.innerHTML += textChunk.replace(/\n/g, '<br>');
+                                }
+                                // Store the raw choices if needed for other processing (e.g. finish_reason)
+                                if (parsed.choices && parsed.choices[0] && parsed.choices[0].finish_reason){
+                                    // console.log("Stream finished with reason: ", parsed.choices[0].finish_reason); // Verbose
+                                }
+                            } catch (e) {
+                                console.warn("Error parsing streamed JSON chunk:", e, "Chunk:", jsonStr);
+                            }
+                        } else if (line.trim().length > 0 && !line.includes("data: ") && !line.includes("event: message_stop")) { // Log non-data lines if they are not empty and not a stop event for some APIs
+                            // console.log("Received non-data line in stream:", line); // Can be verbose
+                        }
+                    }
+                }
+            }
+            await processStream();
+            // For streamed responses, lastApiResponse will show a summary,
+            // as the full JSON is processed chunk by chunk and not stored as a single object.
+            lastApiResponse = `{\n  "info": "Response was streamed.",\n  "model": "${model}",\n  "duration_seconds": ${durationInSeconds.toFixed(2)},\n  "accumulated_content_length": ${contentBuffer.length}\n}`;
 
-        // Display the AI response
-        outputText.innerHTML = `<strong>${model}:</strong><br>${aiContent.replace(/\n/g, '<br>')}`;
-        outputArea.style.borderColor = '#ccc';
+        } else {
+            // Existing non-streaming logic
+            const data = await handleApiResponse(response); // handleApiResponse is for non-streaming
+            console.log("Text API Response Data (Non-Streaming):", data);
+            lastApiResponse = JSON.stringify(data, null, 2); // Keep this for non-streaming
 
-        // Calculate and display stats if usage data is available
-        if (data.usage) {
-            const usage = data.usage;
-            const promptTokens = usage.prompt_tokens || 0;
-            const completionTokens = usage.completion_tokens || 0;
-            const totalTokens = usage.total_tokens || (promptTokens + completionTokens); // Calculate if not provided
-            let tokensPerSecond = 0;
-
-            if (durationInSeconds > 0 && completionTokens > 0) {
-                tokensPerSecond = (completionTokens / durationInSeconds).toFixed(2);
+            // Extract content
+            let aiContent = '';
+            if (provider === 'claude') {
+                if (data.content && data.content.length > 0 && data.content[0].text) aiContent = data.content[0].text;
+                else throw new Error('Could not find text content in Claude response.');
+            } else { // OpenAI/Compatible (non-streaming), Deepseek, OpenRouter
+                if (data.choices && data.choices.length > 0 && data.choices[0].message && data.choices[0].message.content) aiContent = data.choices[0].message.content;
+                else throw new Error('Could not find message content in API response.');
             }
 
-            statsArea.innerHTML = `
-                <span><strong>Time:</strong> ${durationInSeconds.toFixed(2)}s</span>
-                <span><strong>Tokens/Sec:</strong> ${tokensPerSecond}</span>
-                <span><strong>Prompt Tokens:</strong> ${promptTokens}</span>
-                <span><strong>Completion Tokens:</strong> ${completionTokens}</span>
-                <span><strong>Total Tokens:</strong> ${totalTokens}</span>
-            `;
-            statsArea.style.display = 'block';
-        } else {
-             statsArea.innerHTML = '<span>Usage data not available in response.</span>'; // Indicate missing data
-             statsArea.style.display = 'block';
-        }
+            // Display the AI response
+            outputText.innerHTML = `<strong>${model}:</strong><br>${aiContent.replace(/\n/g, '<br>')}`;
+            outputArea.style.borderColor = '#ccc';
 
+            // Calculate and display stats if usage data is available
+            if (data.usage) {
+                const usage = data.usage;
+                const promptTokens = usage.prompt_tokens || 0;
+                const completionTokens = usage.completion_tokens || 0;
+                const totalTokens = usage.total_tokens || (promptTokens + completionTokens);
+                let tokensPerSecond = 0;
+
+                if (durationInSeconds > 0 && completionTokens > 0) {
+                    tokensPerSecond = (completionTokens / durationInSeconds).toFixed(2);
+                }
+
+                statsArea.innerHTML = `
+                    <span><strong>Time:</strong> ${durationInSeconds.toFixed(2)}s</span>
+                    <span><strong>Tokens/Sec:</strong> ${tokensPerSecond}</span>
+                    <span><strong>Prompt Tokens:</strong> ${promptTokens}</span>
+                    <span><strong>Completion Tokens:</strong> ${completionTokens}</span>
+                    <span><strong>Total Tokens:</strong> ${totalTokens}</span>
+                `;
+                statsArea.style.display = 'block';
+            } else {
+                 statsArea.innerHTML = `<span><strong>Time:</strong> ${durationInSeconds.toFixed(2)}s</span><br><span>Usage data not available in response.</span>`;
+                 statsArea.style.display = 'block';
+            }
+        }
 
     } catch (error) {
         // lastApiResponse might contain error details already
-        displayError(error.message);
+        displayError(error.message); // displayError will hide loader
         statsArea.style.display = 'none'; // Hide stats on error
+    } finally {
+        hideLoader(); // Ensure loader is hidden
     }
 }
 
-// --- API Call Logic for Images (OpenAI DALL-E Example) ---
+// Handles image generation API calls.
 async function callImageApi(provider, apiKey, baseUrl, model, prompt) {
+    showLoader(); // Show loader at the start
     clearOutput();
     outputText.innerHTML = 'Sending image request...'; // Use text area for status
     outputArea.style.display = 'block';
@@ -858,8 +888,6 @@ async function callImageApi(provider, apiKey, baseUrl, model, prompt) {
     // Determine API URL based on provider
     if (provider === 'openai') {
         apiUrl = 'https://api.openai.com/v1/images/generations';
-    } else if (provider === 'voidai_api') {
-        apiUrl = 'https://api.voidai.app/v1/images/generations';
     } else if (provider === 'openai_compatible') {
         if (!baseUrl) {
             return displayError('Base URL is required for OpenAI Compatible image generation.');
@@ -867,7 +895,7 @@ async function callImageApi(provider, apiKey, baseUrl, model, prompt) {
         const cleanBaseUrl = baseUrl.endsWith('/') ? baseUrl.slice(0, -1) : baseUrl;
         apiUrl = `${cleanBaseUrl}/images/generations`;
     } else {
-        return displayError(`Image generation is currently only supported for OpenAI, voidai API, and potentially OpenAI Compatible providers in this example.`);
+        return displayError(`Image generation is currently only supported for OpenAI and potentially OpenAI Compatible providers in this example.`);
     }
 
     // Get custom width and height, provide defaults if empty
@@ -883,7 +911,18 @@ async function callImageApi(provider, apiKey, baseUrl, model, prompt) {
     };
     // Include quality parameter only if enabled
     if (provider === 'openai_compatible' && enableQualityCheckbox.checked && qualitySelect) {
-        body.quality = qualitySelect.value;
+        if (qualitySelect.value === 'custom' && customQualityInput) {
+            if (customQualityInput.value.trim() === '') {
+                // Potentially display an error or use a default if custom quality is selected but empty
+                console.warn("Custom quality selected but input is empty. API might reject or use default.");
+                // Not setting body.quality here, or explicitly setting to a default if API requires it
+            } else {
+                body.quality = customQualityInput.value.trim();
+            }
+        } else if (qualitySelect.value !== 'custom') {
+            body.quality = qualitySelect.value;
+        }
+        // If qualitySelect.value is 'custom' but customQualityInput is missing, body.quality remains unset.
     }
 
     // Store payload before sending
@@ -903,28 +942,8 @@ async function callImageApi(provider, apiKey, baseUrl, model, prompt) {
         const endTime = performance.now();
         const durationInSeconds = ((endTime - startTime) / 1000).toFixed(2);
 
-        const responseClone = response.clone();
-        let data;
-        try {
-            data = await response.json();
-            lastApiResponse = JSON.stringify(data, null, 2);
-        } catch (jsonError) {
-            console.error("Failed to parse JSON response:", jsonError);
-            const textResponse = await responseClone.text();
-            lastApiResponse = `Response was not valid JSON:\n${textResponse}`;
-            data = null;
-        }
-
+        const data = await handleApiResponse(response);
         console.log("Image API Response Data:", data);
-
-        if (!response.ok) {
-            const errorMsg = data?.error?.message || lastApiResponse || `HTTP Error ${response.status}`;
-            throw new Error(errorMsg);
-        }
-
-        if (!data) {
-            throw new Error("Received OK response but failed to parse JSON content.");
-        }
 
         // Extract image (URL or base64) and show stats
         if (data.data && data.data.length > 0) {
@@ -1010,27 +1029,9 @@ async function callImageApi(provider, apiKey, baseUrl, model, prompt) {
                 
                 const retryEndTime = performance.now();
                 const retryDuration = ((retryEndTime - retryStartTime) / 1000).toFixed(2);
+
+                const retryData = await handleApiResponse(retryResponse); // Use helper for retry
                 
-                const retryResponseClone = retryResponse.clone();
-                let retryData;
-                try {
-                    retryData = await retryResponse.json();
-                    lastApiResponse = JSON.stringify(retryData, null, 2); // Store retry response
-                } catch (retryJsonError) {
-                    console.error("Failed to parse JSON response on retry:", retryJsonError);
-                    const retryTextResponse = await retryResponseClone.text();
-                    lastApiResponse = `Retry response was not valid JSON:\n${retryTextResponse}`;
-                    retryData = null;
-                }
-                
-                if (!retryResponse.ok) {
-                    const errMsg2 = retryData?.error?.message || lastApiResponse || `HTTP Error ${retryResponse.status}`;
-                    throw new Error(errMsg2);
-                }
-                
-                if (!retryData) {
-                    throw new Error("Received OK retry response but failed to parse JSON content.");
-                }
                 // Extract image URL
                 if (retryData.data && retryData.data.length > 0 && retryData.data[0].url) {
                     const imageUrl2 = retryData.data[0].url;
@@ -1071,14 +1072,16 @@ async function callImageApi(provider, apiKey, baseUrl, model, prompt) {
                 return;
             }
         } else {
-            displayError(error.message);
+            displayError(error.message); // displayError will hide loader
         }
+    } finally {
+        hideLoader();
     }
 }
 
-
-// --- API Call Logic for Audio ---
+// Handles Text-to-Speech (TTS) API calls.
 async function callTtsApi(provider, apiKey, baseUrl, model, text, voice) {
+    showLoader(); // Show loader at the start
     clearOutput();
     outputText.innerHTML = 'Generating TTS...';
     outputAudio.style.display = 'none';
@@ -1102,13 +1105,8 @@ async function callTtsApi(provider, apiKey, baseUrl, model, text, voice) {
             headers = { 'Content-Type': 'application/json', 'Authorization': `Bearer ${apiKey}` };
             body = { model: model, input: text, voice: voice };
             break;
-        case 'voidai_api':
-            apiUrl = 'https://api.voidai.app/v1/audio/speech';
-            headers = { 'Content-Type': 'application/json', 'Authorization': `Bearer ${apiKey}` };
-            body = { model: model, input: text, voice: voice };
-            break;
         default:
-            return displayError('TTS is only supported for OpenAI, OpenAI Compatible, and voidai API providers.');
+            return displayError('TTS is only supported for OpenAI and OpenAI Compatible providers.');
     }
 
     // Store payload before sending
@@ -1170,7 +1168,7 @@ async function callTtsApi(provider, apiKey, baseUrl, model, text, voice) {
             
             outputAudio.style.display = 'block';
             downloadAudio.href = url;
-            downloadAudio.download = `${model}-${voice}-tts.wav`;
+            downloadAudio.download = `${model}-${voice}-tts.mp3`; // Changed to mp3 as it's common for OpenAI TTS
             downloadAudio.style.display = 'inline';
             outputText.innerHTML = `<strong>Voice:</strong> ${voice}`;
             outputText.style.display = 'block';
@@ -1179,15 +1177,16 @@ async function callTtsApi(provider, apiKey, baseUrl, model, text, voice) {
         outputAudio.load();
     } catch (err) {
         // lastApiResponse might be set from the !response.ok block
-        displayError(err.message);
+        displayError(err.message); // displayError will hide loader
         statsArea.style.display = 'none'; // Hide stats on error
+    } finally {
+        hideLoader(); // Ensure loader is hidden
     }
 }
 
-
-
-// --- API Call Logic for Speech-to-Text ---
+// Handles Speech-to-Text (STT) API calls.
 async function callSttApi(provider, apiKey, baseUrl, model, file) {
+    showLoader(); // Show loader at the start
     clearOutput();
     outputText.innerHTML = 'Transcribing audio...';
     outputArea.style.display = 'block';
@@ -1220,8 +1219,6 @@ async function callSttApi(provider, apiKey, baseUrl, model, file) {
             if (!baseUrl) return displayError('Base URL is required for OpenAI Compatible STT.');
             const cleanBase = baseUrl.endsWith('/') ? baseUrl.slice(0, -1) : baseUrl;
             apiUrl = `${cleanBase}/audio/transcriptions`;
-        } else if (provider === 'voidai_api') {
-            apiUrl = 'https://api.voidai.app/v1/audio/transcriptions';
         } else {
             return displayError('STT is not supported for selected provider.');
         }
@@ -1239,26 +1236,7 @@ async function callSttApi(provider, apiKey, baseUrl, model, file) {
         const endTime = performance.now();
         const durationInSeconds = ((endTime - startTime) / 1000).toFixed(2);
         
-        const responseClone = response.clone();
-        let data;
-        try {
-            data = await response.json();
-            lastApiResponse = JSON.stringify(data, null, 2);
-        } catch (jsonError) {
-             console.error("Failed to parse JSON response:", jsonError);
-            const textResponse = await responseClone.text();
-            lastApiResponse = `Response was not valid JSON:\n${textResponse}`;
-            data = null;
-        }
-
-        if (!response.ok) {
-            const errText = data?.text || data?.transcript || lastApiResponse || `HTTP Error ${response.status}`;
-            throw new Error(errText);
-        }
-
-        if (!data) {
-            throw new Error("Received OK response but failed to parse JSON content.");
-        }
+        const data = await handleApiResponse(response);
 
         const transcript = data.text || data.transcript || JSON.stringify(data);
         outputText.innerHTML = `<strong>Transcribed by ${model}:</strong><br>${transcript.replace(/\\n/g, '<br>')}`;
@@ -1305,12 +1283,14 @@ async function callSttApi(provider, apiKey, baseUrl, model, file) {
         
     } catch (err) {
         // lastApiResponse might contain error details
-        displayError(err.message);
+        displayError(err.message); // displayError will hide loader
         statsArea.style.display = 'none'; // Hide stats on error
+    } finally {
+        hideLoader(); // Ensure loader is hidden
     }
 }
 
-// --- Universal Video URL Extraction Function ---
+// Universal function to extract video URL from various API response structures.
 function extractVideoUrl(responseData) {
     console.log('Extracting video URL from response:', responseData);
     
@@ -1442,7 +1422,7 @@ function extractVideoUrl(responseData) {
     return bestUrl.url;
 }
 
-// --- Video Download Setup Function ---
+// Sets up the video download button with appropriate event listeners.
 function setupVideoDownload(videoUrl, model) {
     const fileName = `video-${model}-${Date.now()}.mp4`;
     
@@ -1529,8 +1509,9 @@ function setupVideoDownload(videoUrl, model) {
     });
 }
 
-// --- API Call Logic for Video Generation ---
+// Handles video generation API calls.
 async function callVideoApi(provider, apiKey, baseUrl, model, prompt) {
+    showLoader(); // Show loader at the start
     clearOutput();
     outputText.innerHTML = 'Generating video...';
     outputArea.style.display = 'block';
@@ -1560,14 +1541,6 @@ async function callVideoApi(provider, apiKey, baseUrl, model, prompt) {
                 body.aspect_ratio = aspectRatio;
             }
             break;
-        case 'voidai_api':
-            apiUrl = 'https://api.voidai.app/v1/videos/generations';
-            headers = { 'Content-Type': 'application/json', 'Authorization': `Bearer ${apiKey}` };
-            body = { model: model, prompt: prompt, duration: duration };
-            if (aspectRatioEnabled) {
-                body.aspect_ratio = aspectRatio;
-            }
-            break;
         case 'deepseek':
             displayError('Deepseek does not currently support video generation. Try using a different provider.');
             return;
@@ -1584,7 +1557,7 @@ async function callVideoApi(provider, apiKey, baseUrl, model, prompt) {
             }
             break;
         default:
-            return displayError('Video generation is not supported for the selected provider. Try OpenAI Compatible, voidai API, or OpenRouter.');
+            return displayError('Video generation is not supported for the selected provider. Try OpenAI Compatible or OpenRouter.');
     }
 
     // Store payload before sending
@@ -1595,6 +1568,10 @@ async function callVideoApi(provider, apiKey, baseUrl, model, prompt) {
     const startTime = performance.now();
     
     try {
+        // For providers that we know don't support video, displayError is called in the switch,
+        // and displayError itself handles hideLoader. So no explicit hideLoader here is needed for these cases.
+        // The 'return' in the switch for these providers will prevent further execution.
+
         const response = await fetch(apiUrl, {
             method: 'POST',
             headers: headers,
@@ -1604,28 +1581,8 @@ async function callVideoApi(provider, apiKey, baseUrl, model, prompt) {
         const endTime = performance.now();
         const durationInSeconds = ((endTime - startTime) / 1000).toFixed(2);
 
-        const responseClone = response.clone();
-        let data;
-        try {
-            data = await response.json();
-            lastApiResponse = JSON.stringify(data, null, 2);
-        } catch (jsonError) {
-            console.error("Failed to parse JSON response:", jsonError);
-            const textResponse = await responseClone.text();
-            lastApiResponse = `Response was not valid JSON:\n${textResponse}`;
-            data = null;
-        }
-
+        const data = await handleApiResponse(response);
         console.log("Video API Response Data:", data);
-
-        if (!response.ok) {
-            const errorMsg = data?.error?.message || lastApiResponse || `HTTP Error ${response.status}`;
-            throw new Error(errorMsg);
-        }
-
-        if (!data) {
-            throw new Error("Received OK response but failed to parse JSON content.");
-        }
 
         // Extract video URL and show stats - improved to handle multiple response formats
         let videoUrl = extractVideoUrl(data);
@@ -1670,14 +1627,89 @@ async function callVideoApi(provider, apiKey, baseUrl, model, prompt) {
         }
 
     } catch (error) {
-        displayError(error.message);
+        displayError(error.message); // displayError will hide loader
         statsArea.style.display = 'none';
+    } finally {
+        // Ensure loader is hidden for all other cases, including successful calls or other errors
+        if (!(provider === 'openai' || provider === 'deepseek' || provider === 'claude')) {
+            hideLoader();
+        }
     }
 }
 
-// --- Main Event Listener ---
-sendButton.addEventListener('click', async () => {
-    // Save current provider's credentials and general settings before sending
+
+
+// --- INITIALIZATION ---
+
+// Binds all event listeners for the application.
+function bindEventListeners() {
+    // Main actions
+    sendButton.addEventListener('click', handleSendClick);
+    togglePayloadBtn.addEventListener('click', handleTogglePayload);
+    toggleResponseBtn.addEventListener('click', handleToggleResponse);
+    providerSelect.addEventListener('change', handleProviderChange);
+
+    // Generation type and options
+    generationTypeRadios.forEach(radio => {
+        radio.addEventListener('click', handleGenerationTypeChange);
+    });
+    audioTypeSelect.addEventListener('change', handleAudioTypeChange);
+    recordBtn.addEventListener('click', handleRecordClick);
+    enableQualityCheckbox.addEventListener('change', handleEnableQualityChange);
+    qualitySelect.addEventListener('change', handleQualitySelectChange);
+    videoAspectRatioEnabled.addEventListener('change', handleAspectRatioToggle);
+
+    uploadTextBtn.addEventListener('click', handleUploadText);
+    temperatureInput.addEventListener('input', () => {
+        temperatureValue.textContent = parseFloat(temperatureInput.value).toFixed(1);
+        saveGeneralSettings();
+    });
+    topPInput.addEventListener('input', () => {
+        topPValue.textContent = parseFloat(topPInput.value).toFixed(2);
+        saveGeneralSettings();
+    });
+
+
+    // Inputs that trigger a settings save
+    const inputsToSave = [
+        modelInput, promptInput, enableStreamingCheckbox, customQualityInput,
+        imageWidthInput, imageHeightInput, voiceInput, videoDurationInput,
+        videoAspectRatioSelect, systemPromptInput, maxTokensInput
+    ];
+    inputsToSave.forEach(input => {
+        if (input) { // Ensure element exists before adding listener
+            input.addEventListener('input', saveGeneralSettings);
+        }
+    });
+    
+    // Special case for API credentials
+    apiKeyInput.addEventListener('input', () => saveProviderCredentials(providerSelect.value));
+    if (baseUrlInput) {
+        baseUrlInput.addEventListener('input', () => saveProviderCredentials(providerSelect.value));
+    }
+
+    // Electron-specific listener
+    const newWindowBtn = document.getElementById('open-new-window-btn');
+    if (newWindowBtn) {
+        if (window.electronAPI && window.electronAPI.send) {
+            newWindowBtn.addEventListener('click', () => window.electronAPI.send('open-new-window'));
+        } else {
+            newWindowBtn.style.display = 'none'; // Hide if not in Electron
+        }
+    }
+
+    // Listeners for all collapsible sections to save their state
+    document.querySelectorAll('.settings-details').forEach(details => {
+        details.addEventListener('toggle', () => {
+            const key = `details-panel-open-${details.querySelector('summary').textContent.trim().replace(/\s+/g, '-')}`;
+            setStoredValue(key, details.open);
+        });
+    });
+}
+
+// --- EVENT HANDLER FUNCTIONS ---
+
+async function handleSendClick() {
     await saveProviderCredentials(providerSelect.value);
     await saveGeneralSettings();
 
@@ -1688,171 +1720,172 @@ sendButton.addEventListener('click', async () => {
     const baseUrl = baseUrlInput.value.trim();
     const generationType = document.querySelector('input[name="generation-type"]:checked').value;
 
-    // --- Basic Input Validation ---
     if (!apiKey) return displayError('Please enter your API Key.');
     if (!model) return displayError('Please enter the Model Name.');
-    if (generationType === 'text' || generationType === 'image') {
+    if (generationType === 'text' || generationType === 'image' || generationType === 'video') {
         if (!prompt) return displayError('Please enter a prompt or description.');
     }
     if (provider === 'openai_compatible' && !baseUrl) return displayError('Please enter the Base URL for OpenAI Compatible provider.');
 
-    // --- Route to appropriate API call ---
-    if (generationType === 'text') {
-        callTextApi(provider, apiKey, baseUrl, model, prompt);
-    } else if (generationType === 'image') {
-        callImageApi(provider, apiKey, baseUrl, model, prompt);
-    } else if (generationType === 'audio') {
-        const audioType = audioTypeSelect.value;
-        if (audioType === 'tts') {
-            if (!prompt) return displayError('Please enter text for TTS.');
-            const voice = voiceInput.value.trim();
-            if (!voice) return displayError('Please enter voice.');
-            callTtsApi(provider, apiKey, baseUrl, model, prompt, voice);
-        } else {
-            let file;
-            if (recordedChunks.length > 0) {
-                file = new File(recordedChunks, 'recording.webm', { type: 'audio/webm' });
-            } else {
-                file = audioFileInput.files[0];
+    switch (generationType) {
+        case 'text':
+            callTextApi(provider, apiKey, baseUrl, model, prompt);
+            break;
+        case 'image':
+            callImageApi(provider, apiKey, baseUrl, model, prompt);
+            break;
+        case 'audio':
+            const audioType = audioTypeSelect.value;
+            if (audioType === 'tts') {
+                if (!prompt) return displayError('Please enter text for TTS.');
+                const voice = voiceInput.value.trim();
+                if (!voice) return displayError('Please enter a voice.');
+                callTtsApi(provider, apiKey, baseUrl, model, prompt, voice);
+            } else { // STT
+                const file = recordedChunks.length > 0 ? new File(recordedChunks, 'recording.webm', { type: 'audio/webm' }) : audioFileInput.files[0];
+                if (!file) return displayError('Please upload or record an audio file for STT.');
+                callSttApi(provider, apiKey, baseUrl, model, file);
             }
-            if (!file) return displayError('Please upload or record an audio file for STT.');
-            callSttApi(provider, apiKey, baseUrl, model, file);
-        }
-    } else if (generationType === 'video') {
-        if (!prompt) return displayError('Please enter a video description.');
-        const duration = parseInt(videoDurationInput.value);
-        if (!duration || duration < 1 || duration > 60) return displayError('Please enter a valid duration (1-60 seconds).');
-        callVideoApi(provider, apiKey, baseUrl, model, prompt);
-    } else {
-        displayError('Invalid generation type selected.');
+            break;
+        case 'video':
+            const duration = parseInt(videoDurationInput.value);
+            if (!duration || duration < 1 || duration > 60) return displayError('Please enter a valid duration (1-60 seconds).');
+            callVideoApi(provider, apiKey, baseUrl, model, prompt);
+            break;
+        default:
+            displayError('Invalid generation type selected.');
     }
-});
+}
 
-// --- Payload Toggle Listener ---
-togglePayloadBtn.addEventListener('click', () => {
+function handleTogglePayload() {
     const isHidden = payloadDisplayArea.style.display === 'none';
+    responseDisplayArea.style.display = 'none';
+    toggleResponseBtn.classList.remove('active');
     if (isHidden) {
-        // Hide response if shown
-        responseDisplayArea.style.display = 'none';
-        toggleResponseBtn.classList.remove('active');
-        
-        if (lastRequestPayload) {
-            payloadDisplayArea.textContent = lastRequestPayload;
-        } else {
-            payloadDisplayArea.textContent = 'No request payload data available.';
-        }
+        payloadDisplayArea.textContent = lastRequestPayload || 'No request payload data available.';
         payloadDisplayArea.style.display = 'block';
-        togglePayloadBtn.textContent = 'Hide Request';
         togglePayloadBtn.classList.add('active');
     } else {
         payloadDisplayArea.style.display = 'none';
-        togglePayloadBtn.textContent = 'Show Request';
         togglePayloadBtn.classList.remove('active');
     }
-});
+}
 
-// --- Response Toggle Listener ---
-toggleResponseBtn.addEventListener('click', () => {
+function handleToggleResponse() {
     const isHidden = responseDisplayArea.style.display === 'none';
+    payloadDisplayArea.style.display = 'none';
+    togglePayloadBtn.classList.remove('active');
     if (isHidden) {
-        // Hide request if shown
-        payloadDisplayArea.style.display = 'none';
-        togglePayloadBtn.classList.remove('active');
-        
-        if (lastApiResponse) {
-            responseDisplayArea.textContent = lastApiResponse;
-        } else {
-            responseDisplayArea.textContent = 'No response data available.';
-        }
+        responseDisplayArea.textContent = lastApiResponse || 'No response data available.';
         responseDisplayArea.style.display = 'block';
-        toggleResponseBtn.textContent = 'Hide Response';
         toggleResponseBtn.classList.add('active');
     } else {
         responseDisplayArea.style.display = 'none';
-        toggleResponseBtn.textContent = 'Show Response';
         toggleResponseBtn.classList.remove('active');
     }
-});
+}
 
-// Initial checks
-toggleBaseUrlInput();
-toggleGenerationOptions(); // Initialize generation options visibility on load
+async function handleProviderChange() {
+    await saveGeneralSettings();
+    await loadProviderCredentials(providerSelect.value);
+    toggleBaseUrlInput();
+}
 
-// Initial Load and Setup
-document.addEventListener('DOMContentLoaded', async () => {
-    initializeTheme(); // Initialize theme handling
-    await loadGeneralSettings(); // Load general UI settings first
-    await loadProviderCredentials(providerSelect.value); // Then load creds for the (potentially loaded) provider
-    toggleBaseUrlInput(); // From original code
-    toggleGenerationOptions(); // From original code
-    
-    // Check microphone permission on load and update UI
+async function handleGenerationTypeChange() {
+    await saveGeneralSettings();
+    toggleGenerationOptions();
+}
+
+async function handleAudioTypeChange() {
+    await saveGeneralSettings();
+    toggleGenerationOptions();
+}
+
+async function handleRecordClick() {
+    if (!mediaRecorder || mediaRecorder.state === 'inactive') {
+        recordedChunks = [];
+        try {
+            const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+            microphonePermissionStatus = 'granted';
+            updateMicrophoneUI();
+            mediaRecorder = new MediaRecorder(stream);
+            mediaRecorder.ondataavailable = e => e.data.size > 0 && recordedChunks.push(e.data);
+            mediaRecorder.onstop = () => {
+                const blob = new Blob(recordedChunks, { type: 'audio/webm' });
+                recordingPreview.src = URL.createObjectURL(blob);
+                recordingPreview.style.display = 'block';
+                recordBtn.textContent = 'Start Recording';
+                stream.getTracks().forEach(track => track.stop());
+            };
+            mediaRecorder.start();
+            recordBtn.textContent = 'Stop Recording';
+            recordingPreview.style.display = 'none';
+        } catch (err) {
+            microphonePermissionStatus = 'denied';
+            updateMicrophoneUI();
+            displayError('Microphone access denied or unavailable.');
+        }
+    } else {
+        mediaRecorder.stop();
+    }
+}
+
+async function handleEnableQualityChange() {
+    qualityOptionsContainer.style.display = enableQualityCheckbox.checked ? 'block' : 'none';
+    customQualityInput.style.display = (enableQualityCheckbox.checked && qualitySelect.value === 'custom') ? 'block' : 'none';
+    await saveGeneralSettings();
+}
+
+async function handleQualitySelectChange() {
+    customQualityInput.style.display = (enableQualityCheckbox.checked && qualitySelect.value === 'custom') ? 'block' : 'none';
+    await saveGeneralSettings();
+}
+
+async function handleAspectRatioToggle() {
+    await saveGeneralSettings();
+    toggleAspectRatio();
+}
+
+function handleUploadText() {
+    const fileInput = document.createElement('input');
+    fileInput.type = 'file';
+    fileInput.accept = '.txt';
+    fileInput.onchange = e => {
+        const file = e.target.files[0];
+        if (file) {
+            const reader = new FileReader();
+            reader.onload = event => {
+                promptInput.value = event.target.result;
+                saveGeneralSettings(); // Save the new prompt
+            };
+            reader.readAsText(file);
+        }
+    };
+    fileInput.click();
+}
+
+// Main application initialization function.
+async function initializeApp() {
+    // Restore the open/closed state of all collapsible sections
+    for (const details of document.querySelectorAll('.settings-details')) {
+        const key = `details-panel-open-${details.querySelector('summary').textContent.trim().replace(/\s+/g, '-')}`;
+        const isOpen = await getStoredValue(key);
+        // Default to open if no value is stored, except for "Advanced Options"
+        if (details.querySelector('summary').textContent.includes('Advanced')) {
+            details.open = typeof isOpen === 'boolean' ? isOpen : false; // Default advanced to closed
+        } else {
+            details.open = typeof isOpen === 'boolean' ? isOpen : true; // Default others to open
+        }
+    }
+
+    initializeTheme();
+    await loadGeneralSettings();
+    await loadProviderCredentials(providerSelect.value);
+    toggleBaseUrlInput();
     await checkMicrophonePermission();
     updateMicrophoneUI();
-    
-    // Add input/change listeners to save settings as they are modified
-    apiKeyInput.addEventListener('input', () => saveProviderCredentials(providerSelect.value));
-    if (baseUrlInput) { // Check if exists
-        baseUrlInput.addEventListener('input', () => saveProviderCredentials(providerSelect.value));
-    }
-    modelInput.addEventListener('input', saveGeneralSettings);
-    promptInput.addEventListener('input', saveGeneralSettings);
+    bindEventListeners();
+}
 
-    document.querySelectorAll('input[name="generation-type"]').forEach(radio => {
-        radio.addEventListener('change', async () => {
-            await saveGeneralSettings();
-            toggleGenerationOptions(); // existing call, this will correctly show/hide sections
-        });
-    });
-
-    if (enableQualityCheckbox) enableQualityCheckbox.addEventListener('change', async () => {
-        // When checkbox changes, directly update visibility of its dependent containers
-        if (qualityOptionsContainer) {
-            qualityOptionsContainer.style.display = enableQualityCheckbox.checked ? 'block' : 'none';
-        }
-        // Custom quality input visibility also depends on the quality dropdown
-        if (customQualityInput) {
-            customQualityInput.style.display = (enableQualityCheckbox.checked && qualitySelect.value === 'custom') ? 'block' : 'none';
-        }
-        await saveGeneralSettings(); // Save the checkbox state
-    });
-
-    if (qualitySelect) qualitySelect.addEventListener('change', async () => {
-        // When quality dropdown changes, update visibility of custom input if quality is enabled
-        if (customQualityInput) {
-            customQualityInput.style.display = (enableQualityCheckbox.checked && qualitySelect.value === 'custom') ? 'block' : 'none';
-        }
-        await saveGeneralSettings(); // Save quality select state
-    });
-
-    if (customQualityInput) customQualityInput.addEventListener('input', saveGeneralSettings);
-    if (imageWidthInput) imageWidthInput.addEventListener('input', saveGeneralSettings);
-    if (imageHeightInput) imageHeightInput.addEventListener('input', saveGeneralSettings);
-    if (audioTypeSelect) audioTypeSelect.addEventListener('change', async () => {
-        await saveGeneralSettings();
-        toggleGenerationOptions(); // existing call
-    });
-    if (voiceInput) voiceInput.addEventListener('input', saveGeneralSettings);
-
-    // Video settings event listeners
-    if (videoDurationInput) videoDurationInput.addEventListener('input', saveGeneralSettings);
-    if (videoAspectRatioEnabled) videoAspectRatioEnabled.addEventListener('change', async () => {
-        await saveGeneralSettings();
-        toggleAspectRatio(); // Update UI when aspect ratio is toggled
-    });
-    if (videoAspectRatioSelect) videoAspectRatioSelect.addEventListener('change', saveGeneralSettings);
-
-    // New Window Button Listener
-    const newWindowBtn = document.getElementById('open-new-window-btn');
-    if (newWindowBtn && window.electronAPI && window.electronAPI.send) {
-        newWindowBtn.addEventListener('click', () => {
-            window.electronAPI.send('open-new-window');
-        });
-    } else if (newWindowBtn) {
-        // Fallback or warning if not in Electron context or API not available
-        newWindowBtn.addEventListener('click', () => {
-            alert('This feature is only available in the Electron app.');
-        });
-        console.warn('New window button present, but Electron API for sending messages is not available.');
-    }
-});
+// --- APP START ---
+document.addEventListener('DOMContentLoaded', initializeApp);

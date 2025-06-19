@@ -7,176 +7,243 @@
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <div style="position: absolute; top: 10px; right: 20px;">
+    <div id="loading-indicator" style="display: none;">
+        <div class="spinner"></div>
+        <p>Loading...</p>
+    </div>
+
+    <header>
+        <h1>API Tester</h1>
         <div class="theme-mode-group">
-            <button id="theme-btn-system" class="theme-mode-btn" title="System Theme">🌙</button>
-            <button id="theme-btn-light" class="theme-mode-btn" title="Light Theme">☀️</button>
-            <button id="theme-btn-dark" class="theme-mode-btn" title="Dark Theme">🌑</button>
-            <button id="open-new-window-btn" class="theme-mode-btn" title="Open New Window" style="margin-left: 10px;">➕</button>
+            <button class="theme-mode-btn" data-theme-mode="system" title="System Theme">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-display" viewBox="0 0 16 16">
+                    <path d="M0 4s0-2 2-2h12s2 0 2 2v6s0 2-2 2h-4v1h3a1 1 0 0 1 0 2H5a1 1 0 0 1 0-2h3v-1H2s-2 0-2-2V4zm2-1a1 1 0 0 0-1 1v6a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V4a1 1 0 0 0-1-1H2z"/>
+                </svg>
+            </button>
+            <button class="theme-mode-btn" data-theme-mode="light" title="Light Theme">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-sun" viewBox="0 0 16 16">
+                    <path d="M8 11a3 3 0 1 1 0-6 3 3 0 0 1 0 6zM8 12a4 4 0 1 0 0-8 4 4 0 0 0 0 8zM8 0a.5.5 0 0 1 .5.5v2a.5.5 0 0 1-1 0v-2A.5.5 0 0 1 8 0zm0 13a.5.5 0 0 1 .5.5v2a.5.5 0 0 1-1 0v-2A.5.5 0 0 1 8 13zm-5-5a.5.5 0 0 1 .5-.5h2a.5.5 0 0 1 0 1h-2a.5.5 0 0 1-.5-.5zm10 0a.5.5 0 0 1 .5-.5h2a.5.5 0 0 1 0 1h-2a.5.5 0 0 1-.5-.5zM4.222 4.222a.5.5 0 0 1 .707 0l1.414 1.414a.5.5 0 0 1-.707.707L4.222 4.93a.5.5 0 0 1 0-.707zm9.193 9.193a.5.5 0 0 1 .707 0l1.414 1.414a.5.5 0 0 1-.707.707l-1.414-1.414a.5.5 0 0 1 0-.707zM4.222 11.778a.5.5 0 0 1 .707-.707l1.414 1.414a.5.5 0 0 1-.707.707l-1.414-1.414a.5.5 0 0 1 0-.707zm9.193-9.193a.5.5 0 0 1 0 .707l-1.414 1.414a.5.5 0 1 1-.707-.707l1.414-1.414a.5.5 0 0 1 .707 0z"/>
+                </svg>
+            </button>
+            <button class="theme-mode-btn" data-theme-mode="dark" title="Dark Theme">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-moon" viewBox="0 0 16 16">
+                    <path d="M6 .278a.768.768 0 0 1 .08.858 7.208 7.208 0 0 0-.878 3.46c0 4.021 3.278 7.277 7.318 7.277.527 0 1.04-.055 1.533-.16a.787.787 0 0 1 .81.316.733.733 0 0 1-.031.893A8.349 8.349 0 0 1 8.344 16C3.734 16 0 12.286 0 7.71 0 4.266 2.114 1.312 5.124.06A.752.752 0 0 1 6 .278zM4.858 1.311A7.269 7.269 0 0 0 7.71 14.85c4.021 0 7.277-3.278 7.277-7.318 0-1.817-.67-3.478-1.755-4.744A7.334 7.334 0 0 0 4.858 1.311z"/>
+                </svg>
+            </button>
+            <button id="open-new-window-btn" class="theme-mode-btn" title="Open New Window">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-plus-lg" viewBox="0 0 16 16">
+                    <path fill-rule="evenodd" d="M8 2a.5.5 0 0 1 .5.5v5h5a.5.5 0 0 1 0 1h-5v5a.5.5 0 0 1-1 0v-5h-5a.5.5 0 0 1 0-1h5v-5A.5.5 0 0 1 8 2Z"/>
+                </svg>
+            </button>
         </div>
-    </div>
-    <h1>API Tester</h1>
+    </header>
 
-    <label for="provider-select">Provider:</label>
-    <select id="provider-select">
-        <option value="openai_compatible" selected>OpenAI Compatible</option>
-        <option value="openai">OpenAI</option>
-        <option value="deepseek">Deepseek</option>
-        <option value="voidai_api">voidai API</option>
-        <option value="claude">Claude</option>
-        <option value="openrouter">OpenRouter</option>
-    </select>
+    <main>
+        <section class="main-section">
+            <details class="settings-details" open>
+                <summary>1. Provider Settings</summary>
+                <fieldset>
+                    <label for="provider-select">Provider:</label>
+                    <select id="provider-select">
+                        <option value="openai_compatible" selected>OpenAI Compatible</option>
+                        <option value="openai">OpenAI</option>
+                        <option value="deepseek">Deepseek</option>
+                        <option value="claude">Claude</option>
+                        <option value="openrouter">OpenRouter</option>
+                    </select>
 
-    <div id="base-url-container" style="display: none;">
-        <label for="base-url-input">Base URL:</label>
-        <input type="text" id="base-url-input" placeholder="Enter Base URL">
-    </div>
+                    <div id="base-url-container" style="display: none;">
+                        <label for="base-url-input">Base URL:</label>
+                        <input type="text" id="base-url-input" placeholder="Enter Base URL">
+                    </div>
 
-    <label for="api-key-input">API Key:</label>
-    <input type="password" id="api-key-input" placeholder="Enter your API Key"> <!-- Changed type to password for basic masking -->
+                    <label for="api-key-input">API Key:</label>
+                    <input type="password" id="api-key-input" placeholder="Enter your API Key">
+                </fieldset>
+            </details>
+        </section>
 
-    <hr style="margin: 20px 0;"> <!-- Separator -->
+        <section class="main-section">
+            <details class="settings-details" open>
+                <summary>2. Generation Task</summary>
+                <fieldset>
+                    <div class="generation-type-selector">
+                        <span class="main-label">Generation Type:</span>
+                        <div class="radio-group-wrapper">
+                            <label class="radio-label" for="generation-type-text">
+                                <input type="radio" id="generation-type-text" name="generation-type" value="text" checked>
+                                <span>Text</span>
+                            </label>
+                            <label class="radio-label" for="generation-type-image">
+                                <input type="radio" id="generation-type-image" name="generation-type" value="image">
+                                <span>Image</span>
+                            </label>
+                            <label class="radio-label" for="generation-type-audio">
+                                <input type="radio" id="generation-type-audio" name="generation-type" value="audio">
+                                <span>Audio</span>
+                            </label>
+                            <label class="radio-label" for="generation-type-video">
+                                <input type="radio" id="generation-type-video" name="generation-type" value="video">
+                                <span>Video</span>
+                            </label>
+                        </div>
+                    </div>
 
-    <div class="generation-type-selector"> 
-        <label class="main-label">Generation Type:</label>
-        <div class="radio-group">
-            <input type="radio" id="generation-type-text" name="generation-type" value="text" checked>
-            <label for="generation-type-text">Text</label>
+                    <div id="model-container">
+                        <label for="model-input">Model Name:</label>
+                        <input type="text" id="model-input" placeholder="e.g., gpt-4o, dall-e-3, claude-3-opus-20240229, tts-1, whisper-1">
+                    </div>
+                    <label for="prompt-input" id="prompt-label">Prompt / Image Description:</label>
+                    <button id="upload-text-btn" class="upload-btn" title="Upload a .txt file">Upload Text</button>
+                    <textarea id="prompt-input" rows="4" placeholder="Enter text prompt or image description..."></textarea>
+                </fieldset>
+            </details>
+        </section>
+
+        <section class="main-section">
+            <details class="settings-details">
+                <summary>3. Advanced Options</summary>
+                <fieldset>
+                    <!-- Text Options -->
+                    <div id="text-generation-options">
+                        <div class="form-group">
+                            <label for="system-prompt-input">System Prompt:</label>
+                            <textarea id="system-prompt-input" rows="2" placeholder="Enter system prompt..."></textarea>
+                        </div>
+                        <div class="form-group slider-group">
+                            <label for="temperature-input">Temperature: <span id="temperature-value">1.0</span></label>
+                            <input type="range" id="temperature-input" min="0" max="2" step="0.1" value="1">
+                        </div>
+                        <div class="form-group slider-group">
+                            <label for="top-p-input">Top P: <span id="top-p-value">1.0</span></label>
+                            <input type="range" id="top-p-input" min="0" max="1" step="0.01" value="1">
+                        </div>
+                        <div class="form-group">
+                            <label for="max-tokens-input">Max Tokens:</label>
+                            <input type="number" id="max-tokens-input" placeholder="e.g., 4096">
+                        </div>
+                        <div class="enable-streaming-container">
+                            <label class="enable-streaming-title" for="enable-streaming-checkbox">
+                                <span>Enable Streaming for Text</span>
+                                <span class="switch">
+                                    <input type="checkbox" id="enable-streaming-checkbox" checked>
+                                    <span class="slider"></span>
+                                </span>
+                            </label>
+                        </div>
+                    </div>
+
+                    <!-- Image Options -->
+                    <div id="image-options-container" style="display: none;">
+                        <div class="enable-quality-container">
+                            <label class="enable-quality-title" for="enable-quality-checkbox">
+                                <span>Enable Quality</span>
+                                <span class="switch">
+                                    <input type="checkbox" id="enable-quality-checkbox">
+                                    <span class="slider"></span>
+                                </span>
+                            </label>
+                        </div>
+                        <div id="quality-options-container">
+                            <label for="quality-select">Image Quality:</label>
+                            <select id="quality-select">
+                                <option value="low">Low</option>
+                                <option value="medium" selected>Medium</option>
+                                <option value="high">High</option>
+                                <option value="auto">Auto</option>
+                                <option value="standard">Standard</option>
+                                <option value="hd">hd</option>
+                                <option value="custom">Custom</option>
+                            </select>
+                            <input type="text" id="custom-quality-input" placeholder="Enter custom quality" style="display:none;">
+                        </div>
+                        <label>Image Size (Width x Height):</label>
+                        <div class="size-inputs">
+                            <input type="number" id="image-width-input" placeholder="Width" value="1024" min="1">
+                            <span>x</span>
+                            <input type="number" id="image-height-input" placeholder="Height" value="1024" min="1">
+                        </div>
+                        <small>Note: Most models only support specific resolutions (e.g., 1024x1024, 512x512). Check provider documentation.</small>
+                    </div>
+
+                    <!-- Audio Options -->
+                    <div id="audio-options-container" style="display: none;">
+                        <label for="audio-type-select">Audio Type:</label>
+                        <select id="audio-type-select">
+                            <option value="tts" selected>Text-to-Speech (TTS)</option>
+                            <option value="stt">Speech-to-Text (STT)</option>
+                        </select>
+                        <div id="stt-input-container" style="display: none;">
+                            <label for="audio-file-input">Audio File:</label>
+                            <input type="file" id="audio-file-input" accept="audio/*">
+                        </div>
+                        <div id="recorder-controls" style="display:none;">
+                            <button type="button" id="record-btn">Start Recording</button>
+                            <audio id="recording-preview" controls style="display:none;"></audio>
+                        </div>
+                        <div id="voice-options-container" style="display:none;">
+                            <label for="voice-input">Voice:</label>
+                            <input type="text" id="voice-input" placeholder="Enter voice name">
+                        </div>
+                    </div>
+
+                    <!-- Video Options -->
+                    <div id="video-options-container" style="display: none;">
+                        <div class="enable-aspect-ratio-container">
+                            <label class="enable-aspect-ratio-title" for="video-aspect-ratio-enabled">
+                                <span>Enable Aspect Ratio</span>
+                                <span class="switch">
+                                    <input type="checkbox" id="video-aspect-ratio-enabled" onchange="toggleAspectRatio()">
+                                    <span class="slider"></span>
+                                </span>
+                            </label>
+                        </div>
+                        <div class="form-group" id="aspect-ratio-group" style="display: none;">
+                            <label for="video-aspect-ratio">Aspect Ratio:</label>
+                            <select id="video-aspect-ratio">
+                                <option value="16:9">16:9 (Widescreen)</option>
+                                <option value="9:16">9:16 (Portrait)</option>
+                                <option value="1:1">1:1 (Square)</option>
+                                <option value="4:3">4:3 (Standard)</option>
+                                <option value="21:9">21:9 (Ultrawide)</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="video-duration">Duration (seconds):</label>
+                            <input type="number" id="video-duration" min="1" max="60" value="5" placeholder="Duration in seconds">
+                        </div>
+                    </div>
+                </fieldset>
+            </details>
+        </section>
+
+        <button id="send-button">Generate</button>
+
+        <div id="output-area">
+            <p id="output-text"></p>
+            <img id="output-image" src="" alt="Generated Image" style="display: none;">
+            <audio id="output-audio" controls preload="metadata" style="display:none;"></audio>
+            <video id="output-video" controls preload="metadata" style="display:none;">
+                Your browser does not support the video tag.
+            </video>
+            <div class="download-buttons-container">
+                <a id="download-image-btn" href="" download style="display:none;">Download Image</a>
+                <a id="download-audio" href="" download style="display:none;">Download Audio</a>
+                <a id="download-video-btn" href="" download style="display:none;">Download Video</a>
+            </div>
         </div>
-        <div class="radio-group">
-            <input type="radio" id="generation-type-image" name="generation-type" value="image">
-            <label for="generation-type-image">Image</label>
-        </div>
-        <div class="radio-group">
-            <input type="radio" id="generation-type-audio" name="generation-type" value="audio">
-            <label for="generation-type-audio">Audio</label>
-        </div>
-        <div class="radio-group">
-            <input type="radio" id="generation-type-video" name="generation-type" value="video">
-            <label for="generation-type-video">Video</label>
-        </div>
-    </div>
-    <!-- Audio Type for Audio Generation (Audio only) -->
-    <div id="audio-options-container" style="display: none; margin-top: 10px;">
-        <label for="audio-type-select">Audio Type:</label>
-        <select id="audio-type-select">
-            <option value="tts" selected>Text-to-Speech (TTS)</option>
-            <option value="stt">Speech-to-Text (STT)</option>
-        </select>
-        <div id="stt-input-container" style="display: none; margin-top: 10px;">
-            <label for="audio-file-input">Audio File:</label>
-            <input type="file" id="audio-file-input" accept="audio/*">
-        </div>
-        <div id="recorder-controls" style="display:none; margin-top:10px;">
-            <button type="button" id="record-btn">Start Recording</button>
-            <audio id="recording-preview" controls style="display:none; width:100%; margin-top:5px;"></audio>
-        </div>
-    </div>
 
-    <!-- Video Type for Video Generation -->
-    <div id="video-options-container" style="display: none; margin-top: 10px;">
-        <div class="enable-aspect-ratio-container">
-            <label class="enable-aspect-ratio-title" for="video-aspect-ratio-enabled">
-                <span>Enable Aspect Ratio</span>
-                <span class="switch">
-                    <input type="checkbox" id="video-aspect-ratio-enabled" onchange="toggleAspectRatio()">
-                    <span class="slider"></span>
-                </span>
-            </label>
+        <div id="stats-area"></div>
+
+        <div id="payload-container" style="display: none;">
+            <div class="payload-buttons-container">
+                <button id="toggle-payload-btn" class="payload-toggle-btn">Show Request</button>
+                <button id="toggle-response-btn" class="payload-toggle-btn">Show Response</button>
+            </div>
+            <pre id="payload-display-area" class="payload-display" style="display: none;"></pre>
+            <pre id="response-display-area" class="payload-display" style="display: none;"></pre>
         </div>
-        <div class="form-group" id="aspect-ratio-group" style="display: none;">
-            <label for="video-aspect-ratio">Aspect Ratio:</label>
-            <select id="video-aspect-ratio">
-                <option value="16:9">16:9 (Widescreen)</option>
-                <option value="9:16">9:16 (Portrait)</option>
-                <option value="1:1">1:1 (Square)</option>
-                <option value="4:3">4:3 (Standard)</option>
-                <option value="21:9">21:9 (Ultrawide)</option>
-            </select>
-        </div>
-        <div class="form-group">
-            <label for="video-duration">Duration (seconds):</label>
-            <input type="number" id="video-duration" min="1" max="60" value="5" placeholder="Duration in seconds">
-        </div>
-    </div>
-
-    <!-- Voice field for TTS -->
-    <div id="voice-options-container" style="display:none; margin-top:10px;">
-        <label for="voice-input">Voice:</label>
-        <input type="text" id="voice-input" placeholder="Enter voice name">
-    </div>
-    <!-- Voice field for TTS -->
-
-    <div id="image-options-container"> <!-- Hidden by default -->
-        <div class="enable-quality-container">
-            <label class="enable-quality-title" for="enable-quality-checkbox">
-                <span>Enable Quality</span>
-                <span class="switch">
-                    <input type="checkbox" id="enable-quality-checkbox">
-                    <span class="slider"></span>
-                </span>
-            </label>
-        </div>
-        <div id="quality-options-container" style="margin-bottom: 10px;">
-            <label for="quality-select">Image Quality:</label>
-            <select id="quality-select">
-                <option value="low">Low</option>
-                <option value="medium" selected>Medium</option>
-                <option value="high">High</option>
-                <option value="auto">Auto</option>
-                <option value="standard">Standard</option>
-                <option value="hd">hd</option>
-                <option value="custom">Custom</option>
-            </select>
-            <!-- Custom quality text input, hidden by default -->
-            <input type="text" id="custom-quality-input" placeholder="Enter custom quality" style="display:none; margin-top:5px;">
-        </div>
-         <label>Image Size (Width x Height):</label>
-         <div class="size-inputs">
-            <input type="number" id="image-width-input" placeholder="Width" value="1024" min="1">
-            <span>x</span>
-            <input type="number" id="image-height-input" placeholder="Height" value="1024" min="1">
-         </div>
-         <small>Note: Most models only support specific resolutions (e.g., 1024x1024, 512x512). Check provider documentation.</small>
-    </div>
-
-
-    <div id="model-container" style="margin-top: 10px;">
-        <label for="model-input">Model Name:</label>
-        <input type="text" id="model-input" placeholder="e.g., gpt-4o, dall-e-3, claude-3-opus-20240229, tts-1, whisper-1">
-    </div>
-    <label for="prompt-input" id="prompt-label">Prompt / Image Description:</label> <!-- Label will be updated by JS -->
-    <textarea id="prompt-input" rows="4" placeholder="Enter text prompt or image description..."></textarea>
-
-    <button id="send-button">Generate</button> <!-- Changed button text -->
-
-    <div id="output-area" style="margin-top: 20px; padding: 15px; border: 1px dashed #ccc; background-color: #eee; border-radius: 4px; display: none; white-space: pre-wrap; /* Preserve whitespace and wrap */">
-        <!-- AI response / Image / Status will be displayed here -->
-        <p id="output-text"></p>
-        <img id="output-image" src="" alt="Generated Image" style="max-width: 100%; display: none;">
-        <audio id="output-audio" controls preload="metadata" style="width:100%; display:none;"></audio>
-        <video id="output-video" controls preload="metadata" style="width:100%; max-height: 400px; display:none;">
-            Your browser does not support the video tag.
-        </video>
-        <div class="download-buttons-container">
-            <a id="download-image-btn" href="" download style="display:none;">Download Image</a>
-            <a id="download-audio" href="" download style="display:none;">Download Audio</a>
-            <a id="download-video-btn" href="" download style="display:none;">Download Video</a>
-        </div>
-    </div>
-
-    <div id="stats-area" style="margin-top: 10px; padding: 10px; border: 1px solid #e0e0e0; background-color: #f0f0f0; border-radius: 4px; display: none; font-size: 0.9em;">
-        <!-- Stats will be displayed here -->
-    </div>
-
-    <div id="payload-container" style="margin-top: 15px; display: none;">
-        <div class="payload-buttons-container">
-            <button id="toggle-payload-btn" class="payload-toggle-btn">Show Request</button>
-            <button id="toggle-response-btn" class="payload-toggle-btn">Show Response</button>
-        </div>
-        <pre id="payload-display-area" class="payload-display" style="display: none;"></pre>
-        <pre id="response-display-area" class="payload-display" style="display: none;"></pre>
-    </div>
+    </main>
 
     <script src="script.js"></script>
 </body>
