@@ -94,7 +94,7 @@
                         <input type="text" id="model-input" placeholder="e.g., gpt-4o, dall-e-3, claude-3-opus-20240229, tts-1, whisper-1">
                     </div>
                     <label for="prompt-input" id="prompt-label">Prompt / Image Description:</label>
-                    <button id="upload-text-btn" class="upload-btn" title="Upload a .txt file">Upload Text</button>
+                    <button id="upload-text-btn" class="upload-btn" title="Upload a file for prompt">Upload File</button>
                     <textarea id="prompt-input" rows="4" placeholder="Enter text prompt or image description..."></textarea>
                 </fieldset>
             </details>
@@ -106,25 +106,72 @@
                 <fieldset>
                     <!-- Text Options -->
                     <div id="text-generation-options">
-                        <div class="form-group">
-                            <label for="system-prompt-input">System Prompt:</label>
+                        <div class="enable-param-container">
+                            <label class="enable-param-title" for="enable-system-prompt-checkbox">
+                                <span>System Prompt</span>
+                                <span class="switch">
+                                    <input type="checkbox" id="enable-system-prompt-checkbox" checked>
+                                    <span class="slider"></span>
+                                </span>
+                            </label>
+                        </div>
+                        <div class="form-group" id="system-prompt-group">
                             <textarea id="system-prompt-input" rows="2" placeholder="Enter system prompt..."></textarea>
                         </div>
-                        <div class="form-group slider-group">
+                        <div class="enable-param-container">
+                            <label class="enable-param-title" for="enable-temperature-checkbox">
+                                <span>Temperature</span>
+                                <span class="switch">
+                                    <input type="checkbox" id="enable-temperature-checkbox">
+                                    <span class="slider"></span>
+                                </span>
+                            </label>
+                        </div>
+                        <div class="form-group slider-group" id="temperature-group">
                             <label for="temperature-input">Temperature: <span id="temperature-value">1.0</span></label>
                             <input type="range" id="temperature-input" min="0" max="2" step="0.1" value="1">
                         </div>
-                        <div class="form-group slider-group">
+                        <div class="enable-param-container">
+                            <label class="enable-param-title" for="enable-top-p-checkbox">
+                                <span>Top P</span>
+                                <span class="switch">
+                                    <input type="checkbox" id="enable-top-p-checkbox">
+                                    <span class="slider"></span>
+                                </span>
+                            </label>
+                        </div>
+                        <div class="form-group slider-group" id="top-p-group">
                             <label for="top-p-input">Top P: <span id="top-p-value">1.0</span></label>
                             <input type="range" id="top-p-input" min="0" max="1" step="0.01" value="1">
                         </div>
-                        <div class="form-group">
+                        <div class="enable-param-container">
+                            <label class="enable-param-title" for="enable-max-tokens-checkbox">
+                                <span>Max Tokens</span>
+                                <span class="switch">
+                                    <input type="checkbox" id="enable-max-tokens-checkbox">
+                                    <span class="slider"></span>
+                                </span>
+                            </label>
+                        </div>
+                        <div class="form-group" id="max-tokens-group">
                             <label for="max-tokens-input">Max Tokens:</label>
                             <input type="number" id="max-tokens-input" placeholder="e.g., 4096">
                         </div>
+                        <div class="enable-param-container">
+                            <label class="enable-param-title" for="enable-inference-effort-checkbox">
+                                <span>Resoning Effort</span>
+                                <span class="switch">
+                                    <input type="checkbox" id="enable-inference-effort-checkbox">
+                                    <span class="slider"></span>
+                                </span>
+                            </label>
+                        </div>
+                        <div class="form-group" id="inference-effort-group">
+                            <input type="text" id="inference-effort-input" placeholder="e.g., low, medium, high">
+                        </div>
                         <div class="enable-streaming-container">
                             <label class="enable-streaming-title" for="enable-streaming-checkbox">
-                                <span>Enable Streaming for Text</span>
+                                <span>Streaming</span>
                                 <span class="switch">
                                     <input type="checkbox" id="enable-streaming-checkbox" checked>
                                     <span class="slider"></span>
@@ -207,10 +254,13 @@
                                 <option value="4:3">4:3 (Standard)</option>
                                 <option value="21:9">21:9 (Ultrawide)</option>
                             </select>
+                            <!-- Note: Aspect Ratio select is controlled by Enable Aspect Ratio,
+                                 so it doesn't need an individual toggle. -->
                         </div>
-                        <div class="form-group">
+                        <div class="form-group form-group-toggle">
                             <label for="video-duration">Duration (seconds):</label>
                             <input type="number" id="video-duration" min="1" max="60" value="5" placeholder="Duration in seconds">
+                            <!-- Toggle switch for video duration removed as requested -->
                         </div>
                     </div>
                 </fieldset>

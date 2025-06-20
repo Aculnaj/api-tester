@@ -52,12 +52,18 @@ const downloadVideoBtn = document.getElementById('download-video-btn');
 // Text Generation Options
 const textGenerationOptions = document.getElementById('text-generation-options');
 const systemPromptInput = document.getElementById('system-prompt-input');
+const enableSystemPromptCheckbox = document.getElementById('enable-system-prompt-checkbox');
 const temperatureInput = document.getElementById('temperature-input');
 const temperatureValue = document.getElementById('temperature-value');
+const enableTemperatureCheckbox = document.getElementById('enable-temperature-checkbox');
 const topPInput = document.getElementById('top-p-input');
 const topPValue = document.getElementById('top-p-value');
+const enableTopPCheckbox = document.getElementById('enable-top-p-checkbox');
 const maxTokensInput = document.getElementById('max-tokens-input');
+const enableMaxTokensCheckbox = document.getElementById('enable-max-tokens-checkbox');
 const uploadTextBtn = document.getElementById('upload-text-btn');
+const inferenceEffortInput = document.getElementById('inference-effort-input');
+const enableInferenceEffortCheckbox = document.getElementById('enable-inference-effort-checkbox');
 
 // Payload/Response Display
 const payloadContainer = document.getElementById('payload-container');
@@ -143,10 +149,18 @@ const LAST_VIDEO_DURATION_KEY = 'lastVideoDuration';
 const LAST_VIDEO_ASPECT_RATIO_ENABLED_KEY = 'lastVideoAspectRatioEnabled';
 const LAST_VIDEO_ASPECT_RATIO_KEY = 'lastVideoAspectRatio';
 const LAST_STREAMING_ENABLED_KEY = 'lastStreamingEnabled';
+
+const LAST_ENABLE_SYSTEM_PROMPT_KEY = 'lastEnableSystemPrompt';
+const LAST_ENABLE_TEMPERATURE_KEY = 'lastEnableTemperature';
+const LAST_ENABLE_TOP_P_KEY = 'lastEnableTopP';
+const LAST_ENABLE_MAX_TOKENS_KEY = 'lastEnableMaxTokens';
+const LAST_ENABLE_INFERENCE_EFFORT_KEY = 'lastEnableInferenceEffort';
+
 const LAST_SYSTEM_PROMPT_KEY = 'lastSystemPrompt';
 const LAST_TEMPERATURE_KEY = 'lastTemperature';
 const LAST_TOP_P_KEY = 'lastTopP';
 const LAST_MAX_TOKENS_KEY = 'lastMaxTokens';
+const LAST_INFERENCE_EFFORT_KEY = 'lastInferenceEffort';
 // Loads API credentials for the given provider from storage.
 async function loadProviderCredentials(provider) {
     if (!provider) return;
@@ -173,7 +187,10 @@ async function saveProviderCredentials(provider) {
     await setStoredValue(`${API_CREDENTIALS_KEY_PREFIX}.${provider}`, { apiKey, baseUrl });
 }
 
-// Loads general application settings from storage.
+/**
+ * Loads general application settings from storage.
+ * Extended: Now also loads enable/disable state for parameter toggles.
+ */
 async function loadGeneralSettings() {
     const lastProvider = await getStoredValue(LAST_PROVIDER_KEY);
     if (lastProvider) providerSelect.value = lastProvider;
@@ -232,6 +249,28 @@ async function loadGeneralSettings() {
         enableStreamingCheckbox.checked = typeof lastStreamingEnabled === 'boolean' ? lastStreamingEnabled : true;
     }
 
+    // --- NEW: Load enable toggles for each param ---
+    if (enableSystemPromptCheckbox) {
+        const en = await getStoredValue(LAST_ENABLE_SYSTEM_PROMPT_KEY);
+        enableSystemPromptCheckbox.checked = typeof en === "boolean" ? en : true;
+    }
+    if (enableTemperatureCheckbox) {
+        const en = await getStoredValue(LAST_ENABLE_TEMPERATURE_KEY);
+        enableTemperatureCheckbox.checked = typeof en === "boolean" ? en : true;
+    }
+    if (enableTopPCheckbox) {
+        const en = await getStoredValue(LAST_ENABLE_TOP_P_KEY);
+        enableTopPCheckbox.checked = typeof en === "boolean" ? en : true;
+    }
+    if (enableMaxTokensCheckbox) {
+        const en = await getStoredValue(LAST_ENABLE_MAX_TOKENS_KEY);
+        enableMaxTokensCheckbox.checked = typeof en === "boolean" ? en : true;
+    }
+    if (enableInferenceEffortCheckbox) {
+        const en = await getStoredValue(LAST_ENABLE_INFERENCE_EFFORT_KEY);
+        enableInferenceEffortCheckbox.checked = typeof en === "boolean" ? en : true;
+    }
+
     // Load text generation settings
     systemPromptInput.value = await getStoredValue(LAST_SYSTEM_PROMPT_KEY) || '';
     const lastTemp = await getStoredValue(LAST_TEMPERATURE_KEY);
@@ -241,13 +280,23 @@ async function loadGeneralSettings() {
     topPInput.value = lastTopP !== undefined ? lastTopP : 1;
     topPValue.textContent = parseFloat(topPInput.value).toFixed(2);
     maxTokensInput.value = await getStoredValue(LAST_MAX_TOKENS_KEY) || '';
+    inferenceEffortInput.value = await getStoredValue(LAST_INFERENCE_EFFORT_KEY) || '';
 
+    // NEW: Enable/disable input fields
+    if (enableSystemPromptCheckbox) systemPromptInput.disabled = !enableSystemPromptCheckbox.checked;
+    if (enableTemperatureCheckbox) temperatureInput.disabled = !enableTemperatureCheckbox.checked;
+    if (enableTopPCheckbox) topPInput.disabled = !enableTopPCheckbox.checked;
+    if (enableMaxTokensCheckbox) maxTokensInput.disabled = !enableMaxTokensCheckbox.checked;
+    if (enableInferenceEffortCheckbox) inferenceEffortInput.disabled = !enableInferenceEffortCheckbox.checked;
 
     toggleGenerationOptions(); // Update UI based on loaded settings
     toggleBaseUrlInput(); // Ensure base URL visibility
 }
 
-// Saves general application settings to storage.
+/**
+ * Saves general application settings to storage.
+ * Extended: Speichert auch die Enable/Disable-Schalter für Parameter.
+ */
 async function saveGeneralSettings() {
     await setStoredValue(LAST_PROVIDER_KEY, providerSelect.value);
     await setStoredValue(LAST_MODEL_KEY, modelInput.value);
@@ -262,8 +311,14 @@ async function saveGeneralSettings() {
     if (imageHeightInput) await setStoredValue(LAST_IMAGE_HEIGHT_KEY, imageHeightInput.value);
     if (audioTypeSelect) await setStoredValue(LAST_AUDIO_TYPE_KEY, audioTypeSelect.value);
     if (voiceInput) await setStoredValue(LAST_VOICE_KEY, voiceInput.value);
-    if (enableStreamingCheckbox) await setStoredValue(LAST_STREAMING_ENABLED_KEY, enableStreamingCheckbox.checked); // Added for streaming toggle
+    if (enableStreamingCheckbox) await setStoredValue(LAST_STREAMING_ENABLED_KEY, enableStreamingCheckbox.checked);
 
+    // Save new param enable toggles
+    if (enableSystemPromptCheckbox) await setStoredValue(LAST_ENABLE_SYSTEM_PROMPT_KEY, enableSystemPromptCheckbox.checked);
+    if (enableTemperatureCheckbox) await setStoredValue(LAST_ENABLE_TEMPERATURE_KEY, enableTemperatureCheckbox.checked);
+    if (enableTopPCheckbox) await setStoredValue(LAST_ENABLE_TOP_P_KEY, enableTopPCheckbox.checked);
+    if (enableMaxTokensCheckbox) await setStoredValue(LAST_ENABLE_MAX_TOKENS_KEY, enableMaxTokensCheckbox.checked);
+    if (enableInferenceEffortCheckbox) await setStoredValue(LAST_ENABLE_INFERENCE_EFFORT_KEY, enableInferenceEffortCheckbox.checked);
 
     // Save video settings
     if (videoDurationInput) await setStoredValue(LAST_VIDEO_DURATION_KEY, videoDurationInput.value);
@@ -275,6 +330,7 @@ async function saveGeneralSettings() {
     await setStoredValue(LAST_TEMPERATURE_KEY, temperatureInput.value);
     await setStoredValue(LAST_TOP_P_KEY, topPInput.value);
     await setStoredValue(LAST_MAX_TOKENS_KEY, maxTokensInput.value);
+    await setStoredValue(LAST_INFERENCE_EFFORT_KEY, inferenceEffortInput.value);
 }
 
 // --- THEME MANAGEMENT ---
@@ -406,31 +462,55 @@ function toggleGenerationOptions() {
         case 'image':
             imageOptionsContainer.style.display = 'block';
             document.getElementById('prompt-label').textContent = 'Prompt / Image Description:';
-            // Also manage sub-options visibility
-            qualityOptionsContainer.style.display = enableQualityCheckbox.checked ? 'block' : 'none';
-            customQualityInput.style.display = (enableQualityCheckbox.checked && qualitySelect.value === 'custom') ? 'block' : 'none';
+            // Visibility of quality options container is now primarily controlled by its toggle
+            // but ensure it's hidden if the main image options are hidden.
+             const enableQualityToggle = document.getElementById('enable-quality-checkbox');
+            if (enableQualityToggle) {
+                 qualityOptionsContainer.style.display = enableQualityToggle.checked ? 'block' : 'none';
+                 customQualityInput.style.display = (enableQualityToggle.checked && qualitySelect.value === 'custom') ? 'block' : 'none';
+             }
             break;
         case 'audio':
             audioOptionsContainer.style.display = 'block';
-            const audioType = audioTypeSelect.value;
-            if (audioType === 'tts') {
-                voiceOptionsContainer.style.display = 'block';
+            const audioTypeSelectEl = document.getElementById('audio-type-select');
+            const audioTypeToggle = document.querySelector('.param-toggle[data-param-id="audio-type-select"]');
+            const audioType = audioTypeSelectEl ? audioTypeSelectEl.value : 'tts';
+
+            // Only show audio sub-options if the audio type select is enabled and its toggle is checked
+            if (audioTypeSelectEl && audioTypeToggle && audioTypeToggle.checked) {
+                if (audioType === 'tts') {
+                    voiceOptionsContainer.style.display = 'block';
+                    sttInputContainer.style.display = 'none';
+                    recorderControls.style.display = 'none';
+                    document.getElementById('prompt-label').textContent = 'Text to Speak:';
+                } else { // STT
+                    voiceOptionsContainer.style.display = 'none';
+                    sttInputContainer.style.display = 'block';
+                    recorderControls.style.display = 'block';
+                    promptInput.style.display = 'none'; // Prompt input is not used for STT
+                    uploadTextBtn.style.display = 'none'; // Upload Text button is not used for STT
+                    document.getElementById('prompt-label').textContent = 'Upload or Record Audio:';
+                }
+            } else {
+                 // If audio type select is disabled or its toggle is off, hide all audio sub-options
+                voiceOptionsContainer.style.display = 'none';
                 sttInputContainer.style.display = 'none';
                 recorderControls.style.display = 'none';
-                document.getElementById('prompt-label').textContent = 'Text to Speak:';
-            } else { // STT
-                voiceOptionsContainer.style.display = 'none';
-                sttInputContainer.style.display = 'block';
-                recorderControls.style.display = 'block';
-                promptInput.style.display = 'none';
-                uploadTextBtn.style.display = 'none';
-                document.getElementById('prompt-label').textContent = 'Upload or Record Audio:';
+                // Restore prompt input visibility and Upload File button for other types if audio section is off
+                 promptInput.style.display = 'block';
+                 uploadTextBtn.style.display = 'inline-block'; // Re-show the upload button
             }
             break;
         case 'video':
             videoOptionsContainer.style.display = 'block';
             document.getElementById('prompt-label').textContent = 'Video Description:';
-            toggleAspectRatio(); // Ensure aspect ratio visibility is correct
+            // Aspect ratio group visibility is now primarily controlled by its toggle
+            const aspectRatioToggle = document.getElementById('video-aspect-ratio-enabled');
+            if (aspectRatioToggle) {
+                 aspectRatioGroup.style.display = aspectRatioToggle.checked ? 'block' : 'none';
+            }
+             // Ensure Upload File button is hidden for video
+             uploadTextBtn.style.display = 'none';
             break;
     }
 }
@@ -645,7 +725,10 @@ async function handleApiResponse(response) {
 // --- API CALLS ---
 // Functions responsible for making API calls to different providers and generation types.
 
-// Handles text generation API calls.
+/**
+ * Handles text generation API calls.
+ * Parameter-Toggles werden ausgewertet: Parameter werden nur gesendet, wenn der jeweilige Switch aktiviert ist.
+ */
 async function callTextApi(provider, apiKey, baseUrl, model, prompt) {
     showLoader(); // Show loader at the start
     clearOutput();
@@ -658,7 +741,8 @@ async function callTextApi(provider, apiKey, baseUrl, model, prompt) {
 
     // Construct messages array
     const messages = [];
-    if (systemPromptInput.value.trim()) {
+    // System Prompt nur senden, wenn Toggle aktiv
+    if (enableSystemPromptCheckbox?.checked && systemPromptInput.value.trim()) {
         messages.push({ role: 'system', content: systemPromptInput.value.trim() });
     }
     messages.push({ role: 'user', content: prompt });
@@ -670,10 +754,13 @@ async function callTextApi(provider, apiKey, baseUrl, model, prompt) {
         stream: streamEnabled
     };
 
-    // Add optional parameters if they have values
-    if (temperatureInput.value) body.temperature = parseFloat(temperatureInput.value);
-    if (topPInput.value) body.top_p = parseFloat(topPInput.value);
-    if (maxTokensInput.value) body.max_tokens = parseInt(maxTokensInput.value, 10);
+    // Add optional parameters ONLY IF ENABLED
+    if (enableTemperatureCheckbox?.checked && temperatureInput.value) body.temperature = parseFloat(temperatureInput.value);
+    if (enableTopPCheckbox?.checked && topPInput.value) body.top_p = parseFloat(topPInput.value);
+    if (enableMaxTokensCheckbox?.checked && maxTokensInput.value) body.max_tokens = parseInt(maxTokensInput.value, 10);
+    if (enableInferenceEffortCheckbox?.checked && inferenceEffortInput && inferenceEffortInput.value.trim()) {
+        body.reasoning_effort = inferenceEffortInput.value.trim();
+    }
 
 
     // Configure based on provider
@@ -754,42 +841,70 @@ async function callTextApi(provider, apiKey, baseUrl, model, prompt) {
             let contentBuffer = "";
             let accumulatedResponse = "";
 
+            // --- LIVE PROMPT TOKENS: Calculate once outside processStream so always shown ---
+            function estimateTokens(text) {
+                // Estimate tokens as number of whitespace-separated units in text
+                if (!text) return 0;
+                return text.trim().length > 0 ? text.trim().split(/\s+/).length : 0;
+            }
+            // Prompt tokens estimated from user input (should match frontend logic)
+            const promptTokensEstimate = estimateTokens(prompt);
+
             async function processStream() {
+                // --- Live Stats for Streaming ---
+                let lastLiveStatsUpdate = 0;
+                let streamedTokenCount = 0;
+
                 while (true) {
                     const { done, value } = await reader.read();
+                    const now = performance.now();
+                    const elapsed = (now - startTime) / 1000;
+
                     if (done) {
-                        statsArea.innerHTML = `<span><strong>Time:</strong> ${durationInSeconds.toFixed(2)}s</span><br><span>Stream complete. Usage data is typically not available for streamed responses.</span>`;
+                        // Final update with all stats at completion
+                        const completionTokensFinal = estimateTokens(contentBuffer);
+                        const tokensPerSecondFinal = (elapsed > 0 && completionTokensFinal > 0)
+                            ? (completionTokensFinal / elapsed).toFixed(2) : "…";
+                        const totalTokensFinal = promptTokensEstimate + completionTokensFinal;
+                        statsArea.innerHTML = `
+                            <span><strong>Time:</strong> ${elapsed.toFixed(2)}s</span>
+                            <span><strong>Tokens/Sec:</strong> ${tokensPerSecondFinal}</span>
+                            <span><strong>Prompt Tokens:</strong> ${promptTokensEstimate} (est)</span>
+                            <span><strong>Completion Tokens:</strong> ${completionTokensFinal} (est)</span>
+                            <span><strong>Total Tokens:</strong> ${totalTokensFinal} (est)</span>
+                            <br><small>Usage data may not be available for streamed responses. Token values are estimated.</small>
+                        `;
                         statsArea.style.display = 'block';
                         // Ensure any final buffered content is displayed (though typically not needed with SSE)
-                        if (accumulatedResponse.startsWith("data: ")) { // Check if remaining buffer is a data line
-                            // Process final chunk if any - similar to loop logic
-                             const jsonStr = accumulatedResponse.substring(6).trim();
-                             if (jsonStr && jsonStr !== "[DONE]") {
-                                 try {
-                                     const parsed = JSON.parse(jsonStr);
-                                     if (parsed.choices && parsed.choices[0] && parsed.choices[0].delta && parsed.choices[0].delta.content) {
-                                         const textChunk = parsed.choices[0].delta.content;
-                                         outputText.innerHTML += textChunk.replace(/\n/g, '<br>');
-                                     }
-                                 } catch (e) {
-                                     console.warn("Error parsing final streamed JSON chunk:", e, "Chunk:", jsonStr);
-                                 }
-                             }
+                        if (accumulatedResponse.startsWith("data: ")) {
+                            const jsonStr = accumulatedResponse.substring(6).trim();
+                            if (jsonStr && jsonStr !== "[DONE]") {
+                                try {
+                                    const parsed = JSON.parse(jsonStr);
+                                    if (parsed.choices && parsed.choices[0] && parsed.choices[0].delta && parsed.choices[0].delta.content) {
+                                        const textChunk = parsed.choices[0].delta.content;
+                                        outputText.innerHTML += textChunk.replace(/\n/g, '<br>');
+                                    }
+                                } catch (e) {
+                                    console.warn("Error parsing final streamed JSON chunk:", e, "Chunk:", jsonStr);
+                                }
+                            }
                         }
                         break;
                     }
 
                     accumulatedResponse += decoder.decode(value, { stream: true });
                     let lines = accumulatedResponse.split('\n');
-                    accumulatedResponse = lines.pop() || ""; // Keep incomplete line for next chunk, ensure it's a string
+                    accumulatedResponse = lines.pop() || "";
+
+                    let updateStatsNow = false;
 
                     for (const line of lines) {
                         if (line.startsWith("data: ")) {
                             const jsonStr = line.substring(6).trim();
                             if (jsonStr === "[DONE]") {
-                                statsArea.innerHTML = `<span><strong>Time:</strong> ${durationInSeconds.toFixed(2)}s</span><br><span>Stream finished. Usage data for streamed responses may differ or be unavailable.</span>`;
-                                statsArea.style.display = 'block';
-                                return; // Exit processing loop
+                                // Stream is finished — handoff to the above "done" clause
+                                return;
                             }
                             try {
                                 const parsed = JSON.parse(jsonStr);
@@ -797,17 +912,33 @@ async function callTextApi(provider, apiKey, baseUrl, model, prompt) {
                                     const textChunk = parsed.choices[0].delta.content;
                                     contentBuffer += textChunk;
                                     outputText.innerHTML += textChunk.replace(/\n/g, '<br>');
-                                }
-                                // Store the raw choices if needed for other processing (e.g. finish_reason)
-                                if (parsed.choices && parsed.choices[0] && parsed.choices[0].finish_reason){
-                                    // console.log("Stream finished with reason: ", parsed.choices[0].finish_reason); // Verbose
+                                    streamedTokenCount = estimateTokens(contentBuffer);
+                                    updateStatsNow = true;
                                 }
                             } catch (e) {
                                 console.warn("Error parsing streamed JSON chunk:", e, "Chunk:", jsonStr);
                             }
-                        } else if (line.trim().length > 0 && !line.includes("data: ") && !line.includes("event: message_stop")) { // Log non-data lines if they are not empty and not a stop event for some APIs
-                            // console.log("Received non-data line in stream:", line); // Can be verbose
                         }
+                    }
+
+                    // Live update stats after chunk or every ~120ms
+                    if (updateStatsNow || (now - lastLiveStatsUpdate > 120)) {
+                        lastLiveStatsUpdate = now;
+                        let liveTokens = streamedTokenCount;
+                        let liveTime = ((performance.now() - startTime) / 1000);
+                        let tokensPerSecond = (liveTime > 0 && liveTokens > 0)
+                            ? (liveTokens / liveTime).toFixed(2) : "…";
+                        let totalTokens = promptTokensEstimate + liveTokens;
+
+                        statsArea.innerHTML = `
+                            <span><strong>Time:</strong> ${liveTime.toFixed(2)}s</span>
+                            <span><strong>Tokens/Sec:</strong> ${tokensPerSecond}</span>
+                            <span><strong>Prompt Tokens:</strong> ${promptTokensEstimate} (est)</span>
+                            <span><strong>Completion Tokens:</strong> ${liveTokens} (est)</span>
+                            <span><strong>Total Tokens:</strong> ${totalTokens} (est)</span>
+                            <br><small>Live stats update – values estimated from streamed content.</small>
+                        `;
+                        statsArea.style.display = 'block';
                     }
                 }
             }
@@ -1551,10 +1682,24 @@ async function callVideoApi(provider, apiKey, baseUrl, model, prompt) {
             // OpenRouter might have video models available
             apiUrl = 'https://openrouter.ai/api/v1/videos/generations';
             headers = { 'Content-Type': 'application/json', 'Authorization': `Bearer ${apiKey}` };
-            body = { model: model, prompt: prompt, duration: duration };
-            if (aspectRatioEnabled) {
-                body.aspect_ratio = aspectRatio;
+
+             const getToggleStateOpenRouter = (paramId) => {
+                const toggle = document.querySelector(`.param-toggle[data-param-id="${paramId}"]`);
+                return toggle ? toggle.checked : true;
+            };
+
+            body = { model: model, prompt: prompt }; // Start with required params
+
+            // Include duration if toggled and has value
+            if (getToggleStateOpenRouter('video-duration') && duration) {
+                body.duration = duration;
             }
+
+             // Include aspect ratio if its parent toggle is enabled and a value is selected
+             const aspectRatioToggleOpenRouter = document.getElementById('video-aspect-ratio-enabled');
+             if (aspectRatioToggleOpenRouter && aspectRatioToggleOpenRouter.checked && aspectRatio) {
+                 body.aspect_ratio = aspectRatio;
+             }
             break;
         default:
             return displayError('Video generation is not supported for the selected provider. Try OpenAI Compatible or OpenRouter.');
@@ -1659,6 +1804,51 @@ function bindEventListeners() {
     qualitySelect.addEventListener('change', handleQualitySelectChange);
     videoAspectRatioEnabled.addEventListener('change', handleAspectRatioToggle);
 
+    // --- NEUE SWITCH EVENT LISTENER ---
+    // --- Neue Sichtbarkeits-Logik: Umschaltbare Parameter wie Streaming ---
+    function showOrHideParamGroup(groupId, checkboxEl) {
+        const group = document.getElementById(groupId);
+        if (!group || !checkboxEl) return;
+        group.style.display = checkboxEl.checked ? '' : 'none';
+    }
+
+    // Listener und Initialzustand für alle Param-Switches
+    if (enableSystemPromptCheckbox) {
+        enableSystemPromptCheckbox.addEventListener('change', () => {
+            showOrHideParamGroup('system-prompt-group', enableSystemPromptCheckbox);
+            saveGeneralSettings();
+        });
+        showOrHideParamGroup('system-prompt-group', enableSystemPromptCheckbox);
+    }
+    if (enableTemperatureCheckbox) {
+        enableTemperatureCheckbox.addEventListener('change', () => {
+            showOrHideParamGroup('temperature-group', enableTemperatureCheckbox);
+            saveGeneralSettings();
+        });
+        showOrHideParamGroup('temperature-group', enableTemperatureCheckbox);
+    }
+    if (enableTopPCheckbox) {
+        enableTopPCheckbox.addEventListener('change', () => {
+            showOrHideParamGroup('top-p-group', enableTopPCheckbox);
+            saveGeneralSettings();
+        });
+        showOrHideParamGroup('top-p-group', enableTopPCheckbox);
+    }
+    if (enableMaxTokensCheckbox) {
+        enableMaxTokensCheckbox.addEventListener('change', () => {
+            showOrHideParamGroup('max-tokens-group', enableMaxTokensCheckbox);
+            saveGeneralSettings();
+        });
+        showOrHideParamGroup('max-tokens-group', enableMaxTokensCheckbox);
+    }
+    if (enableInferenceEffortCheckbox) {
+        enableInferenceEffortCheckbox.addEventListener('change', () => {
+            showOrHideParamGroup('inference-effort-group', enableInferenceEffortCheckbox);
+            saveGeneralSettings();
+        });
+        showOrHideParamGroup('inference-effort-group', enableInferenceEffortCheckbox);
+    }
+
     uploadTextBtn.addEventListener('click', handleUploadText);
     temperatureInput.addEventListener('input', () => {
         temperatureValue.textContent = parseFloat(temperatureInput.value).toFixed(1);
@@ -1674,7 +1864,9 @@ function bindEventListeners() {
     const inputsToSave = [
         modelInput, promptInput, enableStreamingCheckbox, customQualityInput,
         imageWidthInput, imageHeightInput, voiceInput, videoDurationInput,
-        videoAspectRatioSelect, systemPromptInput, maxTokensInput
+        videoAspectRatioSelect, systemPromptInput, maxTokensInput, inferenceEffortInput,
+        // NEW: Checkbox toggles trigger save as well:
+        enableSystemPromptCheckbox, enableTemperatureCheckbox, enableTopPCheckbox, enableMaxTokensCheckbox, enableInferenceEffortCheckbox
     ];
     inputsToSave.forEach(input => {
         if (input) { // Ensure element exists before adding listener
@@ -1849,7 +2041,7 @@ async function handleAspectRatioToggle() {
 function handleUploadText() {
     const fileInput = document.createElement('input');
     fileInput.type = 'file';
-    fileInput.accept = '.txt';
+    fileInput.accept = '*/*'; // Accept all file types
     fileInput.onchange = e => {
         const file = e.target.files[0];
         if (file) {
@@ -1858,6 +2050,8 @@ function handleUploadText() {
                 promptInput.value = event.target.result;
                 saveGeneralSettings(); // Save the new prompt
             };
+            // Read as text, assuming it's a text-based file
+            // Need to consider how to handle binary files if required later.
             reader.readAsText(file);
         }
     };
