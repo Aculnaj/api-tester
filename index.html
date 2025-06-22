@@ -94,7 +94,10 @@
                         <input type="text" id="model-input" placeholder="e.g., gpt-4o, dall-e-3, claude-3-opus-20240229, tts-1, whisper-1">
                     </div>
                     <label for="prompt-input" id="prompt-label">Prompt / Image Description:</label>
-                    <button id="upload-text-btn" class="upload-btn" title="Upload a file for prompt">Upload File</button>
+                    <div class="prompt-upload-controls">
+                        <button id="upload-text-btn" class="upload-btn" title="Upload a file for prompt">Upload File</button>
+                        <div id="upload-preview-container" style="display: none;"></div>
+                    </div>
                     <textarea id="prompt-input" rows="4" placeholder="Enter text prompt or image description..."></textarea>
                 </fieldset>
             </details>

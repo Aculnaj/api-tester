@@ -881,3 +881,73 @@ input[type="number"]::-webkit-outer-spin-button {
     -webkit-appearance: inner-spin-button; /* Re-show spinners on Webkit */
     opacity: 1; /* Make sure they are visible */
 }
+
+/* Styles for prompt upload controls and preview */
+.prompt-upload-controls {
+    display: flex;
+    align-items: center; /* Vertically align button and preview items */
+    gap: 10px; /* Space between button and preview container */
+    margin-bottom: 8px; /* Space below this section, before the textarea */
+}
+
+#upload-preview-container {
+    display: flex; /* This will be set by JS, but good to have here for reference */
+    flex-wrap: wrap; /* Allow multiple previews to wrap */
+    gap: 8px; /* Space between individual file previews */
+    align-items: center; /* Align items within the preview container */
+}
+
+.file-preview-wrapper {
+    display: flex; /* Changed from inline-flex for consistency with parent */
+    align-items: center;
+    gap: 4px;
+    padding: 4px;
+    border: 1px solid var(--border-color);
+    border-radius: 4px;
+    background-color: var(--input-bg-color); /* Use input-bg-color for consistency */
+}
+
+.file-preview-thumbnail {
+    width: 32px;
+    height: 32px;
+    object-fit: cover;
+    border-radius: 3px;
+}
+
+.file-preview-icon {
+    font-size: 24px; /* Adjust for better visual balance with thumbnail */
+    line-height: 32px; /* Helps align with thumbnail height */
+    color: var(--text-color-muted);
+}
+
+.remove-file-btn {
+    border: none;
+    background: transparent;
+    cursor: pointer;
+    font-size: 18px; /* Slightly larger for easier clicking */
+    padding: 0 4px;
+    color: var(--text-color-muted);
+    line-height: 1; /* Ensure tight fit */
+}
+
+.remove-file-btn:hover {
+    color: var(--error-color); /* Use error color for remove action */
+}
+
+/* Dark mode adjustments for preview */
+body.dark-mode .file-preview-wrapper {
+    background-color: var(--input-bg-color); /* Consistent with other inputs */
+    border-color: var(--input-border-color);
+}
+
+body.dark-mode .file-preview-icon {
+    color: var(--text-color-muted);
+}
+
+body.dark-mode .remove-file-btn {
+    color: var(--text-color-muted);
+}
+
+body.dark-mode .remove-file-btn:hover {
+    color: var(--error-color);
+}
