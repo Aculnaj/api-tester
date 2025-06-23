@@ -62,6 +62,7 @@ const enableTopPCheckbox = document.getElementById('enable-top-p-checkbox');
 const maxTokensInput = document.getElementById('max-tokens-input');
 const enableMaxTokensCheckbox = document.getElementById('enable-max-tokens-checkbox');
 const uploadTextBtn = document.getElementById('upload-text-btn');
+const uploadPreviewContainer = document.getElementById('upload-preview-container');
 const inferenceEffortInput = document.getElementById('inference-effort-input');
 const enableInferenceEffortCheckbox = document.getElementById('enable-inference-effort-checkbox');
 
@@ -81,6 +82,71 @@ let mediaRecorder;
 let lastRequestPayload = null;
 let lastApiResponse = null;
 let microphonePermissionStatus = 'prompt'; // 'granted', 'denied', 'prompt'
+let uploadedFiles = []; // Holds an array of files to attach
+
+/**
+ * Renders a small preview or icon of the uploaded file, with a remove button.
+ */
+function renderUploadPreview() {
+    uploadPreviewContainer.innerHTML = ''; // Clear existing previews
+    if (uploadedFiles.length === 0) {
+        uploadPreviewContainer.style.display = 'none';
+        return;
+    }
+
+    uploadedFiles.forEach((file, index) => {
+    const previewWrapper = document.createElement('div');
+    previewWrapper.className = 'file-preview-wrapper';
+    previewWrapper.style.display = 'inline-flex';
+    previewWrapper.style.alignItems = 'center';
+    previewWrapper.style.gap = '4px';
+
+    // Thumbnail or icon
+    if (file.type.startsWith('image/')) {
+        const img = document.createElement('img');
+        img.src = URL.createObjectURL(file);
+        img.className = 'file-preview-thumbnail';
+        img.style.width = '32px';
+        img.style.height = '32px';
+        img.style.objectFit = 'cover';
+        previewWrapper.appendChild(img);
+    } else {
+        const icon = document.createElement('span');
+        icon.textContent = '📄';
+        icon.className = 'file-preview-icon';
+        icon.style.fontSize = '24px';
+        previewWrapper.appendChild(icon);
+    }
+
+    // Filename label
+    const label = document.createElement('span');
+    label.textContent = file.name;
+    label.style.fontSize = '12px';
+    previewWrapper.appendChild(label);
+
+    // Remove button
+    const removeBtn = document.createElement('button');
+    removeBtn.textContent = '×';
+    removeBtn.title = 'Remove file';
+    removeBtn.className = 'remove-file-btn';
+    removeBtn.style.border = 'none';
+    removeBtn.style.background = 'transparent';
+    removeBtn.style.cursor = 'pointer';
+    removeBtn.style.fontSize = '16px';
+    removeBtn.onclick = () => {
+        uploadedFiles.splice(index, 1); // Remove the file from the array by index
+        renderUploadPreview(); // Re-render the previews
+        // If you were saving uploadedFile to settings, you'd update settings here too
+    };
+    previewWrapper.appendChild(removeBtn);
+    uploadPreviewContainer.appendChild(previewWrapper);
+    }); // End of forEach
+
+    uploadPreviewContainer.style.display = 'flex'; // Use flex to display items in a row
+    uploadPreviewContainer.style.flexWrap = 'wrap'; // Allow items to wrap
+    uploadPreviewContainer.style.gap = '8px';      // Add some space between preview items
+}
+
 
 // --- STORAGE HELPERS ---
 // These functions handle getting and setting values in Electron store or localStorage.
@@ -450,7 +516,8 @@ function toggleGenerationOptions() {
 
     // Always show prompt input, but hide for STT
     promptInput.style.display = 'block';
-    uploadTextBtn.style.display = 'inline-block';
+    // Hide upload button by default; show only for text generation
+    uploadTextBtn.style.display = 'none';
 
 
     // Configure UI based on the selected generation type
@@ -458,6 +525,8 @@ function toggleGenerationOptions() {
         case 'text':
             textGenerationOptions.style.display = 'block';
             document.getElementById('prompt-label').textContent = 'Prompt:';
+            // Show upload button for text generation
+            uploadTextBtn.style.display = 'inline-block';
             break;
         case 'image':
             imageOptionsContainer.style.display = 'block';
@@ -807,15 +876,78 @@ async function callTextApi(provider, apiKey, baseUrl, model, prompt) {
             hideLoader();
             return displayError('Unknown provider selected for text generation.');
     }
+// Prepare request start time
+const startTime = performance.now(); // Record start time
+// Send request with optional file attachment
+let response;
+if (uploadedFiles.length > 0) {
+    console.log("[callTextApi] Files detected. Preparing FormData for upload...");
+    const formData = new FormData();
 
-    // Store payload before sending
+    // Append each file. Most servers expect multiple files under the same field name.
+    uploadedFiles.forEach((file, index) => {
+        formData.append('files', file, file.name); // Standard: 'files' or 'files[]'
+        console.log(`[callTextApi] Appended file to FormData: '${file.name}' as 'files'`);
+    });
+
+    // Append the original JSON body as a separate string field.
+    // The server will need to parse this field from JSON.
+    formData.append('request_json_payload', JSON.stringify(body));
+    console.log("[callTextApi] Appended stringified JSON body as 'request_json_payload':", JSON.stringify(body));
+
+    lastRequestPayload = `FormData: ${uploadedFiles.map(f => f.name).join(', ')} + JSON payload`;
+    payloadContainer.style.display = 'block';
+    
+    const fetchHeaders = { ...headers };
+    // CRITICAL: For FormData, DO NOT set Content-Type. The browser does this.
+    delete fetchHeaders['Content-Type'];
+    console.log("[callTextApi] Attempting to send FormData request to:", apiUrl);
+    console.log("[callTextApi] Headers for FormData (Content-Type removed):", JSON.stringify(fetchHeaders));
+
+    try {
+        response = await fetch(apiUrl, {
+            method: 'POST',
+            headers: fetchHeaders,
+            body: formData
+        });
+        console.log("[callTextApi] FormData request fetch completed. Response status:", response.status);
+    } catch (fetchError) {
+        console.error("[callTextApi] Fetch error during FormData request:", fetchError);
+        displayError(`Network error during file upload: ${fetchError.message}`);
+        hideLoader();
+        // Clear files here as the request failed before server processing
+        uploadedFiles = [];
+        renderUploadPreview();
+        return; // Exit if fetch itself failed
+    }
+    // Clear files and update preview after the request attempt, regardless of server success/failure for now.
+    // This could be moved into a .finally of the server response processing if files should be kept on server error.
+    uploadedFiles = [];
+    renderUploadPreview();
+
+} else {
+    // No files uploaded, send as plain JSON
+    console.log("[callTextApi] No files to upload. Sending plain JSON request.");
     lastRequestPayload = JSON.stringify(body, null, 2);
     payloadContainer.style.display = 'block';
-
-    // Make the API call
-    const startTime = performance.now(); // Record start time
     try {
-        const response = await fetch(apiUrl, { method: 'POST', headers: headers, body: JSON.stringify(body) });
+        response = await fetch(apiUrl, {
+            method: 'POST',
+            headers: headers, // Original headers with 'Content-Type': 'application/json'
+            body: JSON.stringify(body)
+        });
+        console.log("[callTextApi] Plain JSON request fetch completed. Response status:", response.status);
+    } catch (fetchError) {
+        console.error("[callTextApi] Fetch error during JSON request:", fetchError);
+        displayError(`Network error: ${fetchError.message}`);
+        hideLoader();
+        return; // Exit if fetch itself failed
+    }
+}
+
+// This outer try-catch handles processing the response (JSON parsing, error extraction from body)
+// It assumes 'response' variable is set from one of the branches above.
+try {
         const endTime = performance.now(); // Record end time
         const durationInSeconds = (endTime - startTime) / 1000;
 
@@ -2043,17 +2175,12 @@ function handleUploadText() {
     fileInput.type = 'file';
     fileInput.accept = '*/*'; // Accept all file types
     fileInput.onchange = e => {
-        const file = e.target.files[0];
-        if (file) {
-            const reader = new FileReader();
-            reader.onload = event => {
-                promptInput.value = event.target.result;
-                saveGeneralSettings(); // Save the new prompt
-            };
-            // Read as text, assuming it's a text-based file
-            // Need to consider how to handle binary files if required later.
-            reader.readAsText(file);
+        const newFile = e.target.files[0];
+        if (newFile) {
+            uploadedFiles.push(newFile); // Add to the array
+            renderUploadPreview(); // Update the UI to show all previews
         }
+        // saveGeneralSettings(); // Consider if persisting multiple files is needed
     };
     fileInput.click();
 }
@@ -2079,6 +2206,7 @@ async function initializeApp() {
     await checkMicrophonePermission();
     updateMicrophoneUI();
     bindEventListeners();
+    renderUploadPreview();
 }
 
 // --- APP START ---
