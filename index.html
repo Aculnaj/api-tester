@@ -131,8 +131,21 @@
                             </label>
                         </div>
                         <div class="form-group slider-group" id="temperature-group">
-                            <label for="temperature-input">Temperature: <span id="temperature-value">1.0</span></label>
+                            <label for="temperature-input">Temperature: <span id="temperature-value" class="editable-value">1.0</span></label>
                             <input type="range" id="temperature-input" min="0" max="2" step="0.1" value="1">
+                        </div>
+                        <div class="enable-param-container">
+                            <label class="enable-param-title" for="enable-top-k-checkbox">
+                                <span>Top K</span>
+                                <span class="switch">
+                                    <input type="checkbox" id="enable-top-k-checkbox">
+                                    <span class="slider"></span>
+                                </span>
+                            </label>
+                        </div>
+                        <div class="form-group slider-group" id="top-k-group">
+                            <label for="top-k-input">Top K: <span id="top-k-value" class="editable-value">50</span></label>
+                            <input type="range" id="top-k-input" min="0" max="1000" step="1" value="50">
                         </div>
                         <div class="enable-param-container">
                             <label class="enable-param-title" for="enable-top-p-checkbox">
@@ -144,8 +157,21 @@
                             </label>
                         </div>
                         <div class="form-group slider-group" id="top-p-group">
-                            <label for="top-p-input">Top P: <span id="top-p-value">1.0</span></label>
+                            <label for="top-p-input">Top P: <span id="top-p-value" class="editable-value">1.0</span></label>
                             <input type="range" id="top-p-input" min="0" max="1" step="0.01" value="1">
+                        </div>
+                        <div class="enable-param-container">
+                            <label class="enable-param-title" for="enable-min-p-checkbox">
+                                <span>Min P</span>
+                                <span class="switch">
+                                    <input type="checkbox" id="enable-min-p-checkbox">
+                                    <span class="slider"></span>
+                                </span>
+                            </label>
+                        </div>
+                        <div class="form-group slider-group" id="min-p-group">
+                            <label for="min-p-input">Min P: <span id="min-p-value" class="editable-value">0.0</span></label>
+                            <input type="range" id="min-p-input" min="0" max="1" step="0.01" value="0">
                         </div>
                         <div class="enable-param-container">
                             <label class="enable-param-title" for="enable-max-tokens-checkbox">
@@ -162,7 +188,7 @@
                         </div>
                         <div class="enable-param-container">
                             <label class="enable-param-title" for="enable-inference-effort-checkbox">
-                                <span>Resoning Effort</span>
+                                <span>Reasoning Effort</span>
                                 <span class="switch">
                                     <input type="checkbox" id="enable-inference-effort-checkbox">
                                     <span class="slider"></span>
@@ -170,7 +196,21 @@
                             </label>
                         </div>
                         <div class="form-group" id="inference-effort-group">
-                            <input type="text" id="inference-effort-input" placeholder="e.g., low, medium, high">
+                            <label for="inference-effort-select">Reasoning Effort:</label>
+                            <select id="inference-effort-select">
+                                <option value="high">High</option>
+                                <option value="medium" selected>Medium</option>
+                                <option value="low">Low</option>
+                                <option value="custom">Custom</option>
+                            </select>
+                            <input type="text" id="inference-effort-custom-input" placeholder="Enter custom effort value" style="display: none;">
+                        </div>
+                        <div class="custom-params-container">
+                            <div class="custom-params-header">
+                                <label>Custom Parameters</label>
+                                <button type="button" id="add-custom-param-btn" class="add-param-btn" title="Add custom parameter">+</button>
+                            </div>
+                            <div id="custom-params-list"></div>
                         </div>
                         <div class="enable-streaming-container">
                             <label class="enable-streaming-title" for="enable-streaming-checkbox">
@@ -218,11 +258,22 @@
 
                     <!-- Audio Options -->
                     <div id="audio-options-container" style="display: none;">
-                        <label for="audio-type-select">Audio Type:</label>
-                        <select id="audio-type-select">
-                            <option value="tts" selected>Text-to-Speech (TTS)</option>
-                            <option value="stt">Speech-to-Text (STT)</option>
-                        </select>
+                        <div class="enable-param-container">
+                            <label class="enable-param-title" for="enable-audio-type-checkbox">
+                                <span>Audio Type</span>
+                                <span class="switch">
+                                    <input type="checkbox" id="enable-audio-type-checkbox" checked>
+                                    <span class="slider"></span>
+                                </span>
+                            </label>
+                        </div>
+                        <div class="form-group" id="audio-type-group">
+                            <label for="audio-type-select">Audio Type:</label>
+                            <select id="audio-type-select">
+                                <option value="tts" selected>Text-to-Speech (TTS)</option>
+                                <option value="stt">Speech-to-Text (STT)</option>
+                            </select>
+                        </div>
                         <div id="stt-input-container" style="display: none;">
                             <label for="audio-file-input">Audio File:</label>
                             <input type="file" id="audio-file-input" accept="audio/*">

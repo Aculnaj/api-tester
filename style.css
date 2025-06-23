@@ -361,7 +361,38 @@ legend {
     margin-bottom: 0;
 }
 
-/* Enhanced statistics grid layout */
+/* Enhanced statistics list layout */
+.stats-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-top: 10px;
+}
+
+.stats-list .stat-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 8px 12px;
+    background-color: rgba(0, 123, 255, 0.05);
+    border-radius: 6px;
+    border-left: 3px solid var(--button-bg-color);
+    transition: background-color 0.2s ease;
+}
+
+.stats-list .stat-item:hover {
+    background-color: rgba(0, 123, 255, 0.08);
+}
+
+body.dark-mode .stats-list .stat-item {
+    background-color: rgba(154, 160, 252, 0.1);
+}
+
+body.dark-mode .stats-list .stat-item:hover {
+    background-color: rgba(154, 160, 252, 0.15);
+}
+
+/* Legacy grid layout for backward compatibility */
 .stats-grid {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
@@ -442,6 +473,129 @@ body.dark-mode .stat-row {
     font-size: 1.2em;
     font-weight: 700;
     color: var(--button-bg-color);
+}
+
+/* --- EDITABLE SLIDER VALUES --- */
+.editable-value {
+    cursor: pointer;
+    padding: 2px 4px;
+    border-radius: 3px;
+    transition: background-color 0.2s ease;
+    user-select: none;
+}
+
+.editable-value:hover {
+    background-color: var(--hover-bg-color);
+}
+
+.editable-input {
+    background: var(--input-bg-color);
+    border: 1px solid var(--button-bg-color);
+    border-radius: 3px;
+    padding: 2px 4px;
+    font-size: inherit;
+    font-weight: inherit;
+    color: var(--input-text-color);
+    width: 60px;
+    text-align: center;
+}
+
+.editable-input:focus {
+    outline: none;
+    box-shadow: 0 0 0 2px var(--button-bg-color);
+}
+
+/* --- CUSTOM PARAMETERS --- */
+.custom-params-container {
+    margin-top: 20px;
+    padding: 15px;
+    border: 1px dashed var(--border-color);
+    border-radius: 8px;
+    background-color: rgba(0, 123, 255, 0.02);
+}
+
+body.dark-mode .custom-params-container {
+    background-color: rgba(154, 160, 252, 0.05);
+}
+
+.custom-params-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 15px;
+}
+
+.custom-params-header label {
+    margin: 0;
+    font-weight: 600;
+    color: var(--text-color-muted);
+}
+
+.add-param-btn {
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    background-color: var(--button-bg-color);
+    color: var(--button-text-color);
+    border: none;
+    font-size: 18px;
+    font-weight: bold;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s ease;
+    margin: 0;
+}
+
+.add-param-btn:hover {
+    background-color: var(--button-hover-bg-color);
+    transform: scale(1.1);
+}
+
+.custom-param-item {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    margin-bottom: 10px;
+    padding: 10px;
+    background-color: var(--input-bg-color);
+    border: 1px solid var(--input-border-color);
+    border-radius: 6px;
+}
+
+.custom-param-item input {
+    margin: 0;
+    flex: 1;
+}
+
+.custom-param-item .param-name-input {
+    max-width: 150px;
+}
+
+.custom-param-item .param-value-input {
+    max-width: 200px;
+}
+
+.remove-param-btn {
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    background-color: var(--error-color);
+    color: white;
+    border: none;
+    font-size: 14px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s ease;
+    margin: 0;
+}
+
+.remove-param-btn:hover {
+    background-color: #dc2626;
+    transform: scale(1.1);
 }
 
 /* --- GENERATION TYPE SELECTOR (Segmented Radio Buttons) --- */
