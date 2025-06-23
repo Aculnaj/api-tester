@@ -30,6 +30,7 @@ const downloadImageBtn = document.getElementById('download-image-btn');
 // Audio Options
 const audioOptionsContainer = document.getElementById('audio-options-container');
 const audioTypeSelect = document.getElementById('audio-type-select');
+const enableAudioTypeCheckbox = document.getElementById('enable-audio-type-checkbox');
 const sttInputContainer = document.getElementById('stt-input-container');
 const audioFileInput = document.getElementById('audio-file-input');
 const voiceOptionsContainer = document.getElementById('voice-options-container');
@@ -56,14 +57,24 @@ const enableSystemPromptCheckbox = document.getElementById('enable-system-prompt
 const temperatureInput = document.getElementById('temperature-input');
 const temperatureValue = document.getElementById('temperature-value');
 const enableTemperatureCheckbox = document.getElementById('enable-temperature-checkbox');
+const topKInput = document.getElementById('top-k-input');
+const topKValue = document.getElementById('top-k-value');
+const enableTopKCheckbox = document.getElementById('enable-top-k-checkbox');
 const topPInput = document.getElementById('top-p-input');
 const topPValue = document.getElementById('top-p-value');
 const enableTopPCheckbox = document.getElementById('enable-top-p-checkbox');
+const minPInput = document.getElementById('min-p-input');
+const minPValue = document.getElementById('min-p-value');
+const enableMinPCheckbox = document.getElementById('enable-min-p-checkbox');
 const maxTokensInput = document.getElementById('max-tokens-input');
 const enableMaxTokensCheckbox = document.getElementById('enable-max-tokens-checkbox');
 const uploadTextBtn = document.getElementById('upload-text-btn');
-const inferenceEffortInput = document.getElementById('inference-effort-input');
+const uploadPreviewContainer = document.getElementById('upload-preview-container');
+const inferenceEffortSelect = document.getElementById('inference-effort-select');
+const inferenceEffortCustomInput = document.getElementById('inference-effort-custom-input');
 const enableInferenceEffortCheckbox = document.getElementById('enable-inference-effort-checkbox');
+const addCustomParamBtn = document.getElementById('add-custom-param-btn');
+const customParamsList = document.getElementById('custom-params-list');
 
 // Payload/Response Display
 const payloadContainer = document.getElementById('payload-container');
@@ -81,6 +92,89 @@ let mediaRecorder;
 let lastRequestPayload = null;
 let lastApiResponse = null;
 let microphonePermissionStatus = 'prompt'; // 'granted', 'denied', 'prompt'
+let uploadedFiles = []; // Holds an array of files to attach
+
+// Request cancellation and UI state management
+let currentAbortController = null;
+let isRequestActive = false;
+let originalSendButtonText = 'Generate';
+
+// Statistics tracking
+let sessionStats = {
+    totalRequests: 0,
+    successfulRequests: 0,
+    failedRequests: 0,
+    totalTokensUsed: 0,
+    averageResponseTime: 0,
+    requestHistory: []
+};
+
+// Custom parameters tracking
+let customParameters = [];
+
+/**
+ * Renders a small preview or icon of the uploaded file, with a remove button.
+ */
+function renderUploadPreview() {
+    uploadPreviewContainer.innerHTML = ''; // Clear existing previews
+    if (uploadedFiles.length === 0) {
+        uploadPreviewContainer.style.display = 'none';
+        return;
+    }
+
+    uploadedFiles.forEach((file, index) => {
+    const previewWrapper = document.createElement('div');
+    previewWrapper.className = 'file-preview-wrapper';
+    previewWrapper.style.display = 'inline-flex';
+    previewWrapper.style.alignItems = 'center';
+    previewWrapper.style.gap = '4px';
+
+    // Thumbnail or icon
+    if (file.type.startsWith('image/')) {
+        const img = document.createElement('img');
+        img.src = URL.createObjectURL(file);
+        img.className = 'file-preview-thumbnail';
+        img.style.width = '32px';
+        img.style.height = '32px';
+        img.style.objectFit = 'cover';
+        previewWrapper.appendChild(img);
+    } else {
+        const icon = document.createElement('span');
+        icon.textContent = '📄';
+        icon.className = 'file-preview-icon';
+        icon.style.fontSize = '24px';
+        previewWrapper.appendChild(icon);
+    }
+
+    // Filename label
+    const label = document.createElement('span');
+    label.textContent = file.name;
+    label.style.fontSize = '12px';
+    previewWrapper.appendChild(label);
+
+    // Remove button
+    const removeBtn = document.createElement('button');
+    removeBtn.textContent = '×';
+    removeBtn.title = 'Remove file';
+    removeBtn.className = 'remove-file-btn';
+    removeBtn.style.border = 'none';
+    removeBtn.style.background = 'transparent';
+    removeBtn.style.cursor = 'pointer';
+    removeBtn.style.fontSize = '16px';
+    removeBtn.onclick = () => {
+        uploadedFiles.splice(index, 1); // Remove the file from the array by index
+        renderUploadPreview(); // Re-render the previews
+        // If you were saving uploadedFile to settings, you'd update settings here too
+    };
+    previewWrapper.appendChild(removeBtn);
+    uploadPreviewContainer.appendChild(previewWrapper);
+    }); // End of forEach
+
+    uploadPreviewContainer.style.display = 'flex'; // Use flex to display items in a row
+    uploadPreviewContainer.style.flexWrap = 'wrap'; // Allow items to wrap
+    uploadPreviewContainer.style.gap = '8px';      // Add some space between preview items
+}
+
 
 // --- STORAGE HELPERS ---
 // These functions handle getting and setting values in Electron store or localStorage.
@@ -152,15 +246,21 @@ const LAST_STREAMING_ENABLED_KEY = 'lastStreamingEnabled';
 
 const LAST_ENABLE_SYSTEM_PROMPT_KEY = 'lastEnableSystemPrompt';
 const LAST_ENABLE_TEMPERATURE_KEY = 'lastEnableTemperature';
+const LAST_ENABLE_TOP_K_KEY = 'lastEnableTopK';
 const LAST_ENABLE_TOP_P_KEY = 'lastEnableTopP';
+const LAST_ENABLE_MIN_P_KEY = 'lastEnableMinP';
 const LAST_ENABLE_MAX_TOKENS_KEY = 'lastEnableMaxTokens';
 const LAST_ENABLE_INFERENCE_EFFORT_KEY = 'lastEnableInferenceEffort';
+const LAST_ENABLE_AUDIO_TYPE_KEY = 'lastEnableAudioType';
 
 const LAST_SYSTEM_PROMPT_KEY = 'lastSystemPrompt';
 const LAST_TEMPERATURE_KEY = 'lastTemperature';
+const LAST_TOP_K_KEY = 'lastTopK';
 const LAST_TOP_P_KEY = 'lastTopP';
+const LAST_MIN_P_KEY = 'lastMinP';
 const LAST_MAX_TOKENS_KEY = 'lastMaxTokens';
 const LAST_INFERENCE_EFFORT_KEY = 'lastInferenceEffort';
+const LAST_CUSTOM_PARAMS_KEY = 'lastCustomParams';
 // Loads API credentials for the given provider from storage.
 async function loadProviderCredentials(provider) {
     if (!provider) return;
@@ -256,19 +356,31 @@ async function loadGeneralSettings() {
     }
     if (enableTemperatureCheckbox) {
         const en = await getStoredValue(LAST_ENABLE_TEMPERATURE_KEY);
-        enableTemperatureCheckbox.checked = typeof en === "boolean" ? en : true;
+        enableTemperatureCheckbox.checked = typeof en === "boolean" ? en : false;
+    }
+    if (enableTopKCheckbox) {
+        const en = await getStoredValue(LAST_ENABLE_TOP_K_KEY);
+        enableTopKCheckbox.checked = typeof en === "boolean" ? en : false;
     }
     if (enableTopPCheckbox) {
         const en = await getStoredValue(LAST_ENABLE_TOP_P_KEY);
-        enableTopPCheckbox.checked = typeof en === "boolean" ? en : true;
+        enableTopPCheckbox.checked = typeof en === "boolean" ? en : false;
+    }
+    if (enableMinPCheckbox) {
+        const en = await getStoredValue(LAST_ENABLE_MIN_P_KEY);
+        enableMinPCheckbox.checked = typeof en === "boolean" ? en : false;
     }
     if (enableMaxTokensCheckbox) {
         const en = await getStoredValue(LAST_ENABLE_MAX_TOKENS_KEY);
-        enableMaxTokensCheckbox.checked = typeof en === "boolean" ? en : true;
+        enableMaxTokensCheckbox.checked = typeof en === "boolean" ? en : false;
     }
     if (enableInferenceEffortCheckbox) {
         const en = await getStoredValue(LAST_ENABLE_INFERENCE_EFFORT_KEY);
-        enableInferenceEffortCheckbox.checked = typeof en === "boolean" ? en : true;
+        enableInferenceEffortCheckbox.checked = typeof en === "boolean" ? en : false;
+    }
+    if (enableAudioTypeCheckbox) {
+        const en = await getStoredValue(LAST_ENABLE_AUDIO_TYPE_KEY);
+        enableAudioTypeCheckbox.checked = typeof en === "boolean" ? en : true;
     }
 
     // Load text generation settings
@@ -276,11 +388,31 @@ async function loadGeneralSettings() {
     const lastTemp = await getStoredValue(LAST_TEMPERATURE_KEY);
     temperatureInput.value = lastTemp !== undefined ? lastTemp : 1;
     temperatureValue.textContent = parseFloat(temperatureInput.value).toFixed(1);
+
+    const lastTopK = await getStoredValue(LAST_TOP_K_KEY);
+    topKInput.value = lastTopK !== undefined ? lastTopK : 50;
+    topKValue.textContent = parseInt(topKInput.value);
+
     const lastTopP = await getStoredValue(LAST_TOP_P_KEY);
     topPInput.value = lastTopP !== undefined ? lastTopP : 1;
     topPValue.textContent = parseFloat(topPInput.value).toFixed(2);
+
+    const lastMinP = await getStoredValue(LAST_MIN_P_KEY);
+    minPInput.value = lastMinP !== undefined ? lastMinP : 0;
+    minPValue.textContent = parseFloat(minPInput.value).toFixed(2);
+
     maxTokensInput.value = await getStoredValue(LAST_MAX_TOKENS_KEY) || '';
-    inferenceEffortInput.value = await getStoredValue(LAST_INFERENCE_EFFORT_KEY) || '';
+
+    // Load reasoning effort settings
+    const lastInferenceEffort = await getStoredValue(LAST_INFERENCE_EFFORT_KEY) || 'medium';
+    if (['high', 'medium', 'low'].includes(lastInferenceEffort)) {
+        inferenceEffortSelect.value = lastInferenceEffort;
+        inferenceEffortCustomInput.style.display = 'none';
+    } else {
+        inferenceEffortSelect.value = 'custom';
+        inferenceEffortCustomInput.value = lastInferenceEffort;
+        inferenceEffortCustomInput.style.display = 'block';
+    }
 
     // NEW: Enable/disable input fields
     if (enableSystemPromptCheckbox) systemPromptInput.disabled = !enableSystemPromptCheckbox.checked;
@@ -316,9 +448,12 @@ async function saveGeneralSettings() {
     // Save new param enable toggles
     if (enableSystemPromptCheckbox) await setStoredValue(LAST_ENABLE_SYSTEM_PROMPT_KEY, enableSystemPromptCheckbox.checked);
     if (enableTemperatureCheckbox) await setStoredValue(LAST_ENABLE_TEMPERATURE_KEY, enableTemperatureCheckbox.checked);
+    if (enableTopKCheckbox) await setStoredValue(LAST_ENABLE_TOP_K_KEY, enableTopKCheckbox.checked);
     if (enableTopPCheckbox) await setStoredValue(LAST_ENABLE_TOP_P_KEY, enableTopPCheckbox.checked);
+    if (enableMinPCheckbox) await setStoredValue(LAST_ENABLE_MIN_P_KEY, enableMinPCheckbox.checked);
     if (enableMaxTokensCheckbox) await setStoredValue(LAST_ENABLE_MAX_TOKENS_KEY, enableMaxTokensCheckbox.checked);
     if (enableInferenceEffortCheckbox) await setStoredValue(LAST_ENABLE_INFERENCE_EFFORT_KEY, enableInferenceEffortCheckbox.checked);
+    if (enableAudioTypeCheckbox) await setStoredValue(LAST_ENABLE_AUDIO_TYPE_KEY, enableAudioTypeCheckbox.checked);
 
     // Save video settings
     if (videoDurationInput) await setStoredValue(LAST_VIDEO_DURATION_KEY, videoDurationInput.value);
@@ -327,10 +462,15 @@ async function saveGeneralSettings() {
 
     // Save text generation settings
     await setStoredValue(LAST_SYSTEM_PROMPT_KEY, systemPromptInput.value);
-    await setStoredValue(LAST_TEMPERATURE_KEY, temperatureInput.value);
-    await setStoredValue(LAST_TOP_P_KEY, topPInput.value);
+    await setStoredValue(LAST_TEMPERATURE_KEY, parseFloat(temperatureInput.value));
+    await setStoredValue(LAST_TOP_K_KEY, parseInt(topKInput.value));
+    await setStoredValue(LAST_TOP_P_KEY, parseFloat(topPInput.value));
+    await setStoredValue(LAST_MIN_P_KEY, parseFloat(minPInput.value));
     await setStoredValue(LAST_MAX_TOKENS_KEY, maxTokensInput.value);
-    await setStoredValue(LAST_INFERENCE_EFFORT_KEY, inferenceEffortInput.value);
+
+    // Save reasoning effort setting
+    const reasoningEffortValue = getReasoningEffortValue();
+    await setStoredValue(LAST_INFERENCE_EFFORT_KEY, reasoningEffortValue || 'medium');
 }
 
 // --- THEME MANAGEMENT ---
@@ -450,7 +590,8 @@ function toggleGenerationOptions() {
 
     // Always show prompt input, but hide for STT
     promptInput.style.display = 'block';
-    uploadTextBtn.style.display = 'inline-block';
+    // Hide upload button by default; show only for text generation
+    uploadTextBtn.style.display = 'none';
 
 
     // Configure UI based on the selected generation type
@@ -458,6 +599,8 @@ function toggleGenerationOptions() {
         case 'text':
             textGenerationOptions.style.display = 'block';
             document.getElementById('prompt-label').textContent = 'Prompt:';
+            // Show upload button for text generation
+            uploadTextBtn.style.display = 'inline-block';
             break;
         case 'image':
             imageOptionsContainer.style.display = 'block';
@@ -472,17 +615,17 @@ function toggleGenerationOptions() {
             break;
         case 'audio':
             audioOptionsContainer.style.display = 'block';
-            const audioTypeSelectEl = document.getElementById('audio-type-select');
-            const audioTypeToggle = document.querySelector('.param-toggle[data-param-id="audio-type-select"]');
-            const audioType = audioTypeSelectEl ? audioTypeSelectEl.value : 'tts';
+            const audioType = audioTypeSelect ? audioTypeSelect.value : 'tts';
 
             // Only show audio sub-options if the audio type select is enabled and its toggle is checked
-            if (audioTypeSelectEl && audioTypeToggle && audioTypeToggle.checked) {
+            if (enableAudioTypeCheckbox && enableAudioTypeCheckbox.checked) {
                 if (audioType === 'tts') {
                     voiceOptionsContainer.style.display = 'block';
                     sttInputContainer.style.display = 'none';
                     recorderControls.style.display = 'none';
                     document.getElementById('prompt-label').textContent = 'Text to Speak:';
+                    promptInput.style.display = 'block';
+                    uploadTextBtn.style.display = 'none';
                 } else { // STT
                     voiceOptionsContainer.style.display = 'none';
                     sttInputContainer.style.display = 'block';
@@ -499,6 +642,7 @@ function toggleGenerationOptions() {
                 // Restore prompt input visibility and Upload File button for other types if audio section is off
                  promptInput.style.display = 'block';
                  uploadTextBtn.style.display = 'inline-block'; // Re-show the upload button
+                 document.getElementById('prompt-label').textContent = 'Prompt:';
             }
             break;
         case 'video':
@@ -677,12 +821,498 @@ function clearOutput() {
 
 // --- LOADER FUNCTIONS ---
 // Functions to show and hide the loading indicator.
-function showLoader() {
-    if (loadingIndicator) loadingIndicator.style.display = 'flex';
+function showLoader(message = 'Loading...') {
+    if (loadingIndicator) {
+        loadingIndicator.style.display = 'flex';
+        const loadingText = loadingIndicator.querySelector('p');
+        if (loadingText) loadingText.textContent = message;
+    }
+
+    // Show progress container
+    const progressContainer = document.getElementById('progress-container');
+    if (progressContainer) {
+        progressContainer.style.display = 'block';
+        const progressText = document.getElementById('progress-text');
+        if (progressText) progressText.textContent = message;
+    }
 }
 
 function hideLoader() {
     if (loadingIndicator) loadingIndicator.style.display = 'none';
+
+    // Hide progress container
+    const progressContainer = document.getElementById('progress-container');
+    if (progressContainer) {
+        progressContainer.style.display = 'none';
+    }
+}
+
+function updateProgress(percentage, message) {
+    const progressBar = document.querySelector('.progress-bar');
+    const progressText = document.getElementById('progress-text');
+
+    if (progressBar) {
+        progressBar.style.width = `${Math.min(100, Math.max(0, percentage))}%`;
+    }
+
+    if (progressText && message) {
+        progressText.textContent = message;
+    }
+}
+
+// --- REQUEST CANCELLATION FUNCTIONS ---
+// Functions to handle request cancellation and UI state management.
+
+function startRequest() {
+    isRequestActive = true;
+    currentAbortController = new AbortController();
+
+    // Update send button to show cancel option
+    sendButton.textContent = 'Cancel Request';
+    sendButton.classList.add('cancel-mode');
+    sendButton.style.backgroundColor = 'var(--error-color)';
+
+    // Update session stats
+    sessionStats.totalRequests++;
+}
+
+function endRequest(success = true) {
+    isRequestActive = false;
+    currentAbortController = null;
+
+    // Reset send button
+    sendButton.textContent = originalSendButtonText;
+    sendButton.classList.remove('cancel-mode');
+    sendButton.style.backgroundColor = '';
+
+    // Update session stats
+    if (success) {
+        sessionStats.successfulRequests++;
+    } else {
+        sessionStats.failedRequests++;
+    }
+}
+
+function cancelCurrentRequest() {
+    if (currentAbortController && isRequestActive) {
+        currentAbortController.abort();
+        endRequest(false);
+        hideLoader();
+        displayError('Request was cancelled by user.');
+
+        // Add to request history
+        sessionStats.requestHistory.push({
+            timestamp: new Date().toISOString(),
+            status: 'cancelled',
+            duration: 0
+        });
+
+        updateSessionStatsDisplay();
+    }
+}
+
+// --- COPY TO CLIPBOARD FUNCTIONS ---
+// Functions to handle copying response text to clipboard.
+
+async function copyToClipboard(text) {
+    try {
+        // Try modern clipboard API first
+        if (navigator.clipboard && window.isSecureContext) {
+            await navigator.clipboard.writeText(text);
+            return true;
+        } else {
+            // Fallback for older browsers
+            return copyToClipboardFallback(text);
+        }
+    } catch (error) {
+        console.error('Clipboard copy failed:', error);
+        return copyToClipboardFallback(text);
+    }
+}
+
+function copyToClipboardFallback(text) {
+    try {
+        const textArea = document.createElement('textarea');
+        textArea.value = text;
+        textArea.style.position = 'fixed';
+        textArea.style.left = '-999999px';
+        textArea.style.top = '-999999px';
+        document.body.appendChild(textArea);
+        textArea.focus();
+        textArea.select();
+
+        const successful = document.execCommand('copy');
+        document.body.removeChild(textArea);
+        return successful;
+    } catch (error) {
+        console.error('Fallback clipboard copy failed:', error);
+        return false;
+    }
+}
+
+function showCopyButton(responseText) {
+    // Remove existing copy button if present
+    const existingCopyBtn = document.getElementById('copy-response-btn');
+    if (existingCopyBtn) {
+        existingCopyBtn.remove();
+    }
+
+    // Create copy button
+    const copyBtn = document.createElement('button');
+    copyBtn.id = 'copy-response-btn';
+    copyBtn.className = 'copy-btn';
+    copyBtn.textContent = 'Copy Response';
+    copyBtn.title = 'Copy response to clipboard';
+
+    copyBtn.addEventListener('click', async () => {
+        const success = await copyToClipboard(responseText);
+
+        if (success) {
+            // Show success feedback
+            const originalText = copyBtn.textContent;
+            copyBtn.textContent = 'Copied!';
+            copyBtn.style.backgroundColor = 'var(--success-color)';
+
+            setTimeout(() => {
+                copyBtn.textContent = originalText;
+                copyBtn.style.backgroundColor = '';
+            }, 2000);
+        } else {
+            // Show error feedback
+            const originalText = copyBtn.textContent;
+            copyBtn.textContent = 'Copy Failed';
+            copyBtn.style.backgroundColor = 'var(--error-color)';
+
+            setTimeout(() => {
+                copyBtn.textContent = originalText;
+                copyBtn.style.backgroundColor = '';
+            }, 2000);
+        }
+    });
+
+    // Insert copy button after the output text
+    outputText.parentNode.insertBefore(copyBtn, outputText.nextSibling);
+}
+
+// --- ENHANCED STATISTICS FUNCTIONS ---
+// Functions to track and display comprehensive statistics.
+
+function updateSessionStatsDisplay() {
+    const sessionStatsContainer = document.getElementById('session-stats-container');
+    if (!sessionStatsContainer) return;
+
+    const successRate = sessionStats.totalRequests > 0
+        ? ((sessionStats.successfulRequests / sessionStats.totalRequests) * 100).toFixed(1)
+        : 0;
+
+    sessionStatsContainer.innerHTML = `
+        <div class="session-stats-grid">
+            <div class="stat-item">
+                <span class="stat-label">Total Requests:</span>
+                <span class="stat-value">${sessionStats.totalRequests}</span>
+            </div>
+            <div class="stat-item">
+                <span class="stat-label">Success Rate:</span>
+                <span class="stat-value">${successRate}%</span>
+            </div>
+            <div class="stat-item">
+                <span class="stat-label">Avg Response Time:</span>
+                <span class="stat-value">${sessionStats.averageResponseTime.toFixed(2)}s</span>
+            </div>
+            <div class="stat-item">
+                <span class="stat-label">Total Tokens:</span>
+                <span class="stat-value">${sessionStats.totalTokensUsed}</span>
+            </div>
+        </div>
+    `;
+}
+
+function addToRequestHistory(requestData) {
+    sessionStats.requestHistory.push({
+        timestamp: new Date().toISOString(),
+        ...requestData
+    });
+
+    // Keep only last 50 requests to prevent memory issues
+    if (sessionStats.requestHistory.length > 50) {
+        sessionStats.requestHistory = sessionStats.requestHistory.slice(-50);
+    }
+
+    // Update average response time
+    const successfulRequests = sessionStats.requestHistory.filter(req => req.status === 'success');
+    if (successfulRequests.length > 0) {
+        const totalTime = successfulRequests.reduce((sum, req) => sum + (req.duration || 0), 0);
+        sessionStats.averageResponseTime = totalTime / successfulRequests.length;
+    }
+}
+
+function displayEnhancedStats(requestData) {
+    const {
+        duration,
+        responseSize,
+        statusCode,
+        statusText,
+        tokenCount,
+        promptTokens,
+        completionTokens,
+        model,
+        provider,
+        generationType
+    } = requestData;
+
+    // Calculate tokens per second
+    const durationInSeconds = parseFloat(duration) / 1000;
+    const tokensPerSecond = (completionTokens && durationInSeconds > 0)
+        ? (completionTokens / durationInSeconds).toFixed(2)
+        : 'N/A';
+
+    // Build statistics in the specified order
+    let statsHtml = `
+        <div class="stats-list">
+            <div class="stat-item">
+                <span class="stat-label">Time:</span>
+                <span class="stat-value">${durationInSeconds.toFixed(2)}s (${duration}ms)</span>
+            </div>
+            <div class="stat-item">
+                <span class="stat-label">Tokens/Sec:</span>
+                <span class="stat-value">${tokensPerSecond}</span>
+            </div>
+    `;
+
+    // Add token information if available
+    if (promptTokens !== undefined) {
+        statsHtml += `
+            <div class="stat-item">
+                <span class="stat-label">Prompt Tokens:</span>
+                <span class="stat-value">${promptTokens}</span>
+            </div>
+        `;
+    }
+
+    if (completionTokens !== undefined) {
+        statsHtml += `
+            <div class="stat-item">
+                <span class="stat-label">Completion Tokens:</span>
+                <span class="stat-value">${completionTokens}</span>
+            </div>
+        `;
+    }
+
+    if (tokenCount !== undefined && tokenCount > 0) {
+        statsHtml += `
+            <div class="stat-item">
+                <span class="stat-label">Total Tokens:</span>
+                <span class="stat-value">${tokenCount}</span>
+            </div>
+        `;
+        sessionStats.totalTokensUsed += tokenCount;
+    }
+
+    // Add additional statistics
+    statsHtml += `
+            <div class="stat-item">
+                <span class="stat-label">Response Size:</span>
+                <span class="stat-value">${formatBytes(responseSize)}</span>
+            </div>
+            <div class="stat-item">
+                <span class="stat-label">Status:</span>
+                <span class="stat-value">${statusCode} ${statusText}</span>
+            </div>
+            <div class="stat-item">
+                <span class="stat-label">Model:</span>
+                <span class="stat-value">${model}</span>
+            </div>
+            <div class="stat-item">
+                <span class="stat-label">Provider:</span>
+                <span class="stat-value">${provider}</span>
+            </div>
+            <div class="stat-item">
+                <span class="stat-label">Type:</span>
+                <span class="stat-value">${generationType}</span>
+            </div>
+            <div class="stat-item">
+                <span class="stat-label">Timestamp:</span>
+                <span class="stat-value">${new Date().toLocaleString()}</span>
+            </div>
+        </div>
+    `;
+
+    statsArea.innerHTML = statsHtml;
+    statsArea.style.display = 'block';
+
+    // Add to session history
+    addToRequestHistory({
+        status: 'success',
+        duration: parseFloat(duration),
+        responseSize,
+        statusCode,
+        model,
+        provider,
+        generationType,
+        tokenCount: tokenCount || 0
+    });
+
+    updateSessionStatsDisplay();
+}
+
+function formatBytes(bytes) {
+    if (bytes === 0) return '0 Bytes';
+    const k = 1024;
+    const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+    const i = Math.floor(Math.log(bytes) / Math.log(k));
+    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+}
+
+// --- EDITABLE SLIDER VALUES FUNCTIONS ---
+// Functions to handle double-click editing of slider values.
+
+function makeSliderValueEditable(valueElement, sliderElement, min, max, step, decimals = 1) {
+    valueElement.addEventListener('dblclick', () => {
+        const currentValue = parseFloat(valueElement.textContent);
+
+        // Create input element
+        const input = document.createElement('input');
+        input.type = 'number';
+        input.className = 'editable-input';
+        input.value = currentValue;
+        input.min = min;
+        input.max = max;
+        input.step = step;
+
+        // Replace the span with input
+        valueElement.style.display = 'none';
+        valueElement.parentNode.insertBefore(input, valueElement.nextSibling);
+        input.focus();
+        input.select();
+
+        function finishEditing() {
+            const newValue = parseFloat(input.value);
+
+            // Validate range
+            if (isNaN(newValue) || newValue < min || newValue > max) {
+                displayError(`Value must be between ${min} and ${max}`);
+                input.remove();
+                valueElement.style.display = '';
+                return;
+            }
+
+            // Update slider and display
+            sliderElement.value = newValue;
+            valueElement.textContent = newValue.toFixed(decimals);
+
+            // Trigger change event to save settings
+            sliderElement.dispatchEvent(new Event('input'));
+
+            // Clean up
+            input.remove();
+            valueElement.style.display = '';
+        }
+
+        input.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') {
+                finishEditing();
+            } else if (e.key === 'Escape') {
+                input.remove();
+                valueElement.style.display = '';
+            }
+        });
+
+        input.addEventListener('blur', finishEditing);
+    });
+}
+
+// --- CUSTOM PARAMETERS FUNCTIONS ---
+// Functions to handle dynamic custom parameter addition and removal.
+
+function addCustomParameter(name = '', value = '') {
+    const paramId = Date.now() + Math.random();
+    const paramItem = document.createElement('div');
+    paramItem.className = 'custom-param-item';
+    paramItem.dataset.paramId = paramId;
+
+    paramItem.innerHTML = `
+        <input type="text" class="param-name-input" placeholder="Parameter name" value="${name}">
+        <input type="text" class="param-value-input" placeholder="Parameter value" value="${value}">
+        <button type="button" class="remove-param-btn" title="Remove parameter">×</button>
+    `;
+
+    // Add event listeners
+    const nameInput = paramItem.querySelector('.param-name-input');
+    const valueInput = paramItem.querySelector('.param-value-input');
+    const removeBtn = paramItem.querySelector('.remove-param-btn');
+
+    nameInput.addEventListener('input', saveCustomParameters);
+    valueInput.addEventListener('input', saveCustomParameters);
+    removeBtn.addEventListener('click', () => {
+        paramItem.remove();
+        saveCustomParameters();
+    });
+
+    customParamsList.appendChild(paramItem);
+    saveCustomParameters();
+
+    // Focus on name input if it's empty
+    if (!name) {
+        nameInput.focus();
+    }
+}
+
+function saveCustomParameters() {
+    const params = [];
+    const paramItems = customParamsList.querySelectorAll('.custom-param-item');
+
+    paramItems.forEach(item => {
+        const name = item.querySelector('.param-name-input').value.trim();
+        const value = item.querySelector('.param-value-input').value.trim();
+
+        if (name && value) {
+            params.push({ name, value });
+        }
+    });
+
+    customParameters = params;
+    setStoredValue(LAST_CUSTOM_PARAMS_KEY, params);
+}
+
+function loadCustomParameters() {
+    getStoredValue(LAST_CUSTOM_PARAMS_KEY).then(params => {
+        if (params && Array.isArray(params)) {
+            customParameters = params;
+            params.forEach(param => {
+                addCustomParameter(param.name, param.value);
+            });
+        }
+    });
+}
+
+// --- REASONING EFFORT DROPDOWN FUNCTIONS ---
+// Functions to handle the reasoning effort dropdown and custom input.
+
+function handleReasoningEffortChange() {
+    const selectedValue = inferenceEffortSelect.value;
+
+    if (selectedValue === 'custom') {
+        inferenceEffortCustomInput.style.display = 'block';
+        inferenceEffortCustomInput.focus();
+    } else {
+        inferenceEffortCustomInput.style.display = 'none';
+        inferenceEffortCustomInput.value = '';
+    }
+
+    saveGeneralSettings();
+}
+
+function getReasoningEffortValue() {
+    if (!enableInferenceEffortCheckbox?.checked) {
+        return null;
+    }
+
+    const selectedValue = inferenceEffortSelect.value;
+    if (selectedValue === 'custom') {
+        return inferenceEffortCustomInput.value.trim() || null;
+    }
+
+    return selectedValue;
 }
 
 // --- API RESPONSE HELPER ---
@@ -730,10 +1360,13 @@ async function handleApiResponse(response) {
  * Parameter-Toggles werden ausgewertet: Parameter werden nur gesendet, wenn der jeweilige Switch aktiviert ist.
  */
 async function callTextApi(provider, apiKey, baseUrl, model, prompt) {
-    showLoader(); // Show loader at the start
+    showLoader('Generating text response...'); // Show loader at the start
     clearOutput();
     outputText.innerHTML = 'Sending text request...';
     outputArea.style.display = 'block';
+
+    // Prepare request start time for enhanced statistics
+    const requestStartTime = performance.now();
 
     let apiUrl = '';
     let headers = {};
@@ -756,11 +1389,25 @@ async function callTextApi(provider, apiKey, baseUrl, model, prompt) {
 
     // Add optional parameters ONLY IF ENABLED
     if (enableTemperatureCheckbox?.checked && temperatureInput.value) body.temperature = parseFloat(temperatureInput.value);
+    if (enableTopKCheckbox?.checked && topKInput.value) body.top_k = parseInt(topKInput.value);
     if (enableTopPCheckbox?.checked && topPInput.value) body.top_p = parseFloat(topPInput.value);
+    if (enableMinPCheckbox?.checked && minPInput.value) body.min_p = parseFloat(minPInput.value);
     if (enableMaxTokensCheckbox?.checked && maxTokensInput.value) body.max_tokens = parseInt(maxTokensInput.value, 10);
-    if (enableInferenceEffortCheckbox?.checked && inferenceEffortInput && inferenceEffortInput.value.trim()) {
-        body.reasoning_effort = inferenceEffortInput.value.trim();
+
+    // Add reasoning effort parameter
+    const reasoningEffort = getReasoningEffortValue();
+    if (reasoningEffort) {
+        body.reasoning_effort = reasoningEffort;
     }
+
+    // Add custom parameters
+    customParameters.forEach(param => {
+        if (param.name && param.value) {
+            // Try to parse as number if possible, otherwise keep as string
+            const numValue = parseFloat(param.value);
+            body[param.name] = !isNaN(numValue) ? numValue : param.value;
+        }
+    });
 
 
     // Configure based on provider
@@ -807,15 +1454,80 @@ async function callTextApi(provider, apiKey, baseUrl, model, prompt) {
             hideLoader();
             return displayError('Unknown provider selected for text generation.');
     }
+// Prepare request start time
+const startTime = performance.now(); // Record start time
+// Send request with optional file attachment
+let response;
+if (uploadedFiles.length > 0) {
+    console.log("[callTextApi] Files detected. Preparing FormData for upload...");
+    const formData = new FormData();
 
-    // Store payload before sending
+    // Append each file. Most servers expect multiple files under the same field name.
+    uploadedFiles.forEach((file, index) => {
+        formData.append('files', file, file.name); // Standard: 'files' or 'files[]'
+        console.log(`[callTextApi] Appended file to FormData: '${file.name}' as 'files'`);
+    });
+
+    // Append the original JSON body as a separate string field.
+    // The server will need to parse this field from JSON.
+    formData.append('request_json_payload', JSON.stringify(body));
+    console.log("[callTextApi] Appended stringified JSON body as 'request_json_payload':", JSON.stringify(body));
+
+    lastRequestPayload = `FormData: ${uploadedFiles.map(f => f.name).join(', ')} + JSON payload`;
+    payloadContainer.style.display = 'block';
+    
+    const fetchHeaders = { ...headers };
+    // CRITICAL: For FormData, DO NOT set Content-Type. The browser does this.
+    delete fetchHeaders['Content-Type'];
+    console.log("[callTextApi] Attempting to send FormData request to:", apiUrl);
+    console.log("[callTextApi] Headers for FormData (Content-Type removed):", JSON.stringify(fetchHeaders));
+
+    try {
+        response = await fetch(apiUrl, {
+            method: 'POST',
+            headers: fetchHeaders,
+            body: formData,
+            signal: currentAbortController?.signal
+        });
+        console.log("[callTextApi] FormData request fetch completed. Response status:", response.status);
+    } catch (fetchError) {
+        console.error("[callTextApi] Fetch error during FormData request:", fetchError);
+        displayError(`Network error during file upload: ${fetchError.message}`);
+        hideLoader();
+        // Clear files here as the request failed before server processing
+        uploadedFiles = [];
+        renderUploadPreview();
+        return; // Exit if fetch itself failed
+    }
+    // Clear files and update preview after the request attempt, regardless of server success/failure for now.
+    // This could be moved into a .finally of the server response processing if files should be kept on server error.
+    uploadedFiles = [];
+    renderUploadPreview();
+
+} else {
+    // No files uploaded, send as plain JSON
+    console.log("[callTextApi] No files to upload. Sending plain JSON request.");
     lastRequestPayload = JSON.stringify(body, null, 2);
     payloadContainer.style.display = 'block';
-
-    // Make the API call
-    const startTime = performance.now(); // Record start time
     try {
-        const response = await fetch(apiUrl, { method: 'POST', headers: headers, body: JSON.stringify(body) });
+        response = await fetch(apiUrl, {
+            method: 'POST',
+            headers: headers, // Original headers with 'Content-Type': 'application/json'
+            body: JSON.stringify(body),
+            signal: currentAbortController?.signal
+        });
+        console.log("[callTextApi] Plain JSON request fetch completed. Response status:", response.status);
+    } catch (fetchError) {
+        console.error("[callTextApi] Fetch error during JSON request:", fetchError);
+        displayError(`Network error: ${fetchError.message}`);
+        hideLoader();
+        return; // Exit if fetch itself failed
+    }
+}
+
+// This outer try-catch handles processing the response (JSON parsing, error extraction from body)
+// It assumes 'response' variable is set from one of the branches above.
+try {
         const endTime = performance.now(); // Record end time
         const durationInSeconds = (endTime - startTime) / 1000;
 
@@ -866,15 +1578,25 @@ async function callTextApi(provider, apiKey, baseUrl, model, prompt) {
                         const tokensPerSecondFinal = (elapsed > 0 && completionTokensFinal > 0)
                             ? (completionTokensFinal / elapsed).toFixed(2) : "…";
                         const totalTokensFinal = promptTokensEstimate + completionTokensFinal;
-                        statsArea.innerHTML = `
-                            <span><strong>Time:</strong> ${elapsed.toFixed(2)}s</span>
-                            <span><strong>Tokens/Sec:</strong> ${tokensPerSecondFinal}</span>
-                            <span><strong>Prompt Tokens:</strong> ${promptTokensEstimate} (est)</span>
-                            <span><strong>Completion Tokens:</strong> ${completionTokensFinal} (est)</span>
-                            <span><strong>Total Tokens:</strong> ${totalTokensFinal} (est)</span>
-                            <br><small>Usage data may not be available for streamed responses. Token values are estimated.</small>
-                        `;
-                        statsArea.style.display = 'block';
+
+                        // Show copy button for successful streaming responses
+                        showCopyButton(contentBuffer);
+
+                        // Calculate enhanced statistics for streaming
+                        const responseSize = new Blob([contentBuffer]).size;
+
+                        displayEnhancedStats({
+                            duration: (elapsed * 1000).toFixed(0), // Convert to milliseconds
+                            responseSize: responseSize,
+                            statusCode: response.status,
+                            statusText: response.statusText,
+                            tokenCount: totalTokensFinal,
+                            promptTokens: promptTokensEstimate,
+                            completionTokens: completionTokensFinal,
+                            model: model,
+                            provider: provider,
+                            generationType: 'text (streamed)'
+                        });
                         // Ensure any final buffered content is displayed (though typically not needed with SSE)
                         if (accumulatedResponse.startsWith("data: ")) {
                             const jsonStr = accumulatedResponse.substring(6).trim();
@@ -967,44 +1689,49 @@ async function callTextApi(provider, apiKey, baseUrl, model, prompt) {
             outputText.innerHTML = `<strong>${model}:</strong><br>${aiContent.replace(/\n/g, '<br>')}`;
             outputArea.style.borderColor = '#ccc';
 
-            // Calculate and display stats if usage data is available
-            if (data.usage) {
-                const usage = data.usage;
-                const promptTokens = usage.prompt_tokens || 0;
-                const completionTokens = usage.completion_tokens || 0;
-                const totalTokens = usage.total_tokens || (promptTokens + completionTokens);
-                let tokensPerSecond = 0;
+            // Show copy button for successful text responses
+            showCopyButton(aiContent);
 
-                if (durationInSeconds > 0 && completionTokens > 0) {
-                    tokensPerSecond = (completionTokens / durationInSeconds).toFixed(2);
-                }
+            // Calculate enhanced statistics
+            const responseSize = new Blob([aiContent]).size;
+            const totalTokens = data.usage?.total_tokens || 0;
 
-                statsArea.innerHTML = `
-                    <span><strong>Time:</strong> ${durationInSeconds.toFixed(2)}s</span>
-                    <span><strong>Tokens/Sec:</strong> ${tokensPerSecond}</span>
-                    <span><strong>Prompt Tokens:</strong> ${promptTokens}</span>
-                    <span><strong>Completion Tokens:</strong> ${completionTokens}</span>
-                    <span><strong>Total Tokens:</strong> ${totalTokens}</span>
-                `;
-                statsArea.style.display = 'block';
-            } else {
-                 statsArea.innerHTML = `<span><strong>Time:</strong> ${durationInSeconds.toFixed(2)}s</span><br><span>Usage data not available in response.</span>`;
-                 statsArea.style.display = 'block';
-            }
+            displayEnhancedStats({
+                duration: (durationInSeconds * 1000).toFixed(0), // Convert to milliseconds
+                responseSize: responseSize,
+                statusCode: response.status,
+                statusText: response.statusText,
+                tokenCount: totalTokens,
+                promptTokens: data.usage?.prompt_tokens,
+                completionTokens: data.usage?.completion_tokens,
+                model: model,
+                provider: provider,
+                generationType: 'text'
+            });
         }
 
     } catch (error) {
+        // Handle cancellation specifically
+        if (error.name === 'AbortError') {
+            // Request was cancelled, endRequest already called in cancelCurrentRequest
+            return;
+        }
+
         // lastApiResponse might contain error details already
         displayError(error.message); // displayError will hide loader
         statsArea.style.display = 'none'; // Hide stats on error
+        endRequest(false); // Mark request as failed
     } finally {
         hideLoader(); // Ensure loader is hidden
+        if (isRequestActive) {
+            endRequest(true); // Mark request as successful if still active
+        }
     }
 }
 
 // Handles image generation API calls.
 async function callImageApi(provider, apiKey, baseUrl, model, prompt) {
-    showLoader(); // Show loader at the start
+    showLoader('Generating image...'); // Show loader at the start
     clearOutput();
     outputText.innerHTML = 'Sending image request...'; // Use text area for status
     outputArea.style.display = 'block';
@@ -1067,7 +1794,8 @@ async function callImageApi(provider, apiKey, baseUrl, model, prompt) {
         const response = await fetch(apiUrl, {
             method: 'POST',
             headers: headers,
-            body: JSON.stringify(body)
+            body: JSON.stringify(body),
+            signal: currentAbortController?.signal
         });
 
         const endTime = performance.now();
@@ -1104,40 +1832,66 @@ async function callImageApi(provider, apiKey, baseUrl, model, prompt) {
                 throw new Error('Could not find image data in API response.');
             }
 
-            // Display stats
-            let statsHtml = `
-                <span><strong>Generation Time:</strong> ${durationInSeconds}s</span>
-                <span><strong>Resolution:</strong> ${width}x${height}</span>
-                <span><strong>Model:</strong> ${model}</span>
-            `;
-            
-            // Add quality if enabled
-            if (enableQualityCheckbox.checked && qualitySelect) {
-                statsHtml += `<span><strong>Quality:</strong> ${qualitySelect.value}</span>`;
-            }
+            // Display enhanced statistics for image generation
+            displayEnhancedStats({
+                duration: (parseFloat(durationInSeconds) * 1000).toFixed(0), // Convert to milliseconds
+                responseSize: 0, // Image size not available from URL
+                statusCode: response.status,
+                statusText: response.statusText,
+                tokenCount: data.usage?.prompt_tokens || 0,
+                model: model,
+                provider: provider,
+                generationType: 'image'
+            });
 
-            // Add provider-specific data
+            // Add image-specific stats to the existing display
+            const additionalStats = `
+                <div class="stat-item">
+                    <span class="stat-label">Resolution:</span>
+                    <span class="stat-value">${width}x${height}</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-label">Quality:</span>
+                    <span class="stat-value">${enableQualityCheckbox.checked && qualitySelect ? qualitySelect.value : 'default'}</span>
+                </div>
+            `;
+
             if (data.created) {
-                statsHtml += `<span><strong>Created:</strong> ${new Date(data.created * 1000).toLocaleString()}</span>`;
+                const additionalStats2 = `
+                    <div class="stat-item">
+                        <span class="stat-label">Created:</span>
+                        <span class="stat-value">${new Date(data.created * 1000).toLocaleString()}</span>
+                    </div>
+                `;
+                const statsList = statsArea.querySelector('.stats-list');
+                if (statsList) {
+                    statsList.innerHTML += additionalStats + additionalStats2;
+                }
+            } else {
+                const statsList = statsArea.querySelector('.stats-list');
+                if (statsList) {
+                    statsList.innerHTML += additionalStats;
+                }
             }
-            
-            // Check for credit usage if available
-            if (data.usage && data.usage.prompt_tokens) {
-                statsHtml += `<span><strong>Prompt Tokens:</strong> ${data.usage.prompt_tokens}</span>`;
-            }
-            
-            statsArea.innerHTML = statsHtml;
-            statsArea.style.display = 'block';
             
             // Once image loads, we can get the actual dimensions
             outputImage.onload = () => {
                 const actualWidth = outputImage.naturalWidth;
                 const actualHeight = outputImage.naturalHeight;
-                
-                // Find and update the resolution span
-                const resolutionSpan = statsArea.querySelector('span:nth-child(2)');
-                if (resolutionSpan) {
-                    resolutionSpan.innerHTML = `<strong>Resolution:</strong> ${actualWidth}x${actualHeight}`;
+
+                // Find and update the resolution in the stats list
+                const statsList = statsArea.querySelector('.stats-list');
+                if (statsList) {
+                    const resolutionItems = statsList.querySelectorAll('.stat-item');
+                    resolutionItems.forEach(item => {
+                        const label = item.querySelector('.stat-label');
+                        if (label && label.textContent.includes('Resolution')) {
+                            const value = item.querySelector('.stat-value');
+                            if (value) {
+                                value.textContent = `${actualWidth}x${actualHeight}`;
+                            }
+                        }
+                    });
                 }
             };
         } else {
@@ -1171,22 +1925,51 @@ async function callImageApi(provider, apiKey, baseUrl, model, prompt) {
                     outputImage.style.display = 'block';
                     outputArea.style.borderColor = '#ccc';
                     
-                    // Display stats for retry
-                    statsArea.innerHTML = `
-                        <span><strong>Generation Time:</strong> ${retryDuration}s</span>
-                        <span><strong>Resolution:</strong> ${width}x${height}</span>
-                        <span><strong>Model:</strong> ${model}</span>
-                        <span><strong>Note:</strong> Quality param was removed due to API incompatibility</span>
+                    // Display enhanced statistics for retry
+                    displayEnhancedStats({
+                        duration: (parseFloat(retryDuration) * 1000).toFixed(0), // Convert to milliseconds
+                        responseSize: 0, // Image size not available from URL
+                        statusCode: retryResponse.status,
+                        statusText: retryResponse.statusText,
+                        tokenCount: retryData.usage?.prompt_tokens || 0,
+                        model: model,
+                        provider: provider,
+                        generationType: 'image (retry)'
+                    });
+
+                    // Add image-specific stats for retry
+                    const retryAdditionalStats = `
+                        <div class="stat-item">
+                            <span class="stat-label">Resolution:</span>
+                            <span class="stat-value">${width}x${height}</span>
+                        </div>
+                        <div class="stat-item">
+                            <span class="stat-label">Note:</span>
+                            <span class="stat-value">Quality param removed due to API incompatibility</span>
+                        </div>
                     `;
-                    statsArea.style.display = 'block';
-                    
+
+                    const statsList = statsArea.querySelector('.stats-list');
+                    if (statsList) {
+                        statsList.innerHTML += retryAdditionalStats;
+                    }
+
                     // Update resolution on image load
                     outputImage.onload = () => {
                         const actualWidth = outputImage.naturalWidth;
                         const actualHeight = outputImage.naturalHeight;
-                        const resolutionSpan = statsArea.querySelector('span:nth-child(2)');
-                        if (resolutionSpan) {
-                            resolutionSpan.innerHTML = `<strong>Resolution:</strong> ${actualWidth}x${actualHeight}`;
+                        const statsList = statsArea.querySelector('.stats-list');
+                        if (statsList) {
+                            const resolutionItems = statsList.querySelectorAll('.stat-item');
+                            resolutionItems.forEach(item => {
+                                const label = item.querySelector('.stat-label');
+                                if (label && label.textContent.includes('Resolution')) {
+                                    const value = item.querySelector('.stat-value');
+                                    if (value) {
+                                        value.textContent = `${actualWidth}x${actualHeight}`;
+                                    }
+                                }
+                            });
                         }
                     };
                     
@@ -1203,16 +1986,24 @@ async function callImageApi(provider, apiKey, baseUrl, model, prompt) {
                 return;
             }
         } else {
+            // Handle cancellation specifically
+            if (error.name === 'AbortError') {
+                return;
+            }
             displayError(error.message); // displayError will hide loader
+            endRequest(false);
         }
     } finally {
         hideLoader();
+        if (isRequestActive) {
+            endRequest(true);
+        }
     }
 }
 
 // Handles Text-to-Speech (TTS) API calls.
 async function callTtsApi(provider, apiKey, baseUrl, model, text, voice) {
-    showLoader(); // Show loader at the start
+    showLoader('Generating speech...'); // Show loader at the start
     clearOutput();
     outputText.innerHTML = 'Generating TTS...';
     outputAudio.style.display = 'none';
@@ -1252,6 +2043,7 @@ async function callTtsApi(provider, apiKey, baseUrl, model, text, voice) {
             method: 'POST',
             headers: headers,
             body: JSON.stringify(body),
+            signal: currentAbortController?.signal
         });
         
         const endTime = performance.now();
@@ -1273,33 +2065,55 @@ async function callTtsApi(provider, apiKey, baseUrl, model, text, voice) {
         outputAudio.src = url;
         outputAudio.preload = 'metadata';
         
-        // Display initial stats
-        statsArea.innerHTML = `
-            <span><strong>Generation Time:</strong> ${durationInSeconds}s</span>
-            <span><strong>File Size:</strong> ${(blob.size / 1024).toFixed(2)} KB</span>
-            <span><strong>Model:</strong> ${model}</span>
-            <span><strong>Voice:</strong> ${voice}</span>
-            <span><strong>Characters:</strong> ${text.length}</span>
-        `;
-        statsArea.style.display = 'block';
-        
+        // Display enhanced statistics for TTS
+        displayEnhancedStats({
+            duration: (parseFloat(durationInSeconds) * 1000).toFixed(0), // Convert to milliseconds
+            responseSize: blob.size,
+            statusCode: response.status,
+            statusText: response.statusText,
+            tokenCount: 0, // TTS doesn't use tokens
+            model: model,
+            provider: provider,
+            generationType: 'audio (TTS)'
+        });
+
         outputAudio.addEventListener('loadedmetadata', () => {
             // Update stats with audio duration
             const audioDuration = outputAudio.duration.toFixed(2);
-            const statsSpans = statsArea.querySelectorAll('span');
-            
-            // Add audio duration if available
+
+            // Add audio-specific stats
             if (audioDuration && audioDuration > 0) {
-                statsArea.innerHTML += `<span><strong>Audio Length:</strong> ${audioDuration}s</span>`;
-                
-                // Calculate characters per second
                 const charsPerSecond = (text.length / audioDuration).toFixed(2);
-                statsArea.innerHTML += `<span><strong>Chars/Second:</strong> ${charsPerSecond}</span>`;
+
+                // Add additional audio stats to the existing display
+                const additionalStats = `
+                    <div class="stat-item">
+                        <span class="stat-label">Audio Length:</span>
+                        <span class="stat-value">${audioDuration}s</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-label">Characters:</span>
+                        <span class="stat-value">${text.length}</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-label">Chars/Second:</span>
+                        <span class="stat-value">${charsPerSecond}</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-label">Voice:</span>
+                        <span class="stat-value">${voice}</span>
+                    </div>
+                `;
+
+                const statsList = statsArea.querySelector('.stats-list');
+                if (statsList) {
+                    statsList.innerHTML += additionalStats;
+                }
             }
-            
+
             outputAudio.style.display = 'block';
             downloadAudio.href = url;
-            downloadAudio.download = `${model}-${voice}-tts.mp3`; // Changed to mp3 as it's common for OpenAI TTS
+            downloadAudio.download = `${model}-${voice}-tts.mp3`;
             downloadAudio.style.display = 'inline';
             outputText.innerHTML = `<strong>Voice:</strong> ${voice}`;
             outputText.style.display = 'block';
@@ -1307,17 +2121,25 @@ async function callTtsApi(provider, apiKey, baseUrl, model, text, voice) {
         
         outputAudio.load();
     } catch (err) {
+        // Handle cancellation specifically
+        if (err.name === 'AbortError') {
+            return;
+        }
         // lastApiResponse might be set from the !response.ok block
         displayError(err.message); // displayError will hide loader
         statsArea.style.display = 'none'; // Hide stats on error
+        endRequest(false);
     } finally {
         hideLoader(); // Ensure loader is hidden
+        if (isRequestActive) {
+            endRequest(true);
+        }
     }
 }
 
 // Handles Speech-to-Text (STT) API calls.
 async function callSttApi(provider, apiKey, baseUrl, model, file) {
-    showLoader(); // Show loader at the start
+    showLoader('Transcribing audio...'); // Show loader at the start
     clearOutput();
     outputText.innerHTML = 'Transcribing audio...';
     outputArea.style.display = 'block';
@@ -1361,7 +2183,8 @@ async function callSttApi(provider, apiKey, baseUrl, model, file) {
         const response = await fetch(apiUrl, {
             method: 'POST',
             headers: headers,
-            body: formData
+            body: formData,
+            signal: currentAbortController?.signal
         });
 
         const endTime = performance.now();
@@ -1371,15 +2194,22 @@ async function callSttApi(provider, apiKey, baseUrl, model, file) {
 
         const transcript = data.text || data.transcript || JSON.stringify(data);
         outputText.innerHTML = `<strong>Transcribed by ${model}:</strong><br>${transcript.replace(/\\n/g, '<br>')}`;
-        
-        // Display stats
-        statsArea.innerHTML = `
-            <span><strong>Transcription Time:</strong> ${durationInSeconds}s</span>
-            <span><strong>File Size:</strong> ${fileSize} KB</span>
-            <span><strong>Model:</strong> ${model}</span>
-            <span><strong>Characters Generated:</strong> ${transcript.length}</span>
-        `;
-        
+
+        // Show copy button for transcription
+        showCopyButton(transcript);
+
+        // Display enhanced statistics for STT
+        displayEnhancedStats({
+            duration: (parseFloat(durationInSeconds) * 1000).toFixed(0), // Convert to milliseconds
+            responseSize: transcript.length, // Use transcript length as response size
+            statusCode: response.status,
+            statusText: response.statusText,
+            tokenCount: 0, // STT doesn't use tokens
+            model: model,
+            provider: provider,
+            generationType: 'audio (STT)'
+        });
+
         // Add file duration if we can get it
         if (file.type.includes('audio')) {
             const audio = new Audio();
@@ -1387,11 +2217,32 @@ async function callSttApi(provider, apiKey, baseUrl, model, file) {
             audio.onloadedmetadata = () => {
                 const audioDuration = audio.duration.toFixed(2);
                 if (audioDuration && audioDuration > 0) {
-                    statsArea.innerHTML += `<span><strong>Audio Length:</strong> ${audioDuration}s</span>`;
-                    
-                    // Add processing speed relative to audio length
-                    const processingRatio = (audioDuration / durationInSeconds).toFixed(2);
-                    statsArea.innerHTML += `<span><strong>Processing Speed:</strong> ${processingRatio}x realtime</span>`;
+                    const processingRatio = (audioDuration / parseFloat(durationInSeconds)).toFixed(2);
+
+                    // Add audio-specific stats to the existing display
+                    const additionalStats = `
+                        <div class="stat-item">
+                            <span class="stat-label">Audio Length:</span>
+                            <span class="stat-value">${audioDuration}s</span>
+                        </div>
+                        <div class="stat-item">
+                            <span class="stat-label">File Size:</span>
+                            <span class="stat-value">${fileSize} KB</span>
+                        </div>
+                        <div class="stat-item">
+                            <span class="stat-label">Characters Generated:</span>
+                            <span class="stat-value">${transcript.length}</span>
+                        </div>
+                        <div class="stat-item">
+                            <span class="stat-label">Processing Speed:</span>
+                            <span class="stat-value">${processingRatio}x realtime</span>
+                        </div>
+                    `;
+
+                    const statsList = statsArea.querySelector('.stats-list');
+                    if (statsList) {
+                        statsList.innerHTML += additionalStats;
+                    }
                 }
             };
             audio.load();
@@ -1413,11 +2264,19 @@ async function callSttApi(provider, apiKey, baseUrl, model, file) {
         statsArea.style.display = 'block';
         
     } catch (err) {
+        // Handle cancellation specifically
+        if (err.name === 'AbortError') {
+            return;
+        }
         // lastApiResponse might contain error details
         displayError(err.message); // displayError will hide loader
         statsArea.style.display = 'none'; // Hide stats on error
+        endRequest(false);
     } finally {
         hideLoader(); // Ensure loader is hidden
+        if (isRequestActive) {
+            endRequest(true);
+        }
     }
 }
 
@@ -1642,7 +2501,7 @@ function setupVideoDownload(videoUrl, model) {
 
 // Handles video generation API calls.
 async function callVideoApi(provider, apiKey, baseUrl, model, prompt) {
-    showLoader(); // Show loader at the start
+    showLoader('Generating video...'); // Show loader at the start
     clearOutput();
     outputText.innerHTML = 'Generating video...';
     outputArea.style.display = 'block';
@@ -1720,7 +2579,8 @@ async function callVideoApi(provider, apiKey, baseUrl, model, prompt) {
         const response = await fetch(apiUrl, {
             method: 'POST',
             headers: headers,
-            body: JSON.stringify(body)
+            body: JSON.stringify(body),
+            signal: currentAbortController?.signal
         });
 
         const endTime = performance.now();
@@ -1742,42 +2602,70 @@ async function callVideoApi(provider, apiKey, baseUrl, model, prompt) {
             setupVideoDownload(videoUrl, model);
             downloadVideoBtn.style.display = 'inline-block';
             
-            // Display stats
-            let statsHtml = `
-                <span><strong>Generation Time:</strong> ${durationInSeconds}s</span>
-                <span><strong>Duration:</strong> ${duration}s</span>
-                <span><strong>Model:</strong> ${model}</span>
+            // Display enhanced statistics for video generation
+            displayEnhancedStats({
+                duration: (parseFloat(durationInSeconds) * 1000).toFixed(0), // Convert to milliseconds
+                responseSize: 0, // Video size not available from URL
+                statusCode: response.status,
+                statusText: response.statusText,
+                tokenCount: data.usage?.prompt_tokens || 0,
+                model: model,
+                provider: provider,
+                generationType: 'video'
+            });
+
+            // Add video-specific stats to the existing display
+            let additionalStats = `
+                <div class="stat-item">
+                    <span class="stat-label">Video Duration:</span>
+                    <span class="stat-value">${duration}s</span>
+                </div>
             `;
-            
+
             // Add aspect ratio if enabled
             if (aspectRatioEnabled) {
-                statsHtml += `<span><strong>Aspect Ratio:</strong> ${aspectRatio}</span>`;
+                additionalStats += `
+                    <div class="stat-item">
+                        <span class="stat-label">Aspect Ratio:</span>
+                        <span class="stat-value">${aspectRatio}</span>
+                    </div>
+                `;
             }
 
-            // Add provider-specific data
+            // Add created timestamp if available
             if (data.created) {
-                statsHtml += `<span><strong>Created:</strong> ${new Date(data.created * 1000).toLocaleString()}</span>`;
+                additionalStats += `
+                    <div class="stat-item">
+                        <span class="stat-label">Created:</span>
+                        <span class="stat-value">${new Date(data.created * 1000).toLocaleString()}</span>
+                    </div>
+                `;
             }
-            
-            // Check for usage data if available
-            if (data.usage && data.usage.prompt_tokens) {
-                statsHtml += `<span><strong>Prompt Tokens:</strong> ${data.usage.prompt_tokens}</span>`;
+
+            const statsList = statsArea.querySelector('.stats-list');
+            if (statsList) {
+                statsList.innerHTML += additionalStats;
             }
-            
-            statsArea.innerHTML = statsHtml;
-            statsArea.style.display = 'block';
             
         } else {
             throw new Error('Could not find video URL in API response. Response structure: ' + JSON.stringify(data, null, 2));
         }
 
     } catch (error) {
+        // Handle cancellation specifically
+        if (error.name === 'AbortError') {
+            return;
+        }
         displayError(error.message); // displayError will hide loader
         statsArea.style.display = 'none';
+        endRequest(false);
     } finally {
         // Ensure loader is hidden for all other cases, including successful calls or other errors
         if (!(provider === 'openai' || provider === 'deepseek' || provider === 'claude')) {
             hideLoader();
+        }
+        if (isRequestActive) {
+            endRequest(true);
         }
     }
 }
@@ -1827,12 +2715,26 @@ function bindEventListeners() {
         });
         showOrHideParamGroup('temperature-group', enableTemperatureCheckbox);
     }
+    if (enableTopKCheckbox) {
+        enableTopKCheckbox.addEventListener('change', () => {
+            showOrHideParamGroup('top-k-group', enableTopKCheckbox);
+            saveGeneralSettings();
+        });
+        showOrHideParamGroup('top-k-group', enableTopKCheckbox);
+    }
     if (enableTopPCheckbox) {
         enableTopPCheckbox.addEventListener('change', () => {
             showOrHideParamGroup('top-p-group', enableTopPCheckbox);
             saveGeneralSettings();
         });
         showOrHideParamGroup('top-p-group', enableTopPCheckbox);
+    }
+    if (enableMinPCheckbox) {
+        enableMinPCheckbox.addEventListener('change', () => {
+            showOrHideParamGroup('min-p-group', enableMinPCheckbox);
+            saveGeneralSettings();
+        });
+        showOrHideParamGroup('min-p-group', enableMinPCheckbox);
     }
     if (enableMaxTokensCheckbox) {
         enableMaxTokensCheckbox.addEventListener('change', () => {
@@ -1848,25 +2750,58 @@ function bindEventListeners() {
         });
         showOrHideParamGroup('inference-effort-group', enableInferenceEffortCheckbox);
     }
+    if (enableAudioTypeCheckbox) {
+        enableAudioTypeCheckbox.addEventListener('change', () => {
+            showOrHideParamGroup('audio-type-group', enableAudioTypeCheckbox);
+            toggleGenerationOptions(); // Update audio sub-options visibility
+            saveGeneralSettings();
+        });
+        showOrHideParamGroup('audio-type-group', enableAudioTypeCheckbox);
+    }
 
     uploadTextBtn.addEventListener('click', handleUploadText);
+
+    // Slider input event listeners
     temperatureInput.addEventListener('input', () => {
         temperatureValue.textContent = parseFloat(temperatureInput.value).toFixed(1);
+        saveGeneralSettings();
+    });
+    topKInput.addEventListener('input', () => {
+        topKValue.textContent = parseInt(topKInput.value);
         saveGeneralSettings();
     });
     topPInput.addEventListener('input', () => {
         topPValue.textContent = parseFloat(topPInput.value).toFixed(2);
         saveGeneralSettings();
     });
+    minPInput.addEventListener('input', () => {
+        minPValue.textContent = parseFloat(minPInput.value).toFixed(2);
+        saveGeneralSettings();
+    });
+
+    // Reasoning effort dropdown
+    inferenceEffortSelect.addEventListener('change', handleReasoningEffortChange);
+    inferenceEffortCustomInput.addEventListener('input', saveGeneralSettings);
+
+    // Custom parameters
+    addCustomParamBtn.addEventListener('click', () => addCustomParameter());
+
+    // Make slider values editable
+    makeSliderValueEditable(temperatureValue, temperatureInput, 0, 2, 0.1, 1);
+    makeSliderValueEditable(topKValue, topKInput, 0, 1000, 1, 0);
+    makeSliderValueEditable(topPValue, topPInput, 0, 1, 0.01, 2);
+    makeSliderValueEditable(minPValue, minPInput, 0, 1, 0.01, 2);
 
 
     // Inputs that trigger a settings save
     const inputsToSave = [
         modelInput, promptInput, enableStreamingCheckbox, customQualityInput,
         imageWidthInput, imageHeightInput, voiceInput, videoDurationInput,
-        videoAspectRatioSelect, systemPromptInput, maxTokensInput, inferenceEffortInput,
+        videoAspectRatioSelect, systemPromptInput, maxTokensInput,
         // NEW: Checkbox toggles trigger save as well:
-        enableSystemPromptCheckbox, enableTemperatureCheckbox, enableTopPCheckbox, enableMaxTokensCheckbox, enableInferenceEffortCheckbox
+        enableSystemPromptCheckbox, enableTemperatureCheckbox, enableTopKCheckbox,
+        enableTopPCheckbox, enableMinPCheckbox, enableMaxTokensCheckbox,
+        enableInferenceEffortCheckbox, enableAudioTypeCheckbox
     ];
     inputsToSave.forEach(input => {
         if (input) { // Ensure element exists before adding listener
@@ -1902,6 +2837,12 @@ function bindEventListeners() {
 // --- EVENT HANDLER FUNCTIONS ---
 
 async function handleSendClick() {
+    // Check if we should cancel current request
+    if (isRequestActive) {
+        cancelCurrentRequest();
+        return;
+    }
+
     await saveProviderCredentials(providerSelect.value);
     await saveGeneralSettings();
 
@@ -1918,6 +2859,9 @@ async function handleSendClick() {
         if (!prompt) return displayError('Please enter a prompt or description.');
     }
     if (provider === 'openai_compatible' && !baseUrl) return displayError('Please enter the Base URL for OpenAI Compatible provider.');
+
+    // Start the request (this will update UI and create abort controller)
+    startRequest();
 
     switch (generationType) {
         case 'text':
@@ -1946,6 +2890,7 @@ async function handleSendClick() {
             break;
         default:
             displayError('Invalid generation type selected.');
+            endRequest(false);
     }
 }
 
@@ -2043,17 +2988,12 @@ function handleUploadText() {
     fileInput.type = 'file';
     fileInput.accept = '*/*'; // Accept all file types
     fileInput.onchange = e => {
-        const file = e.target.files[0];
-        if (file) {
-            const reader = new FileReader();
-            reader.onload = event => {
-                promptInput.value = event.target.result;
-                saveGeneralSettings(); // Save the new prompt
-            };
-            // Read as text, assuming it's a text-based file
-            // Need to consider how to handle binary files if required later.
-            reader.readAsText(file);
+        const newFile = e.target.files[0];
+        if (newFile) {
+            uploadedFiles.push(newFile); // Add to the array
+            renderUploadPreview(); // Update the UI to show all previews
         }
+        // saveGeneralSettings(); // Consider if persisting multiple files is needed
     };
     fileInput.click();
 }
@@ -2072,13 +3012,25 @@ async function initializeApp() {
         }
     }
 
+    // Store original button text
+    originalSendButtonText = sendButton.textContent;
+
+    // Show session stats container
+    const sessionStatsContainer = document.getElementById('session-stats-container');
+    if (sessionStatsContainer) {
+        sessionStatsContainer.style.display = 'block';
+        updateSessionStatsDisplay();
+    }
+
     initializeTheme();
     await loadGeneralSettings();
     await loadProviderCredentials(providerSelect.value);
+    loadCustomParameters();
     toggleBaseUrlInput();
     await checkMicrophonePermission();
     updateMicrophoneUI();
     bindEventListeners();
+    renderUploadPreview();
 }
 
 // --- APP START ---

@@ -173,9 +173,30 @@ button:active {
 
 button.copy-btn {
     width: auto;
-    padding: 6px 12px;
-    font-size: 0.85rem;
-    margin-top: 10px;
+    padding: 8px 16px;
+    font-size: 0.9rem;
+    margin-top: 15px;
+    margin-bottom: 10px;
+    border-radius: 6px;
+    transition: all 0.3s ease;
+    font-weight: 500;
+}
+
+button.copy-btn:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 8px var(--shadow-color);
+}
+
+/* Cancel button styling */
+button.cancel-mode {
+    background-color: var(--error-color) !important;
+    animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+    0% { opacity: 1; }
+    50% { opacity: 0.7; }
+    100% { opacity: 1; }
 }
 
 hr {
@@ -338,6 +359,243 @@ legend {
 }
 #stats-area span:last-child {
     margin-bottom: 0;
+}
+
+/* Enhanced statistics list layout */
+.stats-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-top: 10px;
+}
+
+.stats-list .stat-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 8px 12px;
+    background-color: rgba(0, 123, 255, 0.05);
+    border-radius: 6px;
+    border-left: 3px solid var(--button-bg-color);
+    transition: background-color 0.2s ease;
+}
+
+.stats-list .stat-item:hover {
+    background-color: rgba(0, 123, 255, 0.08);
+}
+
+body.dark-mode .stats-list .stat-item {
+    background-color: rgba(154, 160, 252, 0.1);
+}
+
+body.dark-mode .stats-list .stat-item:hover {
+    background-color: rgba(154, 160, 252, 0.15);
+}
+
+/* Legacy grid layout for backward compatibility */
+.stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 8px;
+    margin-top: 10px;
+}
+
+.stat-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 6px 10px;
+    background-color: rgba(0, 123, 255, 0.05);
+    border-radius: 4px;
+    border-left: 3px solid var(--button-bg-color);
+}
+
+body.dark-mode .stat-row {
+    background-color: rgba(154, 160, 252, 0.1);
+}
+
+.stat-label {
+    font-weight: 600;
+    color: var(--text-color-muted);
+    font-size: 0.85em;
+}
+
+.stat-value {
+    font-weight: 500;
+    color: var(--text-color);
+    font-size: 0.9em;
+}
+
+/* Session statistics styling */
+#session-stats-container {
+    margin-top: 20px;
+    padding: 15px;
+    border: 1px solid var(--border-color);
+    background-color: var(--output-bg-color);
+    border-radius: 8px;
+    transition: background-color 0.3s ease, border-color 0.3s ease;
+}
+
+#session-stats-container h3 {
+    margin: 0 0 15px 0;
+    color: var(--text-color);
+    font-size: 1.1em;
+    font-weight: 600;
+}
+
+.session-stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 12px;
+}
+
+.stat-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 10px;
+    background-color: var(--input-bg-color);
+    border-radius: 6px;
+    border: 1px solid var(--input-border-color);
+    transition: transform 0.2s ease;
+}
+
+.stat-item:hover {
+    transform: translateY(-2px);
+}
+
+.stat-item .stat-label {
+    font-size: 0.8em;
+    margin-bottom: 4px;
+}
+
+.stat-item .stat-value {
+    font-size: 1.2em;
+    font-weight: 700;
+    color: var(--button-bg-color);
+}
+
+/* --- EDITABLE SLIDER VALUES --- */
+.editable-value {
+    cursor: pointer;
+    padding: 2px 4px;
+    border-radius: 3px;
+    transition: background-color 0.2s ease;
+    user-select: none;
+}
+
+.editable-value:hover {
+    background-color: var(--hover-bg-color);
+}
+
+.editable-input {
+    background: var(--input-bg-color);
+    border: 1px solid var(--button-bg-color);
+    border-radius: 3px;
+    padding: 2px 4px;
+    font-size: inherit;
+    font-weight: inherit;
+    color: var(--input-text-color);
+    width: 60px;
+    text-align: center;
+}
+
+.editable-input:focus {
+    outline: none;
+    box-shadow: 0 0 0 2px var(--button-bg-color);
+}
+
+/* --- CUSTOM PARAMETERS --- */
+.custom-params-container {
+    margin-top: 20px;
+    padding: 15px;
+    border: 1px dashed var(--border-color);
+    border-radius: 8px;
+    background-color: rgba(0, 123, 255, 0.02);
+}
+
+body.dark-mode .custom-params-container {
+    background-color: rgba(154, 160, 252, 0.05);
+}
+
+.custom-params-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 15px;
+}
+
+.custom-params-header label {
+    margin: 0;
+    font-weight: 600;
+    color: var(--text-color-muted);
+}
+
+.add-param-btn {
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    background-color: var(--button-bg-color);
+    color: var(--button-text-color);
+    border: none;
+    font-size: 18px;
+    font-weight: bold;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s ease;
+    margin: 0;
+}
+
+.add-param-btn:hover {
+    background-color: var(--button-hover-bg-color);
+    transform: scale(1.1);
+}
+
+.custom-param-item {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    margin-bottom: 10px;
+    padding: 10px;
+    background-color: var(--input-bg-color);
+    border: 1px solid var(--input-border-color);
+    border-radius: 6px;
+}
+
+.custom-param-item input {
+    margin: 0;
+    flex: 1;
+}
+
+.custom-param-item .param-name-input {
+    max-width: 150px;
+}
+
+.custom-param-item .param-value-input {
+    max-width: 200px;
+}
+
+.remove-param-btn {
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    background-color: var(--error-color);
+    color: white;
+    border: none;
+    font-size: 14px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s ease;
+    margin: 0;
+}
+
+.remove-param-btn:hover {
+    background-color: #dc2626;
+    transform: scale(1.1);
 }
 
 /* --- GENERATION TYPE SELECTOR (Segmented Radio Buttons) --- */
@@ -726,6 +984,73 @@ body.dark-mode .model-response {
 
 #loading-indicator p {
     font-size: 1.2em;
+    margin-top: 10px;
+    font-weight: 500;
+}
+
+/* Enhanced loading states */
+.loading-state {
+    position: relative;
+    overflow: hidden;
+}
+
+.loading-state::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(
+        90deg,
+        transparent,
+        rgba(255, 255, 255, 0.2),
+        transparent
+    );
+    animation: shimmer 2s infinite;
+}
+
+body.dark-mode .loading-state::after {
+    background: linear-gradient(
+        90deg,
+        transparent,
+        rgba(255, 255, 255, 0.1),
+        transparent
+    );
+}
+
+@keyframes shimmer {
+    0% { left: -100%; }
+    100% { left: 100%; }
+}
+
+/* Progress indicator for streaming */
+.progress-indicator {
+    width: 100%;
+    height: 3px;
+    background-color: var(--border-color);
+    border-radius: 2px;
+    overflow: hidden;
+    margin: 10px 0;
+}
+
+.progress-bar {
+    height: 100%;
+    background: linear-gradient(
+        90deg,
+        var(--button-bg-color),
+        var(--button-hover-bg-color),
+        var(--button-bg-color)
+    );
+    background-size: 200% 100%;
+    animation: progress-flow 2s linear infinite;
+    width: 0%;
+    transition: width 0.3s ease;
+}
+
+@keyframes progress-flow {
+    0% { background-position: 200% 0; }
+    100% { background-position: -200% 0; }
 }
 
 #output-area a#download-audio:hover,
@@ -880,4 +1205,160 @@ input[type="number"]::-webkit-inner-spin-button,
 input[type="number"]::-webkit-outer-spin-button {
     -webkit-appearance: inner-spin-button; /* Re-show spinners on Webkit */
     opacity: 1; /* Make sure they are visible */
+}
+
+/* Styles for prompt upload controls and preview */
+.prompt-upload-controls {
+    display: flex;
+    align-items: center; /* Vertically align button and preview items */
+    gap: 10px; /* Space between button and preview container */
+    margin-bottom: 8px; /* Space below this section, before the textarea */
+}
+
+#upload-preview-container {
+    display: flex; /* This will be set by JS, but good to have here for reference */
+    flex-wrap: wrap; /* Allow multiple previews to wrap */
+    gap: 8px; /* Space between individual file previews */
+    align-items: center; /* Align items within the preview container */
+}
+
+.file-preview-wrapper {
+    display: flex; /* Changed from inline-flex for consistency with parent */
+    align-items: center;
+    gap: 4px;
+    padding: 4px;
+    border: 1px solid var(--border-color);
+    border-radius: 4px;
+    background-color: var(--input-bg-color); /* Use input-bg-color for consistency */
+}
+
+.file-preview-thumbnail {
+    width: 32px;
+    height: 32px;
+    object-fit: cover;
+    border-radius: 3px;
+}
+
+.file-preview-icon {
+    font-size: 24px; /* Adjust for better visual balance with thumbnail */
+    line-height: 32px; /* Helps align with thumbnail height */
+    color: var(--text-color-muted);
+}
+
+.remove-file-btn {
+    border: none;
+    background: transparent;
+    cursor: pointer;
+    font-size: 18px; /* Slightly larger for easier clicking */
+    padding: 0 4px;
+    color: var(--text-color-muted);
+    line-height: 1; /* Ensure tight fit */
+}
+
+.remove-file-btn:hover {
+    color: var(--error-color); /* Use error color for remove action */
+}
+
+/* Dark mode adjustments for preview */
+body.dark-mode .file-preview-wrapper {
+    background-color: var(--input-bg-color); /* Consistent with other inputs */
+    border-color: var(--input-border-color);
+}
+
+body.dark-mode .file-preview-icon {
+    color: var(--text-color-muted);
+}
+
+body.dark-mode .remove-file-btn {
+    color: var(--text-color-muted);
+}
+
+body.dark-mode .remove-file-btn:hover {
+    color: var(--error-color);
+}
+
+/* --- RESPONSIVE DESIGN IMPROVEMENTS --- */
+@media (max-width: 768px) {
+    body {
+        padding: 15px;
+        margin: 10px auto;
+        max-width: 95%;
+    }
+
+    header {
+        flex-direction: column;
+        gap: 15px;
+        text-align: center;
+    }
+
+    .theme-mode-group {
+        justify-content: center;
+    }
+
+    .generation-type-selector {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .generation-type-selector .main-label {
+        margin-bottom: 10px;
+        text-align: center;
+    }
+
+    .radio-group-wrapper {
+        flex-direction: column;
+    }
+
+    .generation-type-selector .radio-label {
+        border-right: none;
+        border-bottom: 1px solid var(--border-color);
+        text-align: center;
+    }
+
+    .generation-type-selector .radio-label:last-of-type {
+        border-bottom: none;
+    }
+
+    .stats-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .session-stats-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    .size-inputs {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .size-inputs input[type="number"] {
+        width: 100%;
+        margin-bottom: 10px;
+    }
+
+    .prompt-upload-controls {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .upload-btn {
+        margin-left: 0;
+        margin-bottom: 10px;
+    }
+}
+
+@media (max-width: 480px) {
+    .session-stats-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .payload-buttons-container {
+        flex-direction: column;
+    }
+
+    .download-buttons-container {
+        flex-direction: column;
+        gap: 8px;
+    }
 }
