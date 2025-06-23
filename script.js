@@ -84,6 +84,21 @@ let lastApiResponse = null;
 let microphonePermissionStatus = 'prompt'; // 'granted', 'denied', 'prompt'
 let uploadedFiles = []; // Holds an array of files to attach
 
+// Request cancellation and UI state management
+let currentAbortController = null;
+let isRequestActive = false;
+let originalSendButtonText = 'Generate';
+
+// Statistics tracking
+let sessionStats = {
+    totalRequests: 0,
+    successfulRequests: 0,
+    failedRequests: 0,
+    totalTokensUsed: 0,
+    averageResponseTime: 0,
+    requestHistory: []
+};
+
 /**
  * Renders a small preview or icon of the uploaded file, with a remove button.
  */
@@ -746,12 +761,311 @@ function clearOutput() {
 
 // --- LOADER FUNCTIONS ---
 // Functions to show and hide the loading indicator.
-function showLoader() {
-    if (loadingIndicator) loadingIndicator.style.display = 'flex';
+function showLoader(message = 'Loading...') {
+    if (loadingIndicator) {
+        loadingIndicator.style.display = 'flex';
+        const loadingText = loadingIndicator.querySelector('p');
+        if (loadingText) loadingText.textContent = message;
+    }
+
+    // Show progress container
+    const progressContainer = document.getElementById('progress-container');
+    if (progressContainer) {
+        progressContainer.style.display = 'block';
+        const progressText = document.getElementById('progress-text');
+        if (progressText) progressText.textContent = message;
+    }
 }
 
 function hideLoader() {
     if (loadingIndicator) loadingIndicator.style.display = 'none';
+
+    // Hide progress container
+    const progressContainer = document.getElementById('progress-container');
+    if (progressContainer) {
+        progressContainer.style.display = 'none';
+    }
+}
+
+function updateProgress(percentage, message) {
+    const progressBar = document.querySelector('.progress-bar');
+    const progressText = document.getElementById('progress-text');
+
+    if (progressBar) {
+        progressBar.style.width = `${Math.min(100, Math.max(0, percentage))}%`;
+    }
+
+    if (progressText && message) {
+        progressText.textContent = message;
+    }
+}
+
+// --- REQUEST CANCELLATION FUNCTIONS ---
+// Functions to handle request cancellation and UI state management.
+
+function startRequest() {
+    isRequestActive = true;
+    currentAbortController = new AbortController();
+
+    // Update send button to show cancel option
+    sendButton.textContent = 'Cancel Request';
+    sendButton.classList.add('cancel-mode');
+    sendButton.style.backgroundColor = 'var(--error-color)';
+
+    // Update session stats
+    sessionStats.totalRequests++;
+}
+
+function endRequest(success = true) {
+    isRequestActive = false;
+    currentAbortController = null;
+
+    // Reset send button
+    sendButton.textContent = originalSendButtonText;
+    sendButton.classList.remove('cancel-mode');
+    sendButton.style.backgroundColor = '';
+
+    // Update session stats
+    if (success) {
+        sessionStats.successfulRequests++;
+    } else {
+        sessionStats.failedRequests++;
+    }
+}
+
+function cancelCurrentRequest() {
+    if (currentAbortController && isRequestActive) {
+        currentAbortController.abort();
+        endRequest(false);
+        hideLoader();
+        displayError('Request was cancelled by user.');
+
+        // Add to request history
+        sessionStats.requestHistory.push({
+            timestamp: new Date().toISOString(),
+            status: 'cancelled',
+            duration: 0
+        });
+
+        updateSessionStatsDisplay();
+    }
+}
+
+// --- COPY TO CLIPBOARD FUNCTIONS ---
+// Functions to handle copying response text to clipboard.
+
+async function copyToClipboard(text) {
+    try {
+        // Try modern clipboard API first
+        if (navigator.clipboard && window.isSecureContext) {
+            await navigator.clipboard.writeText(text);
+            return true;
+        } else {
+            // Fallback for older browsers
+            return copyToClipboardFallback(text);
+        }
+    } catch (error) {
+        console.error('Clipboard copy failed:', error);
+        return copyToClipboardFallback(text);
+    }
+}
+
+function copyToClipboardFallback(text) {
+    try {
+        const textArea = document.createElement('textarea');
+        textArea.value = text;
+        textArea.style.position = 'fixed';
+        textArea.style.left = '-999999px';
+        textArea.style.top = '-999999px';
+        document.body.appendChild(textArea);
+        textArea.focus();
+        textArea.select();
+
+        const successful = document.execCommand('copy');
+        document.body.removeChild(textArea);
+        return successful;
+    } catch (error) {
+        console.error('Fallback clipboard copy failed:', error);
+        return false;
+    }
+}
+
+function showCopyButton(responseText) {
+    // Remove existing copy button if present
+    const existingCopyBtn = document.getElementById('copy-response-btn');
+    if (existingCopyBtn) {
+        existingCopyBtn.remove();
+    }
+
+    // Create copy button
+    const copyBtn = document.createElement('button');
+    copyBtn.id = 'copy-response-btn';
+    copyBtn.className = 'copy-btn';
+    copyBtn.textContent = 'Copy Response';
+    copyBtn.title = 'Copy response to clipboard';
+
+    copyBtn.addEventListener('click', async () => {
+        const success = await copyToClipboard(responseText);
+
+        if (success) {
+            // Show success feedback
+            const originalText = copyBtn.textContent;
+            copyBtn.textContent = 'Copied!';
+            copyBtn.style.backgroundColor = 'var(--success-color)';
+
+            setTimeout(() => {
+                copyBtn.textContent = originalText;
+                copyBtn.style.backgroundColor = '';
+            }, 2000);
+        } else {
+            // Show error feedback
+            const originalText = copyBtn.textContent;
+            copyBtn.textContent = 'Copy Failed';
+            copyBtn.style.backgroundColor = 'var(--error-color)';
+
+            setTimeout(() => {
+                copyBtn.textContent = originalText;
+                copyBtn.style.backgroundColor = '';
+            }, 2000);
+        }
+    });
+
+    // Insert copy button after the output text
+    outputText.parentNode.insertBefore(copyBtn, outputText.nextSibling);
+}
+
+// --- ENHANCED STATISTICS FUNCTIONS ---
+// Functions to track and display comprehensive statistics.
+
+function updateSessionStatsDisplay() {
+    const sessionStatsContainer = document.getElementById('session-stats-container');
+    if (!sessionStatsContainer) return;
+
+    const successRate = sessionStats.totalRequests > 0
+        ? ((sessionStats.successfulRequests / sessionStats.totalRequests) * 100).toFixed(1)
+        : 0;
+
+    sessionStatsContainer.innerHTML = `
+        <div class="session-stats-grid">
+            <div class="stat-item">
+                <span class="stat-label">Total Requests:</span>
+                <span class="stat-value">${sessionStats.totalRequests}</span>
+            </div>
+            <div class="stat-item">
+                <span class="stat-label">Success Rate:</span>
+                <span class="stat-value">${successRate}%</span>
+            </div>
+            <div class="stat-item">
+                <span class="stat-label">Avg Response Time:</span>
+                <span class="stat-value">${sessionStats.averageResponseTime.toFixed(2)}s</span>
+            </div>
+            <div class="stat-item">
+                <span class="stat-label">Total Tokens:</span>
+                <span class="stat-value">${sessionStats.totalTokensUsed}</span>
+            </div>
+        </div>
+    `;
+}
+
+function addToRequestHistory(requestData) {
+    sessionStats.requestHistory.push({
+        timestamp: new Date().toISOString(),
+        ...requestData
+    });
+
+    // Keep only last 50 requests to prevent memory issues
+    if (sessionStats.requestHistory.length > 50) {
+        sessionStats.requestHistory = sessionStats.requestHistory.slice(-50);
+    }
+
+    // Update average response time
+    const successfulRequests = sessionStats.requestHistory.filter(req => req.status === 'success');
+    if (successfulRequests.length > 0) {
+        const totalTime = successfulRequests.reduce((sum, req) => sum + (req.duration || 0), 0);
+        sessionStats.averageResponseTime = totalTime / successfulRequests.length;
+    }
+}
+
+function displayEnhancedStats(requestData) {
+    const {
+        duration,
+        responseSize,
+        statusCode,
+        statusText,
+        tokenCount,
+        model,
+        provider,
+        generationType
+    } = requestData;
+
+    let statsHtml = `
+        <div class="stats-grid">
+            <div class="stat-row">
+                <span class="stat-label">Duration:</span>
+                <span class="stat-value">${duration}ms</span>
+            </div>
+            <div class="stat-row">
+                <span class="stat-label">Response Size:</span>
+                <span class="stat-value">${formatBytes(responseSize)}</span>
+            </div>
+            <div class="stat-row">
+                <span class="stat-label">Status:</span>
+                <span class="stat-value">${statusCode} ${statusText}</span>
+            </div>
+            <div class="stat-row">
+                <span class="stat-label">Model:</span>
+                <span class="stat-value">${model}</span>
+            </div>
+            <div class="stat-row">
+                <span class="stat-label">Provider:</span>
+                <span class="stat-value">${provider}</span>
+            </div>
+            <div class="stat-row">
+                <span class="stat-label">Type:</span>
+                <span class="stat-value">${generationType}</span>
+            </div>
+            <div class="stat-row">
+                <span class="stat-label">Timestamp:</span>
+                <span class="stat-value">${new Date().toLocaleString()}</span>
+            </div>
+    `;
+
+    if (tokenCount && tokenCount > 0) {
+        statsHtml += `
+            <div class="stat-row">
+                <span class="stat-label">Tokens:</span>
+                <span class="stat-value">${tokenCount}</span>
+            </div>
+        `;
+        sessionStats.totalTokensUsed += tokenCount;
+    }
+
+    statsHtml += '</div>';
+
+    statsArea.innerHTML = statsHtml;
+    statsArea.style.display = 'block';
+
+    // Add to session history
+    addToRequestHistory({
+        status: 'success',
+        duration: parseFloat(duration),
+        responseSize,
+        statusCode,
+        model,
+        provider,
+        generationType,
+        tokenCount: tokenCount || 0
+    });
+
+    updateSessionStatsDisplay();
+}
+
+function formatBytes(bytes) {
+    if (bytes === 0) return '0 Bytes';
+    const k = 1024;
+    const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+    const i = Math.floor(Math.log(bytes) / Math.log(k));
+    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
 }
 
 // --- API RESPONSE HELPER ---
@@ -799,10 +1113,13 @@ async function handleApiResponse(response) {
  * Parameter-Toggles werden ausgewertet: Parameter werden nur gesendet, wenn der jeweilige Switch aktiviert ist.
  */
 async function callTextApi(provider, apiKey, baseUrl, model, prompt) {
-    showLoader(); // Show loader at the start
+    showLoader('Generating text response...'); // Show loader at the start
     clearOutput();
     outputText.innerHTML = 'Sending text request...';
     outputArea.style.display = 'block';
+
+    // Prepare request start time for enhanced statistics
+    const requestStartTime = performance.now();
 
     let apiUrl = '';
     let headers = {};
@@ -908,7 +1225,8 @@ if (uploadedFiles.length > 0) {
         response = await fetch(apiUrl, {
             method: 'POST',
             headers: fetchHeaders,
-            body: formData
+            body: formData,
+            signal: currentAbortController?.signal
         });
         console.log("[callTextApi] FormData request fetch completed. Response status:", response.status);
     } catch (fetchError) {
@@ -934,7 +1252,8 @@ if (uploadedFiles.length > 0) {
         response = await fetch(apiUrl, {
             method: 'POST',
             headers: headers, // Original headers with 'Content-Type': 'application/json'
-            body: JSON.stringify(body)
+            body: JSON.stringify(body),
+            signal: currentAbortController?.signal
         });
         console.log("[callTextApi] Plain JSON request fetch completed. Response status:", response.status);
     } catch (fetchError) {
@@ -998,15 +1317,23 @@ try {
                         const tokensPerSecondFinal = (elapsed > 0 && completionTokensFinal > 0)
                             ? (completionTokensFinal / elapsed).toFixed(2) : "…";
                         const totalTokensFinal = promptTokensEstimate + completionTokensFinal;
-                        statsArea.innerHTML = `
-                            <span><strong>Time:</strong> ${elapsed.toFixed(2)}s</span>
-                            <span><strong>Tokens/Sec:</strong> ${tokensPerSecondFinal}</span>
-                            <span><strong>Prompt Tokens:</strong> ${promptTokensEstimate} (est)</span>
-                            <span><strong>Completion Tokens:</strong> ${completionTokensFinal} (est)</span>
-                            <span><strong>Total Tokens:</strong> ${totalTokensFinal} (est)</span>
-                            <br><small>Usage data may not be available for streamed responses. Token values are estimated.</small>
-                        `;
-                        statsArea.style.display = 'block';
+
+                        // Show copy button for successful streaming responses
+                        showCopyButton(contentBuffer);
+
+                        // Calculate enhanced statistics for streaming
+                        const responseSize = new Blob([contentBuffer]).size;
+
+                        displayEnhancedStats({
+                            duration: (elapsed * 1000).toFixed(0), // Convert to milliseconds
+                            responseSize: responseSize,
+                            statusCode: response.status,
+                            statusText: response.statusText,
+                            tokenCount: totalTokensFinal,
+                            model: model,
+                            provider: provider,
+                            generationType: 'text (streamed)'
+                        });
                         // Ensure any final buffered content is displayed (though typically not needed with SSE)
                         if (accumulatedResponse.startsWith("data: ")) {
                             const jsonStr = accumulatedResponse.substring(6).trim();
@@ -1099,44 +1426,47 @@ try {
             outputText.innerHTML = `<strong>${model}:</strong><br>${aiContent.replace(/\n/g, '<br>')}`;
             outputArea.style.borderColor = '#ccc';
 
-            // Calculate and display stats if usage data is available
-            if (data.usage) {
-                const usage = data.usage;
-                const promptTokens = usage.prompt_tokens || 0;
-                const completionTokens = usage.completion_tokens || 0;
-                const totalTokens = usage.total_tokens || (promptTokens + completionTokens);
-                let tokensPerSecond = 0;
+            // Show copy button for successful text responses
+            showCopyButton(aiContent);
 
-                if (durationInSeconds > 0 && completionTokens > 0) {
-                    tokensPerSecond = (completionTokens / durationInSeconds).toFixed(2);
-                }
+            // Calculate enhanced statistics
+            const responseSize = new Blob([aiContent]).size;
+            const totalTokens = data.usage?.total_tokens || 0;
 
-                statsArea.innerHTML = `
-                    <span><strong>Time:</strong> ${durationInSeconds.toFixed(2)}s</span>
-                    <span><strong>Tokens/Sec:</strong> ${tokensPerSecond}</span>
-                    <span><strong>Prompt Tokens:</strong> ${promptTokens}</span>
-                    <span><strong>Completion Tokens:</strong> ${completionTokens}</span>
-                    <span><strong>Total Tokens:</strong> ${totalTokens}</span>
-                `;
-                statsArea.style.display = 'block';
-            } else {
-                 statsArea.innerHTML = `<span><strong>Time:</strong> ${durationInSeconds.toFixed(2)}s</span><br><span>Usage data not available in response.</span>`;
-                 statsArea.style.display = 'block';
-            }
+            displayEnhancedStats({
+                duration: (durationInSeconds * 1000).toFixed(0), // Convert to milliseconds
+                responseSize: responseSize,
+                statusCode: response.status,
+                statusText: response.statusText,
+                tokenCount: totalTokens,
+                model: model,
+                provider: provider,
+                generationType: 'text'
+            });
         }
 
     } catch (error) {
+        // Handle cancellation specifically
+        if (error.name === 'AbortError') {
+            // Request was cancelled, endRequest already called in cancelCurrentRequest
+            return;
+        }
+
         // lastApiResponse might contain error details already
         displayError(error.message); // displayError will hide loader
         statsArea.style.display = 'none'; // Hide stats on error
+        endRequest(false); // Mark request as failed
     } finally {
         hideLoader(); // Ensure loader is hidden
+        if (isRequestActive) {
+            endRequest(true); // Mark request as successful if still active
+        }
     }
 }
 
 // Handles image generation API calls.
 async function callImageApi(provider, apiKey, baseUrl, model, prompt) {
-    showLoader(); // Show loader at the start
+    showLoader('Generating image...'); // Show loader at the start
     clearOutput();
     outputText.innerHTML = 'Sending image request...'; // Use text area for status
     outputArea.style.display = 'block';
@@ -1199,7 +1529,8 @@ async function callImageApi(provider, apiKey, baseUrl, model, prompt) {
         const response = await fetch(apiUrl, {
             method: 'POST',
             headers: headers,
-            body: JSON.stringify(body)
+            body: JSON.stringify(body),
+            signal: currentAbortController?.signal
         });
 
         const endTime = performance.now();
@@ -1335,16 +1666,24 @@ async function callImageApi(provider, apiKey, baseUrl, model, prompt) {
                 return;
             }
         } else {
+            // Handle cancellation specifically
+            if (error.name === 'AbortError') {
+                return;
+            }
             displayError(error.message); // displayError will hide loader
+            endRequest(false);
         }
     } finally {
         hideLoader();
+        if (isRequestActive) {
+            endRequest(true);
+        }
     }
 }
 
 // Handles Text-to-Speech (TTS) API calls.
 async function callTtsApi(provider, apiKey, baseUrl, model, text, voice) {
-    showLoader(); // Show loader at the start
+    showLoader('Generating speech...'); // Show loader at the start
     clearOutput();
     outputText.innerHTML = 'Generating TTS...';
     outputAudio.style.display = 'none';
@@ -1384,6 +1723,7 @@ async function callTtsApi(provider, apiKey, baseUrl, model, text, voice) {
             method: 'POST',
             headers: headers,
             body: JSON.stringify(body),
+            signal: currentAbortController?.signal
         });
         
         const endTime = performance.now();
@@ -1439,17 +1779,25 @@ async function callTtsApi(provider, apiKey, baseUrl, model, text, voice) {
         
         outputAudio.load();
     } catch (err) {
+        // Handle cancellation specifically
+        if (err.name === 'AbortError') {
+            return;
+        }
         // lastApiResponse might be set from the !response.ok block
         displayError(err.message); // displayError will hide loader
         statsArea.style.display = 'none'; // Hide stats on error
+        endRequest(false);
     } finally {
         hideLoader(); // Ensure loader is hidden
+        if (isRequestActive) {
+            endRequest(true);
+        }
     }
 }
 
 // Handles Speech-to-Text (STT) API calls.
 async function callSttApi(provider, apiKey, baseUrl, model, file) {
-    showLoader(); // Show loader at the start
+    showLoader('Transcribing audio...'); // Show loader at the start
     clearOutput();
     outputText.innerHTML = 'Transcribing audio...';
     outputArea.style.display = 'block';
@@ -1493,7 +1841,8 @@ async function callSttApi(provider, apiKey, baseUrl, model, file) {
         const response = await fetch(apiUrl, {
             method: 'POST',
             headers: headers,
-            body: formData
+            body: formData,
+            signal: currentAbortController?.signal
         });
 
         const endTime = performance.now();
@@ -1545,11 +1894,19 @@ async function callSttApi(provider, apiKey, baseUrl, model, file) {
         statsArea.style.display = 'block';
         
     } catch (err) {
+        // Handle cancellation specifically
+        if (err.name === 'AbortError') {
+            return;
+        }
         // lastApiResponse might contain error details
         displayError(err.message); // displayError will hide loader
         statsArea.style.display = 'none'; // Hide stats on error
+        endRequest(false);
     } finally {
         hideLoader(); // Ensure loader is hidden
+        if (isRequestActive) {
+            endRequest(true);
+        }
     }
 }
 
@@ -1774,7 +2131,7 @@ function setupVideoDownload(videoUrl, model) {
 
 // Handles video generation API calls.
 async function callVideoApi(provider, apiKey, baseUrl, model, prompt) {
-    showLoader(); // Show loader at the start
+    showLoader('Generating video...'); // Show loader at the start
     clearOutput();
     outputText.innerHTML = 'Generating video...';
     outputArea.style.display = 'block';
@@ -1852,7 +2209,8 @@ async function callVideoApi(provider, apiKey, baseUrl, model, prompt) {
         const response = await fetch(apiUrl, {
             method: 'POST',
             headers: headers,
-            body: JSON.stringify(body)
+            body: JSON.stringify(body),
+            signal: currentAbortController?.signal
         });
 
         const endTime = performance.now();
@@ -1904,12 +2262,20 @@ async function callVideoApi(provider, apiKey, baseUrl, model, prompt) {
         }
 
     } catch (error) {
+        // Handle cancellation specifically
+        if (error.name === 'AbortError') {
+            return;
+        }
         displayError(error.message); // displayError will hide loader
         statsArea.style.display = 'none';
+        endRequest(false);
     } finally {
         // Ensure loader is hidden for all other cases, including successful calls or other errors
         if (!(provider === 'openai' || provider === 'deepseek' || provider === 'claude')) {
             hideLoader();
+        }
+        if (isRequestActive) {
+            endRequest(true);
         }
     }
 }
@@ -2034,6 +2400,12 @@ function bindEventListeners() {
 // --- EVENT HANDLER FUNCTIONS ---
 
 async function handleSendClick() {
+    // Check if we should cancel current request
+    if (isRequestActive) {
+        cancelCurrentRequest();
+        return;
+    }
+
     await saveProviderCredentials(providerSelect.value);
     await saveGeneralSettings();
 
@@ -2050,6 +2422,9 @@ async function handleSendClick() {
         if (!prompt) return displayError('Please enter a prompt or description.');
     }
     if (provider === 'openai_compatible' && !baseUrl) return displayError('Please enter the Base URL for OpenAI Compatible provider.');
+
+    // Start the request (this will update UI and create abort controller)
+    startRequest();
 
     switch (generationType) {
         case 'text':
@@ -2078,6 +2453,7 @@ async function handleSendClick() {
             break;
         default:
             displayError('Invalid generation type selected.');
+            endRequest(false);
     }
 }
 
@@ -2197,6 +2573,16 @@ async function initializeApp() {
         } else {
             details.open = typeof isOpen === 'boolean' ? isOpen : true; // Default others to open
         }
+    }
+
+    // Store original button text
+    originalSendButtonText = sendButton.textContent;
+
+    // Show session stats container
+    const sessionStatsContainer = document.getElementById('session-stats-container');
+    if (sessionStatsContainer) {
+        sessionStatsContainer.style.display = 'block';
+        updateSessionStatsDisplay();
     }
 
     initializeTheme();

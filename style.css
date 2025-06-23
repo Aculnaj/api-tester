@@ -173,9 +173,30 @@ button:active {
 
 button.copy-btn {
     width: auto;
-    padding: 6px 12px;
-    font-size: 0.85rem;
-    margin-top: 10px;
+    padding: 8px 16px;
+    font-size: 0.9rem;
+    margin-top: 15px;
+    margin-bottom: 10px;
+    border-radius: 6px;
+    transition: all 0.3s ease;
+    font-weight: 500;
+}
+
+button.copy-btn:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 8px var(--shadow-color);
+}
+
+/* Cancel button styling */
+button.cancel-mode {
+    background-color: var(--error-color) !important;
+    animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+    0% { opacity: 1; }
+    50% { opacity: 0.7; }
+    100% { opacity: 1; }
 }
 
 hr {
@@ -338,6 +359,89 @@ legend {
 }
 #stats-area span:last-child {
     margin-bottom: 0;
+}
+
+/* Enhanced statistics grid layout */
+.stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 8px;
+    margin-top: 10px;
+}
+
+.stat-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 6px 10px;
+    background-color: rgba(0, 123, 255, 0.05);
+    border-radius: 4px;
+    border-left: 3px solid var(--button-bg-color);
+}
+
+body.dark-mode .stat-row {
+    background-color: rgba(154, 160, 252, 0.1);
+}
+
+.stat-label {
+    font-weight: 600;
+    color: var(--text-color-muted);
+    font-size: 0.85em;
+}
+
+.stat-value {
+    font-weight: 500;
+    color: var(--text-color);
+    font-size: 0.9em;
+}
+
+/* Session statistics styling */
+#session-stats-container {
+    margin-top: 20px;
+    padding: 15px;
+    border: 1px solid var(--border-color);
+    background-color: var(--output-bg-color);
+    border-radius: 8px;
+    transition: background-color 0.3s ease, border-color 0.3s ease;
+}
+
+#session-stats-container h3 {
+    margin: 0 0 15px 0;
+    color: var(--text-color);
+    font-size: 1.1em;
+    font-weight: 600;
+}
+
+.session-stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 12px;
+}
+
+.stat-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 10px;
+    background-color: var(--input-bg-color);
+    border-radius: 6px;
+    border: 1px solid var(--input-border-color);
+    transition: transform 0.2s ease;
+}
+
+.stat-item:hover {
+    transform: translateY(-2px);
+}
+
+.stat-item .stat-label {
+    font-size: 0.8em;
+    margin-bottom: 4px;
+}
+
+.stat-item .stat-value {
+    font-size: 1.2em;
+    font-weight: 700;
+    color: var(--button-bg-color);
 }
 
 /* --- GENERATION TYPE SELECTOR (Segmented Radio Buttons) --- */
@@ -726,6 +830,73 @@ body.dark-mode .model-response {
 
 #loading-indicator p {
     font-size: 1.2em;
+    margin-top: 10px;
+    font-weight: 500;
+}
+
+/* Enhanced loading states */
+.loading-state {
+    position: relative;
+    overflow: hidden;
+}
+
+.loading-state::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(
+        90deg,
+        transparent,
+        rgba(255, 255, 255, 0.2),
+        transparent
+    );
+    animation: shimmer 2s infinite;
+}
+
+body.dark-mode .loading-state::after {
+    background: linear-gradient(
+        90deg,
+        transparent,
+        rgba(255, 255, 255, 0.1),
+        transparent
+    );
+}
+
+@keyframes shimmer {
+    0% { left: -100%; }
+    100% { left: 100%; }
+}
+
+/* Progress indicator for streaming */
+.progress-indicator {
+    width: 100%;
+    height: 3px;
+    background-color: var(--border-color);
+    border-radius: 2px;
+    overflow: hidden;
+    margin: 10px 0;
+}
+
+.progress-bar {
+    height: 100%;
+    background: linear-gradient(
+        90deg,
+        var(--button-bg-color),
+        var(--button-hover-bg-color),
+        var(--button-bg-color)
+    );
+    background-size: 200% 100%;
+    animation: progress-flow 2s linear infinite;
+    width: 0%;
+    transition: width 0.3s ease;
+}
+
+@keyframes progress-flow {
+    0% { background-position: 200% 0; }
+    100% { background-position: -200% 0; }
 }
 
 #output-area a#download-audio:hover,
@@ -950,4 +1121,90 @@ body.dark-mode .remove-file-btn {
 
 body.dark-mode .remove-file-btn:hover {
     color: var(--error-color);
+}
+
+/* --- RESPONSIVE DESIGN IMPROVEMENTS --- */
+@media (max-width: 768px) {
+    body {
+        padding: 15px;
+        margin: 10px auto;
+        max-width: 95%;
+    }
+
+    header {
+        flex-direction: column;
+        gap: 15px;
+        text-align: center;
+    }
+
+    .theme-mode-group {
+        justify-content: center;
+    }
+
+    .generation-type-selector {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .generation-type-selector .main-label {
+        margin-bottom: 10px;
+        text-align: center;
+    }
+
+    .radio-group-wrapper {
+        flex-direction: column;
+    }
+
+    .generation-type-selector .radio-label {
+        border-right: none;
+        border-bottom: 1px solid var(--border-color);
+        text-align: center;
+    }
+
+    .generation-type-selector .radio-label:last-of-type {
+        border-bottom: none;
+    }
+
+    .stats-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .session-stats-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    .size-inputs {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .size-inputs input[type="number"] {
+        width: 100%;
+        margin-bottom: 10px;
+    }
+
+    .prompt-upload-controls {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .upload-btn {
+        margin-left: 0;
+        margin-bottom: 10px;
+    }
+}
+
+@media (max-width: 480px) {
+    .session-stats-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .payload-buttons-container {
+        flex-direction: column;
+    }
+
+    .download-buttons-container {
+        flex-direction: column;
+        gap: 8px;
+    }
 }

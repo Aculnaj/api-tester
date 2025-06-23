@@ -272,6 +272,13 @@
 
         <button id="send-button">Generate</button>
 
+        <div id="progress-container" style="display: none;">
+            <div class="progress-indicator">
+                <div class="progress-bar"></div>
+            </div>
+            <p id="progress-text">Processing request...</p>
+        </div>
+
         <div id="output-area">
             <p id="output-text"></p>
             <img id="output-image" src="" alt="Generated Image" style="display: none;">
@@ -287,6 +294,11 @@
         </div>
 
         <div id="stats-area"></div>
+
+        <div id="session-stats-container" style="display: none;">
+            <h3>Session Statistics</h3>
+            <div class="session-stats-grid"></div>
+        </div>
 
         <div id="payload-container" style="display: none;">
             <div class="payload-buttons-container">
