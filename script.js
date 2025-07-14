@@ -277,7 +277,7 @@ async function loadGeneralSettings() {
     }
     if (enableTemperatureCheckbox) {
         const en = await getStoredValue(LAST_ENABLE_TEMPERATURE_KEY);
-        enableTemperatureCheckbox.checked = typeof en === "boolean" ? en : true;
+        enableTemperatureCheckbox.checked = typeof en === "boolean" ? en : false;
     }
     if (enableTopPCheckbox) {
         const en = await getStoredValue(LAST_ENABLE_TOP_P_KEY);
@@ -289,7 +289,7 @@ async function loadGeneralSettings() {
     }
     if (enableMaxTokensCheckbox) {
         const en = await getStoredValue(LAST_ENABLE_MAX_TOKENS_KEY);
-        enableMaxTokensCheckbox.checked = typeof en === "boolean" ? en : true;
+        enableMaxTokensCheckbox.checked = typeof en === "boolean" ? en : false;
     }
     if (enableReasoningEffortCheckbox) {
         const en = await getStoredValue(LAST_ENABLE_REASONING_EFFORT_KEY);
@@ -311,18 +311,12 @@ async function loadGeneralSettings() {
     const lastTopK = await getStoredValue(LAST_TOP_K_KEY);
     topKInput.value = lastTopK !== undefined ? lastTopK : 50;
     topKValue.textContent = topKInput.value;
-    maxTokensInput.value = await getStoredValue(LAST_MAX_TOKENS_KEY) || '';
+    maxTokensInput.value = await getStoredValue(LAST_MAX_TOKENS_KEY) || '1024';
     reasoningEffortSelect.value = await getStoredValue(LAST_REASONING_EFFORT_KEY) || 'medium';
     customParamsInput.value = await getStoredValue(LAST_CUSTOM_PARAMS_KEY) || '';
 
-    // NEW: Enable/disable input fields
-    if (enableSystemPromptCheckbox) systemPromptInput.disabled = !enableSystemPromptCheckbox.checked;
-    if (enableTemperatureCheckbox) temperatureInput.disabled = !enableTemperatureCheckbox.checked;
-    if (enableTopPCheckbox) topPInput.disabled = !enableTopPCheckbox.checked;
-    if (enableTopKCheckbox) topKInput.disabled = !enableTopKCheckbox.checked;
-    if (enableMaxTokensCheckbox) maxTokensInput.disabled = !enableMaxTokensCheckbox.checked;
-    if (enableReasoningEffortCheckbox && reasoningEffortSelect) reasoningEffortSelect.disabled = !enableReasoningEffortCheckbox.checked;
-    if (enableCustomParamsCheckbox && customParamsInput) customParamsInput.disabled = !enableCustomParamsCheckbox.checked;
+    // Remove disabled state logic - only use visibility control
+    // Elements should never be disabled, only hidden when toggle is off
 
     toggleGenerationOptions(); // Update UI based on loaded settings
     toggleBaseUrlInput(); // Ensure base URL visibility
@@ -2165,63 +2159,103 @@ function bindEventListeners() {
     qualitySelect.addEventListener('change', handleQualitySelectChange);
     videoAspectRatioEnabled.addEventListener('change', handleAspectRatioToggle);
 
-    // --- NEUE SWITCH EVENT LISTENER ---
-    // --- Neue Sichtbarkeits-Logik: Umschaltbare Parameter wie Streaming ---
-    function showOrHideParamGroup(groupId, checkboxEl) {
+    // --- PARAMETER TOGGLE MANAGEMENT ---
+    // Control visibility and reset to defaults when enabled
+    function handleParamToggle(groupId, checkboxEl, resetFunction = null) {
         const group = document.getElementById(groupId);
         if (!group || !checkboxEl) return;
-        group.style.display = checkboxEl.checked ? '' : 'none';
+        
+        if (checkboxEl.checked) {
+            group.style.display = '';
+            // Reset to default value when toggle is turned ON (except for custom params)
+            if (resetFunction && groupId !== 'custom-params-group') {
+                resetFunction();
+            }
+        } else {
+            group.style.display = 'none';
+        }
     }
 
-    // Listener und Initialzustand für alle Param-Switches
+    // Default value reset functions
+    const resetToDefaults = {
+        temperature: () => {
+            temperatureInput.value = 1;
+            temperatureValue.textContent = '1.0';
+        },
+        topP: () => {
+            topPInput.value = 1;
+            topPValue.textContent = '1.00';
+        },
+        topK: () => {
+            topKInput.value = 50;
+            topKValue.textContent = '50';
+        },
+        maxTokens: () => {
+            maxTokensInput.value = '1024';
+        },
+        reasoningEffort: () => {
+            reasoningEffortSelect.value = 'medium';
+        },
+        systemPrompt: () => {
+            // Don't reset system prompt as it's usually intentional content
+        }
+    };
+
+    // Setup listeners for all parameter switches
     if (enableSystemPromptCheckbox) {
         enableSystemPromptCheckbox.addEventListener('change', () => {
-            showOrHideParamGroup('system-prompt-group', enableSystemPromptCheckbox);
+            handleParamToggle('system-prompt-group', enableSystemPromptCheckbox, resetToDefaults.systemPrompt);
             saveGeneralSettings();
         });
-        showOrHideParamGroup('system-prompt-group', enableSystemPromptCheckbox);
+        handleParamToggle('system-prompt-group', enableSystemPromptCheckbox);
     }
+    
     if (enableTemperatureCheckbox) {
         enableTemperatureCheckbox.addEventListener('change', () => {
-            showOrHideParamGroup('temperature-group', enableTemperatureCheckbox);
+            handleParamToggle('temperature-group', enableTemperatureCheckbox, resetToDefaults.temperature);
             saveGeneralSettings();
         });
-        showOrHideParamGroup('temperature-group', enableTemperatureCheckbox);
+        handleParamToggle('temperature-group', enableTemperatureCheckbox);
     }
+    
     if (enableTopPCheckbox) {
         enableTopPCheckbox.addEventListener('change', () => {
-            showOrHideParamGroup('top-p-group', enableTopPCheckbox);
+            handleParamToggle('top-p-group', enableTopPCheckbox, resetToDefaults.topP);
             saveGeneralSettings();
         });
-        showOrHideParamGroup('top-p-group', enableTopPCheckbox);
+        handleParamToggle('top-p-group', enableTopPCheckbox);
     }
+    
     if (enableTopKCheckbox) {
         enableTopKCheckbox.addEventListener('change', () => {
-            showOrHideParamGroup('top-k-group', enableTopKCheckbox);
+            handleParamToggle('top-k-group', enableTopKCheckbox, resetToDefaults.topK);
             saveGeneralSettings();
         });
-        showOrHideParamGroup('top-k-group', enableTopKCheckbox);
+        handleParamToggle('top-k-group', enableTopKCheckbox);
     }
+    
     if (enableMaxTokensCheckbox) {
         enableMaxTokensCheckbox.addEventListener('change', () => {
-            showOrHideParamGroup('max-tokens-group', enableMaxTokensCheckbox);
+            handleParamToggle('max-tokens-group', enableMaxTokensCheckbox, resetToDefaults.maxTokens);
             saveGeneralSettings();
         });
-        showOrHideParamGroup('max-tokens-group', enableMaxTokensCheckbox);
+        handleParamToggle('max-tokens-group', enableMaxTokensCheckbox);
     }
+    
     if (enableReasoningEffortCheckbox) {
         enableReasoningEffortCheckbox.addEventListener('change', () => {
-            showOrHideParamGroup('reasoning-effort-group', enableReasoningEffortCheckbox);
+            handleParamToggle('reasoning-effort-group', enableReasoningEffortCheckbox, resetToDefaults.reasoningEffort);
             saveGeneralSettings();
         });
-        showOrHideParamGroup('reasoning-effort-group', enableReasoningEffortCheckbox);
+        handleParamToggle('reasoning-effort-group', enableReasoningEffortCheckbox);
     }
+    
     if (enableCustomParamsCheckbox) {
         enableCustomParamsCheckbox.addEventListener('change', () => {
-            showOrHideParamGroup('custom-params-group', enableCustomParamsCheckbox);
+            handleParamToggle('custom-params-group', enableCustomParamsCheckbox);
             saveGeneralSettings();
         });
-        showOrHideParamGroup('custom-params-group', enableCustomParamsCheckbox);
+        handleParamToggle('custom-params-group', enableCustomParamsCheckbox);
     }
 
     uploadTextBtn.addEventListener('click', handleUploadText);
@@ -2298,6 +2332,125 @@ function bindEventListeners() {
                         deleteConfiguration(configName);
                     }
                 }
+            }
+        });
+    }
+
+    // --- Custom Parameters Enhancement ---
+    // JSON formatting functionality
+    const formatJsonBtn = document.getElementById('format-json-btn');
+    const clearJsonBtn = document.getElementById('clear-json-btn');
+    const customParamsInput = document.getElementById('custom-params-input');
+
+    if (formatJsonBtn && customParamsInput) {
+        formatJsonBtn.addEventListener('click', () => {
+            try {
+                const value = customParamsInput.value.trim();
+                if (!value) return;
+                
+                const parsed = JSON.parse(value);
+                const formatted = JSON.stringify(parsed, null, 2);
+                customParamsInput.value = formatted;
+                
+                // Visual feedback
+                formatJsonBtn.style.background = 'var(--success-color)';
+                formatJsonBtn.querySelector('svg').style.color = 'white';
+                setTimeout(() => {
+                    formatJsonBtn.style.background = '';
+                    formatJsonBtn.querySelector('svg').style.color = '';
+                }, 1000);
+            } catch (error) {
+                // Visual feedback for error
+                formatJsonBtn.style.background = 'var(--error-color)';
+                formatJsonBtn.querySelector('svg').style.color = 'white';
+                setTimeout(() => {
+                    formatJsonBtn.style.background = '';
+                    formatJsonBtn.querySelector('svg').style.color = '';
+                }, 1000);
+                console.warn('Invalid JSON for formatting:', error.message);
+            }
+        });
+    }
+
+    if (clearJsonBtn && customParamsInput) {
+        clearJsonBtn.addEventListener('click', () => {
+            if (customParamsInput.value.trim() && confirm('Clear all custom parameters?')) {
+                customParamsInput.value = '';
+                saveGeneralSettings();
+            }
+        });
+    }
+
+    // Parameter examples functionality
+    const paramExamples = document.querySelectorAll('.param-example');
+    paramExamples.forEach(example => {
+        example.addEventListener('click', () => {
+            try {
+                const paramData = JSON.parse(example.dataset.param);
+                const currentValue = customParamsInput.value.trim();
+                
+                let currentParams = {};
+                if (currentValue) {
+                    try {
+                        currentParams = JSON.parse(currentValue);
+                    } catch (error) {
+                        console.warn('Current JSON is invalid, starting fresh:', error.message);
+                    }
+                }
+
+                // Merge the new parameter
+                Object.assign(currentParams, paramData);
+                
+                // Format and set the new value
+                const formatted = JSON.stringify(currentParams, null, 2);
+                customParamsInput.value = formatted;
+                
+                // Save settings
+                saveGeneralSettings();
+                
+                // Visual feedback
+                example.style.transform = 'scale(0.95)';
+                setTimeout(() => {
+                    example.style.transform = '';
+                }, 150);
+                
+            } catch (error) {
+                console.error('Error adding parameter example:', error);
+            }
+        });
+    });
+
+    // Enhanced JSON validation with real-time feedback
+    if (customParamsInput) {
+        let validationTimeout;
+        customParamsInput.addEventListener('input', () => {
+            clearTimeout(validationTimeout);
+            validationTimeout = setTimeout(() => {
+                const value = customParamsInput.value.trim();
+                if (!value) {
+                    customParamsInput.style.borderColor = '';
+                    customParamsInput.style.boxShadow = '';
+                    return;
+                }
+                
+                try {
+                    JSON.parse(value);
+                    // Valid JSON
+                    customParamsInput.style.borderColor = 'var(--success-color)';
+                    customParamsInput.style.boxShadow = 'inset 0 1px 3px rgba(0, 0, 0, 0.1), 0 0 0 3px rgba(40, 167, 69, 0.1)';
+                } catch (error) {
+                    // Invalid JSON
+                    customParamsInput.style.borderColor = 'var(--error-color)';
+                    customParamsInput.style.boxShadow = 'inset 0 1px 3px rgba(0, 0, 0, 0.1), 0 0 0 3px rgba(220, 53, 69, 0.1)';
+                }
+            }, 500);
+        });
+
+        // Reset border on focus out if empty
+        customParamsInput.addEventListener('blur', () => {
+            if (!customParamsInput.value.trim()) {
+                customParamsInput.style.borderColor = '';
+                customParamsInput.style.boxShadow = '';
             }
         });
     }

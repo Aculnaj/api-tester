@@ -223,10 +223,54 @@
                                 </span>
                             </label>
                         </div>
-                        <div class="form-group" id="custom-params-group">
-                            <label for="custom-params-input">Custom Parameters (JSON format):</label>
-                            <textarea id="custom-params-input" rows="4" placeholder='{"min_p": 0.1, "repeat_penalty": 1.1}'></textarea>
-                            <small>Enter additional parameters as valid JSON. These will be merged with the request.</small>
+                        <div class="form-group custom-params-form" id="custom-params-group">
+                            <div class="custom-params-input-wrapper">
+                                <label for="custom-params-input" class="custom-params-label">
+                                    <span class="label-text">Custom Parameters (JSON format)</span>
+                                    <span class="help-tooltip" title="Enter additional API parameters as valid JSON. These will be merged with the request body.">?</span>
+                                </label>
+                                <div class="textarea-container">
+                                    <textarea
+                                        id="custom-params-input"
+                                        rows="5"
+                                        placeholder='{
+  "min_p": 0.1,
+  "repeat_penalty": 1.1,
+  "frequency_penalty": 0.5
+}'></textarea>
+                                    <div class="json-actions">
+                                        <button type="button" id="format-json-btn" class="json-action-btn" title="Format JSON">
+                                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                                <polyline points="16 18 22 12 16 6"></polyline>
+                                                <polyline points="8 6 2 12 8 18"></polyline>
+                                            </svg>
+                                        </button>
+                                        <button type="button" id="clear-json-btn" class="json-action-btn" title="Clear JSON">
+                                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                                <line x1="18" y1="6" x2="6" y2="18"></line>
+                                                <line x1="6" y1="6" x2="18" y2="18"></line>
+                                            </svg>
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="custom-params-help">
+                                <div class="help-section">
+                                    <h4>Common Parameters:</h4>
+                                    <div class="param-examples">
+                                        <span class="param-example" data-param='{"min_p": 0.1}'>min_p</span>
+                                        <span class="param-example" data-param='{"repeat_penalty": 1.1}'>repeat_penalty</span>
+                                        <span class="param-example" data-param='{"frequency_penalty": 0.5}'>frequency_penalty</span>
+                                        <span class="param-example" data-param='{"presence_penalty": 0.3}'>presence_penalty</span>
+                                        <span class="param-example" data-param='{"mirostat": 2}'>mirostat</span>
+                                        <span class="param-example" data-param='{"tfs_z": 1.0}'>tfs_z</span>
+                                    </div>
+                                </div>
+                                <small class="help-text">
+                                    <strong>Tips:</strong> Click parameter examples to add them. Parameters will be merged with the request body.
+                                    Ensure valid JSON format for compatibility across providers.
+                                </small>
+                            </div>
                         </div>
                         <div class="enable-streaming-container">
                             <label class="enable-streaming-title" for="enable-streaming-checkbox">
