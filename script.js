@@ -682,7 +682,6 @@ async function populateModelDropdown(models) {
 function handleModelSelectionChange() {
     if (modelSelect.value === 'custom') {
         customModelInput.style.display = 'block';
-        customModelInput.focus();
     } else {
         customModelInput.style.display = 'none';
     }
