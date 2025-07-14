@@ -64,8 +64,13 @@ const enableTopPCheckbox = document.getElementById('enable-top-p-checkbox');
 const maxTokensInput = document.getElementById('max-tokens-input');
 const enableMaxTokensCheckbox = document.getElementById('enable-max-tokens-checkbox');
 const uploadTextBtn = document.getElementById('upload-text-btn');
-const inferenceEffortInput = document.getElementById('inference-effort-input');
-const enableInferenceEffortCheckbox = document.getElementById('enable-inference-effort-checkbox');
+const topKInput = document.getElementById('top-k-input');
+const topKValue = document.getElementById('top-k-value');
+const enableTopKCheckbox = document.getElementById('enable-top-k-checkbox');
+const reasoningEffortSelect = document.getElementById('reasoning-effort-select');
+const enableReasoningEffortCheckbox = document.getElementById('enable-reasoning-effort-checkbox');
+const customParamsInput = document.getElementById('custom-params-input');
+const enableCustomParamsCheckbox = document.getElementById('enable-custom-params-checkbox');
 
 // Payload/Response Display
 const payloadContainer = document.getElementById('payload-container');
@@ -161,14 +166,18 @@ const LAST_STREAMING_ENABLED_KEY = 'lastStreamingEnabled';
 const LAST_ENABLE_SYSTEM_PROMPT_KEY = 'lastEnableSystemPrompt';
 const LAST_ENABLE_TEMPERATURE_KEY = 'lastEnableTemperature';
 const LAST_ENABLE_TOP_P_KEY = 'lastEnableTopP';
+const LAST_ENABLE_TOP_K_KEY = 'lastEnableTopK';
 const LAST_ENABLE_MAX_TOKENS_KEY = 'lastEnableMaxTokens';
-const LAST_ENABLE_INFERENCE_EFFORT_KEY = 'lastEnableInferenceEffort';
+const LAST_ENABLE_REASONING_EFFORT_KEY = 'lastEnableReasoningEffort';
+const LAST_ENABLE_CUSTOM_PARAMS_KEY = 'lastEnableCustomParams';
 
 const LAST_SYSTEM_PROMPT_KEY = 'lastSystemPrompt';
 const LAST_TEMPERATURE_KEY = 'lastTemperature';
 const LAST_TOP_P_KEY = 'lastTopP';
+const LAST_TOP_K_KEY = 'lastTopK';
 const LAST_MAX_TOKENS_KEY = 'lastMaxTokens';
-const LAST_INFERENCE_EFFORT_KEY = 'lastInferenceEffort';
+const LAST_REASONING_EFFORT_KEY = 'lastReasoningEffort';
+const LAST_CUSTOM_PARAMS_KEY = 'lastCustomParams';
 const LAST_SELECTED_MODEL_OPTION_KEY = 'lastSelectedModelOption';
 const LAST_CUSTOM_MODEL_NAME_KEY = 'lastCustomModelName';
 const SAVED_PROVIDER_CONFIGS_KEY = 'savedProviderConfigurations';
@@ -274,13 +283,21 @@ async function loadGeneralSettings() {
         const en = await getStoredValue(LAST_ENABLE_TOP_P_KEY);
         enableTopPCheckbox.checked = typeof en === "boolean" ? en : false;
     }
+    if (enableTopKCheckbox) {
+        const en = await getStoredValue(LAST_ENABLE_TOP_K_KEY);
+        enableTopKCheckbox.checked = typeof en === "boolean" ? en : false;
+    }
     if (enableMaxTokensCheckbox) {
         const en = await getStoredValue(LAST_ENABLE_MAX_TOKENS_KEY);
         enableMaxTokensCheckbox.checked = typeof en === "boolean" ? en : true;
     }
-    if (enableInferenceEffortCheckbox) {
-        const en = await getStoredValue(LAST_ENABLE_INFERENCE_EFFORT_KEY);
-        enableInferenceEffortCheckbox.checked = typeof en === "boolean" ? en : true;
+    if (enableReasoningEffortCheckbox) {
+        const en = await getStoredValue(LAST_ENABLE_REASONING_EFFORT_KEY);
+        enableReasoningEffortCheckbox.checked = typeof en === "boolean" ? en : false;
+    }
+    if (enableCustomParamsCheckbox) {
+        const en = await getStoredValue(LAST_ENABLE_CUSTOM_PARAMS_KEY);
+        enableCustomParamsCheckbox.checked = typeof en === "boolean" ? en : false;
     }
 
     // Load text generation settings
@@ -291,15 +308,21 @@ async function loadGeneralSettings() {
     const lastTopP = await getStoredValue(LAST_TOP_P_KEY);
     topPInput.value = lastTopP !== undefined ? lastTopP : 1;
     topPValue.textContent = parseFloat(topPInput.value).toFixed(2);
+    const lastTopK = await getStoredValue(LAST_TOP_K_KEY);
+    topKInput.value = lastTopK !== undefined ? lastTopK : 50;
+    topKValue.textContent = topKInput.value;
     maxTokensInput.value = await getStoredValue(LAST_MAX_TOKENS_KEY) || '';
-    inferenceEffortInput.value = await getStoredValue(LAST_INFERENCE_EFFORT_KEY) || '';
+    reasoningEffortSelect.value = await getStoredValue(LAST_REASONING_EFFORT_KEY) || 'medium';
+    customParamsInput.value = await getStoredValue(LAST_CUSTOM_PARAMS_KEY) || '';
 
     // NEW: Enable/disable input fields
     if (enableSystemPromptCheckbox) systemPromptInput.disabled = !enableSystemPromptCheckbox.checked;
     if (enableTemperatureCheckbox) temperatureInput.disabled = !enableTemperatureCheckbox.checked;
     if (enableTopPCheckbox) topPInput.disabled = !enableTopPCheckbox.checked;
+    if (enableTopKCheckbox) topKInput.disabled = !enableTopKCheckbox.checked;
     if (enableMaxTokensCheckbox) maxTokensInput.disabled = !enableMaxTokensCheckbox.checked;
-    if (enableInferenceEffortCheckbox) inferenceEffortInput.disabled = !enableInferenceEffortCheckbox.checked;
+    if (enableReasoningEffortCheckbox && reasoningEffortSelect) reasoningEffortSelect.disabled = !enableReasoningEffortCheckbox.checked;
+    if (enableCustomParamsCheckbox && customParamsInput) customParamsInput.disabled = !enableCustomParamsCheckbox.checked;
 
     toggleGenerationOptions(); // Update UI based on loaded settings
     toggleBaseUrlInput(); // Ensure base URL visibility
@@ -339,8 +362,10 @@ async function saveGeneralSettings() {
     if (enableSystemPromptCheckbox) await setStoredValue(LAST_ENABLE_SYSTEM_PROMPT_KEY, enableSystemPromptCheckbox.checked);
     if (enableTemperatureCheckbox) await setStoredValue(LAST_ENABLE_TEMPERATURE_KEY, enableTemperatureCheckbox.checked);
     if (enableTopPCheckbox) await setStoredValue(LAST_ENABLE_TOP_P_KEY, enableTopPCheckbox.checked);
+    if (enableTopKCheckbox) await setStoredValue(LAST_ENABLE_TOP_K_KEY, enableTopKCheckbox.checked);
     if (enableMaxTokensCheckbox) await setStoredValue(LAST_ENABLE_MAX_TOKENS_KEY, enableMaxTokensCheckbox.checked);
-    if (enableInferenceEffortCheckbox) await setStoredValue(LAST_ENABLE_INFERENCE_EFFORT_KEY, enableInferenceEffortCheckbox.checked);
+    if (enableReasoningEffortCheckbox) await setStoredValue(LAST_ENABLE_REASONING_EFFORT_KEY, enableReasoningEffortCheckbox.checked);
+    if (enableCustomParamsCheckbox) await setStoredValue(LAST_ENABLE_CUSTOM_PARAMS_KEY, enableCustomParamsCheckbox.checked);
 
     // Save video settings
     if (videoDurationInput) await setStoredValue(LAST_VIDEO_DURATION_KEY, videoDurationInput.value);
@@ -351,8 +376,10 @@ async function saveGeneralSettings() {
     await setStoredValue(LAST_SYSTEM_PROMPT_KEY, systemPromptInput.value);
     await setStoredValue(LAST_TEMPERATURE_KEY, temperatureInput.value);
     await setStoredValue(LAST_TOP_P_KEY, topPInput.value);
+    await setStoredValue(LAST_TOP_K_KEY, topKInput.value);
     await setStoredValue(LAST_MAX_TOKENS_KEY, maxTokensInput.value);
-    await setStoredValue(LAST_INFERENCE_EFFORT_KEY, inferenceEffortInput.value);
+    await setStoredValue(LAST_REASONING_EFFORT_KEY, reasoningEffortSelect.value);
+    await setStoredValue(LAST_CUSTOM_PARAMS_KEY, customParamsInput.value);
 }
 
 // --- THEME MANAGEMENT ---
@@ -552,6 +579,29 @@ async function deleteConfiguration(name) {
     }
 }
 
+// --- PARAMETER VALIDATION ---
+// Function to validate parameter compatibility with selected provider
+function validateParameterCompatibility(provider) {
+    let warnings = [];
+    
+    // Top K parameter - only supported by OpenAI Compatible, Deepseek, OpenRouter
+    if (enableTopKCheckbox?.checked && !['openai_compatible', 'deepseek', 'openrouter'].includes(provider)) {
+        warnings.push('Top K parameter is not supported by ' + provider + '. It will be ignored.');
+    }
+    
+    // Reasoning effort - primarily for Antrophic and some OpenAI models
+    if (enableReasoningEffortCheckbox?.checked && !['antrophic', 'openai'].includes(provider)) {
+        warnings.push('Reasoning effort parameter may not be supported by ' + provider + '.');
+    }
+    
+    // Custom parameters - mainly for OpenAI Compatible and OpenRouter
+    if (enableCustomParamsCheckbox?.checked && !['openai_compatible', 'openrouter'].includes(provider)) {
+        warnings.push('Custom parameters may not be fully supported by ' + provider + '.');
+    }
+    
+    return warnings;
+}
+
 // --- UI MANIPULATION ---
 // Functions that control the visibility and state of UI elements.
 
@@ -586,16 +636,17 @@ async function fetchModels() {
     const baseUrl = baseUrlInput.value.trim();
 
     // Don't fetch for providers that don't support it or if key is missing
-    if (!apiKey || ['claude', 'deepseek'].includes(provider)) {
+    if (!apiKey || ['deepseek'].includes(provider)) {
         populateModelDropdown([]); // Populate with just "Custom"
         return;
     }
 
     let apiUrl = '';
-    let headers = { 'Authorization': `Bearer ${apiKey}` };
+    let headers = {};
 
     if (provider === 'openai') {
         apiUrl = 'https://api.openai.com/v1/models';
+        headers = { 'Authorization': `Bearer ${apiKey}` };
     } else if (provider === 'openai_compatible') {
         if (!baseUrl) {
             populateModelDropdown([]); // Can't fetch without base URL
@@ -603,8 +654,16 @@ async function fetchModels() {
         }
         const cleanBaseUrl = baseUrl.endsWith('/') ? baseUrl.slice(0, -1) : baseUrl;
         apiUrl = `${cleanBaseUrl}/models`;
+        headers = { 'Authorization': `Bearer ${apiKey}` };
     } else if (provider === 'openrouter') {
         apiUrl = 'https://openrouter.ai/api/v1/models';
+        headers = { 'Authorization': `Bearer ${apiKey}` };
+    } else if (provider === 'antrophic') {
+        apiUrl = 'https://api.anthropic.com/v1/models';
+        headers = {
+            'x-api-key': apiKey,
+            'anthropic-version': '2023-06-01'
+        };
     } else {
         populateModelDropdown([]); // Unsupported provider for this feature
         return;
@@ -1010,9 +1069,31 @@ async function callTextApi(provider, apiKey, baseUrl, model, prompt) {
     // Add optional parameters ONLY IF ENABLED
     if (enableTemperatureCheckbox?.checked && temperatureInput.value) body.temperature = parseFloat(temperatureInput.value);
     if (enableTopPCheckbox?.checked && topPInput.value) body.top_p = parseFloat(topPInput.value);
+    
+    // Top K parameter (only for compatible providers)
+    if (enableTopKCheckbox?.checked && topKInput.value && ['openai_compatible', 'deepseek', 'openrouter'].includes(provider)) {
+        body.top_k = parseInt(topKInput.value, 10);
+    }
+    
     if (enableMaxTokensCheckbox?.checked && maxTokensInput.value) body.max_tokens = parseInt(maxTokensInput.value, 10);
-    if (enableInferenceEffortCheckbox?.checked && inferenceEffortInput && inferenceEffortInput.value.trim()) {
-        body.reasoning_effort = inferenceEffortInput.value.trim();
+    
+    // Reasoning effort parameter
+    if (enableReasoningEffortCheckbox?.checked && reasoningEffortSelect && reasoningEffortSelect.value.trim()) {
+        body.reasoning_effort = reasoningEffortSelect.value.trim();
+    }
+
+    // Custom parameters support
+    if (enableCustomParamsCheckbox?.checked && customParamsInput && customParamsInput.value.trim()) {
+        try {
+            const customParams = JSON.parse(customParamsInput.value.trim());
+            if (typeof customParams === 'object' && customParams !== null && !Array.isArray(customParams)) {
+                // Merge custom parameters with the body (custom params take precedence)
+                Object.assign(body, customParams);
+            }
+        } catch (error) {
+            hideLoader();
+            return displayError(`Custom Parameters JSON is invalid: ${error.message}`);
+        }
     }
 
 
@@ -1036,19 +1117,44 @@ async function callTextApi(provider, apiKey, baseUrl, model, prompt) {
             apiUrl = `${cleanBaseUrl}/chat/completions`;
             headers = { 'Content-Type': 'application/json', 'Authorization': `Bearer ${apiKey}` };
             break;
-        case 'claude':
+        case 'antrophic':
             apiUrl = 'https://api.anthropic.com/v1/messages';
             headers = { 'Content-Type': 'application/json', 'x-api-key': apiKey, 'anthropic-version': '2023-06-01' };
-            // Claude has a different body structure
+            // Antrophic has a different body structure - rebuild it properly
             body = {
                 model: model,
-                system: systemPromptInput.value.trim() || undefined,
                 messages: [{ role: 'user', content: prompt }],
-                max_tokens: parseInt(maxTokensInput.value, 10) || 4096,
-                temperature: parseFloat(temperatureInput.value),
-                top_p: parseFloat(topPInput.value)
+                max_tokens: (enableMaxTokensCheckbox?.checked && maxTokensInput.value) ? parseInt(maxTokensInput.value, 10) : 4096
             };
-            delete body.stream; // Claude doesn't use the 'stream' property here
+            
+            // Add system prompt if enabled
+            if (enableSystemPromptCheckbox?.checked && systemPromptInput.value.trim()) {
+                body.system = systemPromptInput.value.trim();
+            }
+            
+            // Add optional parameters only if enabled
+            if (enableTemperatureCheckbox?.checked && temperatureInput.value) {
+                body.temperature = parseFloat(temperatureInput.value);
+            }
+            if (enableTopPCheckbox?.checked && topPInput.value) {
+                body.top_p = parseFloat(topPInput.value);
+            }
+            if (enableReasoningEffortCheckbox?.checked && reasoningEffortSelect && reasoningEffortSelect.value.trim()) {
+                body.reasoning_effort = reasoningEffortSelect.value.trim();
+            }
+            
+            // Add custom parameters for Antrophic if enabled
+            if (enableCustomParamsCheckbox?.checked && customParamsInput && customParamsInput.value.trim()) {
+                try {
+                    const customParams = JSON.parse(customParamsInput.value.trim());
+                    if (typeof customParams === 'object' && customParams !== null && !Array.isArray(customParams)) {
+                        Object.assign(body, customParams);
+                    }
+                } catch (error) {
+                    hideLoader();
+                    return displayError(`Custom Parameters JSON is invalid: ${error.message}`);
+                }
+            }
             break;
         case 'openrouter':
             apiUrl = 'https://openrouter.ai/api/v1/chat/completions';
@@ -1208,9 +1314,9 @@ async function callTextApi(provider, apiKey, baseUrl, model, prompt) {
 
             // Extract content
             let aiContent = '';
-            if (provider === 'claude') {
+            if (provider === 'antrophic') {
                 if (data.content && data.content.length > 0 && data.content[0].text) aiContent = data.content[0].text;
-                else throw new Error('Could not find text content in Claude response.');
+                else throw new Error('Could not find text content in Antrophic response.');
             } else { // OpenAI/Compatible (non-streaming), Deepseek, OpenRouter
                 if (data.choices && data.choices.length > 0 && data.choices[0].message && data.choices[0].message.content) aiContent = data.choices[0].message.content;
                 else throw new Error('Could not find message content in API response.');
@@ -1928,8 +2034,8 @@ async function callVideoApi(provider, apiKey, baseUrl, model, prompt) {
         case 'deepseek':
             displayError('Deepseek does not currently support video generation. Try using a different provider.');
             return;
-        case 'claude':
-            displayError('Claude does not currently support video generation. Try using a different provider.');
+        case 'antrophic':
+            displayError('Antrophic does not currently support video generation. Try using a different provider.');
             return;
         case 'openrouter':
             // OpenRouter might have video models available
@@ -2029,7 +2135,7 @@ async function callVideoApi(provider, apiKey, baseUrl, model, prompt) {
         statsArea.style.display = 'none';
     } finally {
         // Ensure loader is hidden for all other cases, including successful calls or other errors
-        if (!(provider === 'openai' || provider === 'deepseek' || provider === 'claude')) {
+        if (!(provider === 'openai' || provider === 'deepseek' || provider === 'antrophic')) {
             hideLoader();
         }
     }
@@ -2089,6 +2195,13 @@ function bindEventListeners() {
         });
         showOrHideParamGroup('top-p-group', enableTopPCheckbox);
     }
+    if (enableTopKCheckbox) {
+        enableTopKCheckbox.addEventListener('change', () => {
+            showOrHideParamGroup('top-k-group', enableTopKCheckbox);
+            saveGeneralSettings();
+        });
+        showOrHideParamGroup('top-k-group', enableTopKCheckbox);
+    }
     if (enableMaxTokensCheckbox) {
         enableMaxTokensCheckbox.addEventListener('change', () => {
             showOrHideParamGroup('max-tokens-group', enableMaxTokensCheckbox);
@@ -2096,12 +2209,19 @@ function bindEventListeners() {
         });
         showOrHideParamGroup('max-tokens-group', enableMaxTokensCheckbox);
     }
-    if (enableInferenceEffortCheckbox) {
-        enableInferenceEffortCheckbox.addEventListener('change', () => {
-            showOrHideParamGroup('inference-effort-group', enableInferenceEffortCheckbox);
+    if (enableReasoningEffortCheckbox) {
+        enableReasoningEffortCheckbox.addEventListener('change', () => {
+            showOrHideParamGroup('reasoning-effort-group', enableReasoningEffortCheckbox);
             saveGeneralSettings();
         });
-        showOrHideParamGroup('inference-effort-group', enableInferenceEffortCheckbox);
+        showOrHideParamGroup('reasoning-effort-group', enableReasoningEffortCheckbox);
+    }
+    if (enableCustomParamsCheckbox) {
+        enableCustomParamsCheckbox.addEventListener('change', () => {
+            showOrHideParamGroup('custom-params-group', enableCustomParamsCheckbox);
+            saveGeneralSettings();
+        });
+        showOrHideParamGroup('custom-params-group', enableCustomParamsCheckbox);
     }
 
     uploadTextBtn.addEventListener('click', handleUploadText);
@@ -2113,15 +2233,20 @@ function bindEventListeners() {
         topPValue.textContent = parseFloat(topPInput.value).toFixed(2);
         saveGeneralSettings();
     });
+    topKInput.addEventListener('input', () => {
+        topKValue.textContent = topKInput.value;
+        saveGeneralSettings();
+    });
 
 
     // Inputs that trigger a settings save
     const inputsToSave = [
         customModelInput, promptInput, enableStreamingCheckbox, customQualityInput,
         imageWidthInput, imageHeightInput, voiceInput, videoDurationInput,
-        videoAspectRatioSelect, systemPromptInput, maxTokensInput, inferenceEffortInput,
+        videoAspectRatioSelect, systemPromptInput, maxTokensInput, reasoningEffortSelect, customParamsInput,
         // NEW: Checkbox toggles trigger save as well:
-        enableSystemPromptCheckbox, enableTemperatureCheckbox, enableTopPCheckbox, enableMaxTokensCheckbox, enableInferenceEffortCheckbox
+        enableSystemPromptCheckbox, enableTemperatureCheckbox, enableTopPCheckbox, enableTopKCheckbox,
+        enableMaxTokensCheckbox, enableReasoningEffortCheckbox, enableCustomParamsCheckbox
     ];
     inputsToSave.forEach(input => {
         if (input) { // Ensure element exists before adding listener

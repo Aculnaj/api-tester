@@ -48,7 +48,7 @@
                         <option value="openai_compatible" selected>OpenAI Compatible</option>
                         <option value="openai">OpenAI</option>
                         <option value="deepseek">Deepseek</option>
-                        <option value="claude">Claude</option>
+                        <option value="antrophic">Antrophic</option>
                         <option value="openrouter">OpenRouter</option>
                     </select>
 
@@ -172,6 +172,19 @@
                             <input type="range" id="top-p-input" min="0" max="1" step="0.01" value="1">
                         </div>
                         <div class="enable-param-container">
+                            <label class="enable-param-title" for="enable-top-k-checkbox">
+                                <span>Top K</span>
+                                <span class="switch">
+                                    <input type="checkbox" id="enable-top-k-checkbox">
+                                    <span class="slider"></span>
+                                </span>
+                            </label>
+                        </div>
+                        <div class="form-group slider-group" id="top-k-group">
+                            <label for="top-k-input">Top K: <span id="top-k-value">50</span></label>
+                            <input type="range" id="top-k-input" min="0" max="1000" step="50" value="50">
+                        </div>
+                        <div class="enable-param-container">
                             <label class="enable-param-title" for="enable-max-tokens-checkbox">
                                 <span>Max Tokens</span>
                                 <span class="switch">
@@ -185,16 +198,35 @@
                             <input type="number" id="max-tokens-input" placeholder="e.g., 4096">
                         </div>
                         <div class="enable-param-container">
-                            <label class="enable-param-title" for="enable-inference-effort-checkbox">
-                                <span>Resoning Effort</span>
+                            <label class="enable-param-title" for="enable-reasoning-effort-checkbox">
+                                <span>Reasoning Effort</span>
                                 <span class="switch">
-                                    <input type="checkbox" id="enable-inference-effort-checkbox">
+                                    <input type="checkbox" id="enable-reasoning-effort-checkbox">
                                     <span class="slider"></span>
                                 </span>
                             </label>
                         </div>
-                        <div class="form-group" id="inference-effort-group">
-                            <input type="text" id="inference-effort-input" placeholder="e.g., low, medium, high">
+                        <div class="form-group" id="reasoning-effort-group">
+                            <label for="reasoning-effort-select">Reasoning Effort:</label>
+                            <select id="reasoning-effort-select">
+                                <option value="low">Low</option>
+                                <option value="medium" selected>Medium</option>
+                                <option value="high">High</option>
+                            </select>
+                        </div>
+                        <div class="enable-param-container">
+                            <label class="enable-param-title" for="enable-custom-params-checkbox">
+                                <span>Custom Parameters</span>
+                                <span class="switch">
+                                    <input type="checkbox" id="enable-custom-params-checkbox">
+                                    <span class="slider"></span>
+                                </span>
+                            </label>
+                        </div>
+                        <div class="form-group" id="custom-params-group">
+                            <label for="custom-params-input">Custom Parameters (JSON format):</label>
+                            <textarea id="custom-params-input" rows="4" placeholder='{"min_p": 0.1, "repeat_penalty": 1.1}'></textarea>
+                            <small>Enter additional parameters as valid JSON. These will be merged with the request.</small>
                         </div>
                         <div class="enable-streaming-container">
                             <label class="enable-streaming-title" for="enable-streaming-checkbox">

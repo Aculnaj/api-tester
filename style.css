@@ -988,3 +988,71 @@ input[type="number"]::-webkit-outer-spin-button {
 body.dark-mode .saved-config-item .delete-btn:hover {
     background-color: #e54848; /* A lighter red for dark mode hover */
 }
+
+/* --- CUSTOM PARAMETERS STYLING --- */
+#custom-params-input {
+    font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
+    font-size: 0.9em;
+    line-height: 1.4;
+    background-color: var(--input-bg-color);
+    border: 1px solid var(--input-border-color);
+    border-radius: 6px;
+    padding: 12px;
+    resize: vertical;
+    min-height: 80px;
+}
+
+#custom-params-input:focus {
+    border-color: var(--button-bg-color);
+    outline: none;
+}
+
+#custom-params-group small {
+    color: var(--text-color-muted);
+    font-size: 0.85em;
+    margin-top: 8px;
+    display: block;
+}
+
+/* Disabled state styling for range inputs */
+input[type="range"]:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+input[type="range"]:disabled::-webkit-slider-thumb {
+    cursor: not-allowed;
+    background: var(--input-border-color);
+}
+
+input[type="range"]:disabled::-moz-range-thumb {
+    cursor: not-allowed;
+    background: var(--input-border-color);
+}
+
+/* Better visual feedback for parameter groups */
+.form-group {
+    transition: opacity 0.3s ease;
+}
+
+.form-group:has(input:disabled),
+.form-group:has(select:disabled),
+.form-group:has(textarea:disabled) {
+    opacity: 0.6;
+}
+
+/* Disabled state for select elements */
+select:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    background-color: var(--input-bg-color);
+    color: var(--text-color-muted);
+}
+
+/* Disabled state for textareas */
+textarea:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    background-color: var(--input-bg-color);
+    color: var(--text-color-muted);
+}
