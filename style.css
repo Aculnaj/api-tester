@@ -881,3 +881,51 @@ input[type="number"]::-webkit-outer-spin-button {
     -webkit-appearance: inner-spin-button; /* Re-show spinners on Webkit */
     opacity: 1; /* Make sure they are visible */
 }
+
+
+/* --- MODEL SELECTION & REFRESH BUTTON --- */
+.model-selection-wrapper {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.model-selection-wrapper select {
+    flex-grow: 1; /* The select box should take up the available space */
+    margin-bottom: 0; /* Remove margin from select when it's inside the wrapper */
+}
+
+.icon-btn {
+    flex-shrink: 0; /* Prevent the button from shrinking */
+    background: transparent;
+    color: var(--text-color-muted);
+    border: 1px solid var(--border-color);
+    border-radius: 6px;
+    padding: 8px;
+    cursor: pointer;
+    transition: background-color 0.2s, color 0.2s, border-color 0.2s;
+    outline: none;
+    margin: 0;
+    width: auto;
+    line-height: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.icon-btn:hover {
+    background-color: var(--hover-bg-color);
+    color: var(--text-color);
+    transform: none;
+}
+
+.icon-btn:focus {
+    box-shadow: 0 0 0 2px var(--button-bg-color);
+    z-index: 1;
+}
+
+.icon-btn svg {
+    width: 16px;
+    height: 16px;
+    fill: currentColor;
+}
