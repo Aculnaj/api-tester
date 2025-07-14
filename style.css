@@ -929,3 +929,62 @@ input[type="number"]::-webkit-outer-spin-button {
     height: 16px;
     fill: currentColor;
 }
+
+/* --- SAVED PROVIDER CONFIGURATIONS --- */
+.config-separator {
+    border: none;
+    border-top: 1px solid var(--border-color);
+    margin: 25px 0;
+}
+
+.saved-configs-title {
+    margin-top: 0;
+    margin-bottom: 15px;
+    font-size: 1.1em;
+    color: var(--text-color-muted);
+}
+
+#saved-configs-list {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.saved-config-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px;
+    border: 1px solid var(--border-color);
+    border-radius: 6px;
+    background-color: var(--output-bg-color);
+}
+
+.saved-config-item .config-name {
+    font-weight: 600;
+    color: var(--text-color);
+}
+
+.saved-config-item .config-buttons {
+    display: flex;
+    gap: 8px;
+}
+
+.saved-config-item .config-btn {
+    width: auto;
+    padding: 6px 12px;
+    font-size: 0.85rem;
+    margin: 0;
+}
+
+.saved-config-item .delete-btn {
+    background-color: var(--error-color);
+}
+
+.saved-config-item .delete-btn:hover {
+    background-color: #c82333; /* A darker red for hover */
+}
+
+body.dark-mode .saved-config-item .delete-btn:hover {
+    background-color: #e54848; /* A lighter red for dark mode hover */
+}

@@ -77,6 +77,12 @@ const responseDisplayArea = document.getElementById('response-display-area');
 // Model Container
 const modelContainer = document.getElementById('model-container');
 
+// Provider Configurations
+const configNameInput = document.getElementById('config-name-input');
+const saveConfigBtn = document.getElementById('save-config-btn');
+const savedConfigsList = document.getElementById('saved-configs-list');
+
+
 // --- STATE VARIABLES ---
 let recordedChunks = [];
 let mediaRecorder;
@@ -165,6 +171,8 @@ const LAST_MAX_TOKENS_KEY = 'lastMaxTokens';
 const LAST_INFERENCE_EFFORT_KEY = 'lastInferenceEffort';
 const LAST_SELECTED_MODEL_OPTION_KEY = 'lastSelectedModelOption';
 const LAST_CUSTOM_MODEL_NAME_KEY = 'lastCustomModelName';
+const SAVED_PROVIDER_CONFIGS_KEY = 'savedProviderConfigurations';
+
 // Loads API credentials for the given provider from storage.
 async function loadProviderCredentials(provider) {
     if (!provider) return;
@@ -421,6 +429,126 @@ async function initializeTheme() {
         } catch (err) {
             console.error("Error getting initial theme from Electron main:", err);
         }
+    }
+}
+
+// --- PROVIDER CONFIGURATION MANAGEMENT ---
+
+// Renders the list of saved provider configurations into the UI.
+async function renderSavedConfigs() {
+    const configs = await getStoredValue(SAVED_PROVIDER_CONFIGS_KEY) || {};
+    savedConfigsList.innerHTML = ''; // Clear the list first
+
+    const configContainer = document.getElementById('saved-configs-list-container');
+
+    if (Object.keys(configs).length === 0) {
+        // Hide the container if there are no configs, as it contains the HR and title
+        if(configContainer) configContainer.style.display = 'none';
+        return;
+    }
+    
+    // Show the container if there are configs
+    if(configContainer) configContainer.style.display = 'block';
+
+    for (const name in configs) {
+        if (Object.hasOwnProperty.call(configs, name)) {
+            const configItem = document.createElement('div');
+            configItem.className = 'saved-config-item';
+            
+            // Sanitize the name for use in data attributes
+            const sanitizedName = name.replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+
+            configItem.innerHTML = `
+                <span class="config-name">${sanitizedName}</span>
+                <div class="config-buttons">
+                    <button class="config-btn restore-btn" data-config-name="${sanitizedName}">Restore</button>
+                    <button class="config-btn delete-btn" data-config-name="${sanitizedName}">Delete</button>
+                </div>
+            `;
+            savedConfigsList.appendChild(configItem);
+        }
+    }
+}
+
+// Saves the current provider settings as a named configuration.
+async function saveConfiguration() {
+    const name = configNameInput.value.trim();
+    if (!name) {
+        displayError("Please enter a name for the configuration.");
+        return;
+    }
+
+    const currentProvider = providerSelect.value;
+    const currentApiKey = apiKeyInput.value.trim();
+    const currentBaseUrl = baseUrlInput.value.trim();
+
+    if (!currentApiKey) {
+        displayError("API Key cannot be empty when saving a configuration.");
+        return;
+    }
+
+    const configs = await getStoredValue(SAVED_PROVIDER_CONFIGS_KEY) || {};
+    
+    configs[name] = {
+        provider: currentProvider,
+        apiKey: currentApiKey,
+        baseUrl: currentBaseUrl
+    };
+
+    await setStoredValue(SAVED_PROVIDER_CONFIGS_KEY, configs);
+    
+    // Clear the input and re-render the list
+    configNameInput.value = '';
+    await renderSavedConfigs();
+}
+
+// Restores a saved provider configuration into the main form fields.
+async function restoreConfiguration(name) {
+    const configs = await getStoredValue(SAVED_PROVIDER_CONFIGS_KEY) || {};
+    const configToRestore = configs[name];
+
+    if (!configToRestore) {
+        displayError(`Configuration "${name}" not found.`);
+        return;
+    }
+
+    // Populate the form fields
+    providerSelect.value = configToRestore.provider;
+    apiKeyInput.value = configToRestore.apiKey;
+    baseUrlInput.value = configToRestore.baseUrl || '';
+
+    // Also populate the name input for easy re-saving
+    configNameInput.value = name;
+
+    // --- Manually trigger the necessary updates ---
+
+    // 1. Save the newly restored credentials to the specific provider's slot
+    await saveProviderCredentials(configToRestore.provider);
+    
+    // 2. Save the new provider selection as the last used one
+    await setStoredValue(LAST_PROVIDER_KEY, configToRestore.provider);
+
+    // 3. Update the UI based on the new provider
+    toggleBaseUrlInput();
+    
+    // 4. Fetch the models for the new provider
+    await fetchModels();
+}
+
+// Deletes a saved provider configuration.
+async function deleteConfiguration(name) {
+    const configs = await getStoredValue(SAVED_PROVIDER_CONFIGS_KEY) || {};
+    
+    if (configs[name]) {
+        delete configs[name];
+        await setStoredValue(SAVED_PROVIDER_CONFIGS_KEY, configs);
+        
+        // If the deleted config's name is in the input, clear it
+        if (configNameInput.value === name) {
+            configNameInput.value = '';
+        }
+
+        await renderSavedConfigs();
     }
 }
 
@@ -2025,6 +2153,30 @@ function bindEventListeners() {
             setStoredValue(key, details.open);
         });
     });
+
+    // --- Provider Configuration Listeners ---
+    if (saveConfigBtn) {
+        saveConfigBtn.addEventListener('click', saveConfiguration);
+    }
+
+    if (savedConfigsList) {
+        savedConfigsList.addEventListener('click', (e) => {
+            const target = e.target;
+            // Ensure we are targeting a button with the correct data attribute
+            if (target.tagName === 'BUTTON' && target.dataset.configName) {
+                const configName = target.dataset.configName;
+
+                if (target.classList.contains('restore-btn')) {
+                    restoreConfiguration(configName);
+                } else if (target.classList.contains('delete-btn')) {
+                    // Add a confirmation dialog before deleting
+                    if (confirm(`Are you sure you want to delete the "${configName}" configuration?`)) {
+                        deleteConfiguration(configName);
+                    }
+                }
+            }
+        });
+    }
 }
 
 // --- EVENT HANDLER FUNCTIONS ---
@@ -2208,6 +2360,7 @@ async function initializeApp() {
     await loadProviderCredentials(providerSelect.value);
     toggleBaseUrlInput();
     await fetchModels(); // Fetch models on initial load
+    await renderSavedConfigs(); // Render the list of saved configurations
     await checkMicrophonePermission();
     updateMicrophoneUI();
     bindEventListeners();

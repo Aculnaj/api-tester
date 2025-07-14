@@ -62,6 +62,24 @@
                 </fieldset>
             </details>
         </section>
+        <section class="main-section">
+            <details class="settings-details">
+                <summary>Provider Configurations</summary>
+                <fieldset>
+                    <label for="config-name-input">Configuration Name:</label>
+                    <input type="text" id="config-name-input" placeholder="e.g., My Work Account, Groq Llama3">
+                    <button id="save-config-btn">Save Current Configuration</button>
+                    
+                    <div id="saved-configs-list-container">
+                        <hr class="config-separator">
+                        <h3 class="saved-configs-title">Saved Configurations</h3>
+                        <div id="saved-configs-list">
+                            <!-- Saved configurations will be dynamically inserted here -->
+                        </div>
+                    </div>
+                </fieldset>
+            </details>
+        </section>
 
         <section class="main-section">
             <details class="settings-details" open>
