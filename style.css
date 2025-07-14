@@ -990,24 +990,6 @@ body.dark-mode .saved-config-item .delete-btn:hover {
 }
 
 /* --- CUSTOM PARAMETERS STYLING --- */
-.custom-params-header {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-}
-
-.plus-icon {
-    width: 18px;
-    height: 18px;
-    color: var(--button-bg-color);
-    transition: transform 0.2s ease, color 0.2s ease;
-    flex-shrink: 0;
-}
-
-.enable-param-container:has(#enable-custom-params-checkbox:checked) .plus-icon {
-    transform: rotate(45deg);
-    color: var(--success-color);
-}
 
 .custom-params-form {
     background: linear-gradient(135deg, var(--bg-color) 0%, var(--output-bg-color) 100%);
