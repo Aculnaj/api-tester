@@ -3,7 +3,9 @@ const providerSelect = document.getElementById('provider-select');
 const apiKeyInput = document.getElementById('api-key-input');
 const baseUrlContainer = document.getElementById('base-url-container');
 const baseUrlInput = document.getElementById('base-url-input');
-const modelInput = document.getElementById('model-input');
+const modelSelect = document.getElementById('model-select');
+const customModelInput = document.getElementById('custom-model-input');
+const refreshModelsBtn = document.getElementById('refresh-models-btn');
 const promptInput = document.getElementById('prompt-input');
 const sendButton = document.getElementById('send-button');
 const outputArea = document.getElementById('output-area');
@@ -74,6 +76,12 @@ const responseDisplayArea = document.getElementById('response-display-area');
 
 // Model Container
 const modelContainer = document.getElementById('model-container');
+
+// Provider Configurations
+const configNameInput = document.getElementById('config-name-input');
+const saveConfigBtn = document.getElementById('save-config-btn');
+const savedConfigsList = document.getElementById('saved-configs-list');
+
 
 // --- STATE VARIABLES ---
 let recordedChunks = [];
@@ -161,6 +169,10 @@ const LAST_TEMPERATURE_KEY = 'lastTemperature';
 const LAST_TOP_P_KEY = 'lastTopP';
 const LAST_MAX_TOKENS_KEY = 'lastMaxTokens';
 const LAST_INFERENCE_EFFORT_KEY = 'lastInferenceEffort';
+const LAST_SELECTED_MODEL_OPTION_KEY = 'lastSelectedModelOption';
+const LAST_CUSTOM_MODEL_NAME_KEY = 'lastCustomModelName';
+const SAVED_PROVIDER_CONFIGS_KEY = 'savedProviderConfigurations';
+
 // Loads API credentials for the given provider from storage.
 async function loadProviderCredentials(provider) {
     if (!provider) return;
@@ -195,7 +207,7 @@ async function loadGeneralSettings() {
     const lastProvider = await getStoredValue(LAST_PROVIDER_KEY);
     if (lastProvider) providerSelect.value = lastProvider;
 
-    modelInput.value = await getStoredValue(LAST_MODEL_KEY) || 'gpt-4o'; // Default model
+    // modelInput.value = await getStoredValue(LAST_MODEL_KEY) || 'gpt-4o'; // Default model (Now handled by populateModelDropdown)
     promptInput.value = await getStoredValue(LAST_PROMPT_KEY) || '';
 
     const lastGenerationType = await getStoredValue(LAST_GENERATION_TYPE_KEY);
@@ -260,7 +272,7 @@ async function loadGeneralSettings() {
     }
     if (enableTopPCheckbox) {
         const en = await getStoredValue(LAST_ENABLE_TOP_P_KEY);
-        enableTopPCheckbox.checked = typeof en === "boolean" ? en : true;
+        enableTopPCheckbox.checked = typeof en === "boolean" ? en : false;
     }
     if (enableMaxTokensCheckbox) {
         const en = await getStoredValue(LAST_ENABLE_MAX_TOKENS_KEY);
@@ -299,7 +311,17 @@ async function loadGeneralSettings() {
  */
 async function saveGeneralSettings() {
     await setStoredValue(LAST_PROVIDER_KEY, providerSelect.value);
-    await setStoredValue(LAST_MODEL_KEY, modelInput.value);
+    if (modelSelect) {
+        // Save the actual model name to be used in the API call
+        const modelToSave = modelSelect.value === 'custom' ? customModelInput.value.trim() : modelSelect.value;
+        await setStoredValue(LAST_MODEL_KEY, modelToSave);
+
+        // Save the state of the dropdown and custom input for UI restoration
+        await setStoredValue(LAST_SELECTED_MODEL_OPTION_KEY, modelSelect.value);
+        if (modelSelect.value === 'custom') {
+            await setStoredValue(LAST_CUSTOM_MODEL_NAME_KEY, customModelInput.value.trim());
+        }
+    }
     await setStoredValue(LAST_PROMPT_KEY, promptInput.value);
     const generationType = document.querySelector('input[name="generation-type"]:checked');
     if (generationType) await setStoredValue(LAST_GENERATION_TYPE_KEY, generationType.value);
@@ -410,6 +432,126 @@ async function initializeTheme() {
     }
 }
 
+// --- PROVIDER CONFIGURATION MANAGEMENT ---
+
+// Renders the list of saved provider configurations into the UI.
+async function renderSavedConfigs() {
+    const configs = await getStoredValue(SAVED_PROVIDER_CONFIGS_KEY) || {};
+    savedConfigsList.innerHTML = ''; // Clear the list first
+
+    const configContainer = document.getElementById('saved-configs-list-container');
+
+    if (Object.keys(configs).length === 0) {
+        // Hide the container if there are no configs, as it contains the HR and title
+        if(configContainer) configContainer.style.display = 'none';
+        return;
+    }
+    
+    // Show the container if there are configs
+    if(configContainer) configContainer.style.display = 'block';
+
+    for (const name in configs) {
+        if (Object.hasOwnProperty.call(configs, name)) {
+            const configItem = document.createElement('div');
+            configItem.className = 'saved-config-item';
+            
+            // Sanitize the name for use in data attributes
+            const sanitizedName = name.replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+
+            configItem.innerHTML = `
+                <span class="config-name">${sanitizedName}</span>
+                <div class="config-buttons">
+                    <button class="config-btn restore-btn" data-config-name="${sanitizedName}">Restore</button>
+                    <button class="config-btn delete-btn" data-config-name="${sanitizedName}">Delete</button>
+                </div>
+            `;
+            savedConfigsList.appendChild(configItem);
+        }
+    }
+}
+
+// Saves the current provider settings as a named configuration.
+async function saveConfiguration() {
+    const name = configNameInput.value.trim();
+    if (!name) {
+        displayError("Please enter a name for the configuration.");
+        return;
+    }
+
+    const currentProvider = providerSelect.value;
+    const currentApiKey = apiKeyInput.value.trim();
+    const currentBaseUrl = baseUrlInput.value.trim();
+
+    if (!currentApiKey) {
+        displayError("API Key cannot be empty when saving a configuration.");
+        return;
+    }
+
+    const configs = await getStoredValue(SAVED_PROVIDER_CONFIGS_KEY) || {};
+    
+    configs[name] = {
+        provider: currentProvider,
+        apiKey: currentApiKey,
+        baseUrl: currentBaseUrl
+    };
+
+    await setStoredValue(SAVED_PROVIDER_CONFIGS_KEY, configs);
+    
+    // Clear the input and re-render the list
+    configNameInput.value = '';
+    await renderSavedConfigs();
+}
+
+// Restores a saved provider configuration into the main form fields.
+async function restoreConfiguration(name) {
+    const configs = await getStoredValue(SAVED_PROVIDER_CONFIGS_KEY) || {};
+    const configToRestore = configs[name];
+
+    if (!configToRestore) {
+        displayError(`Configuration "${name}" not found.`);
+        return;
+    }
+
+    // Populate the form fields
+    providerSelect.value = configToRestore.provider;
+    apiKeyInput.value = configToRestore.apiKey;
+    baseUrlInput.value = configToRestore.baseUrl || '';
+
+    // Also populate the name input for easy re-saving
+    configNameInput.value = name;
+
+    // --- Manually trigger the necessary updates ---
+
+    // 1. Save the newly restored credentials to the specific provider's slot
+    await saveProviderCredentials(configToRestore.provider);
+    
+    // 2. Save the new provider selection as the last used one
+    await setStoredValue(LAST_PROVIDER_KEY, configToRestore.provider);
+
+    // 3. Update the UI based on the new provider
+    toggleBaseUrlInput();
+    
+    // 4. Fetch the models for the new provider
+    await fetchModels();
+}
+
+// Deletes a saved provider configuration.
+async function deleteConfiguration(name) {
+    const configs = await getStoredValue(SAVED_PROVIDER_CONFIGS_KEY) || {};
+    
+    if (configs[name]) {
+        delete configs[name];
+        await setStoredValue(SAVED_PROVIDER_CONFIGS_KEY, configs);
+        
+        // If the deleted config's name is in the input, clear it
+        if (configNameInput.value === name) {
+            configNameInput.value = '';
+        }
+
+        await renderSavedConfigs();
+    }
+}
+
 // --- UI MANIPULATION ---
 // Functions that control the visibility and state of UI elements.
 
@@ -433,6 +575,117 @@ function toggleAspectRatio() {
         aspectRatioGroup.style.display = 'none';
         aspectRatioGroup.classList.add('disabled');
     }
+}
+
+// --- MODEL MANAGEMENT ---
+
+// Fetches the list of available models from the provider's API.
+async function fetchModels() {
+    const provider = providerSelect.value;
+    const apiKey = apiKeyInput.value.trim();
+    const baseUrl = baseUrlInput.value.trim();
+
+    // Don't fetch for providers that don't support it or if key is missing
+    if (!apiKey || ['claude', 'deepseek'].includes(provider)) {
+        populateModelDropdown([]); // Populate with just "Custom"
+        return;
+    }
+
+    let apiUrl = '';
+    let headers = { 'Authorization': `Bearer ${apiKey}` };
+
+    if (provider === 'openai') {
+        apiUrl = 'https://api.openai.com/v1/models';
+    } else if (provider === 'openai_compatible') {
+        if (!baseUrl) {
+            populateModelDropdown([]); // Can't fetch without base URL
+            return;
+        }
+        const cleanBaseUrl = baseUrl.endsWith('/') ? baseUrl.slice(0, -1) : baseUrl;
+        apiUrl = `${cleanBaseUrl}/models`;
+    } else if (provider === 'openrouter') {
+        apiUrl = 'https://openrouter.ai/api/v1/models';
+    } else {
+        populateModelDropdown([]); // Unsupported provider for this feature
+        return;
+    }
+
+    try {
+        const response = await fetch(apiUrl, { headers: headers });
+        if (!response.ok) {
+            const errorData = await response.json().catch(() => ({}));
+            const errorMessage = errorData?.error?.message || `Failed to fetch models (${response.status})`;
+            console.error('Model fetch error:', errorMessage);
+            displayError(`Could not fetch models: ${errorMessage}`);
+            populateModelDropdown([]); // Show custom at least
+            return;
+        }
+        const data = await response.json();
+        const models = data.data || []; // OpenAI and OpenRouter use `data` field
+        populateModelDropdown(models);
+    } catch (error) {
+        console.error('Error fetching models:', error);
+        displayError(`Network error while fetching models: ${error.message}`);
+        populateModelDropdown([]); // Show custom at least
+    }
+}
+
+// Populates the model dropdown with a list of models.
+async function populateModelDropdown(models) {
+    const lastSelectedOption = await getStoredValue(LAST_SELECTED_MODEL_OPTION_KEY);
+    const lastCustomName = await getStoredValue(LAST_CUSTOM_MODEL_NAME_KEY);
+
+    modelSelect.innerHTML = ''; // Clear existing options
+
+    // Add the "Custom" option first
+    const customOption = document.createElement('option');
+    customOption.value = 'custom';
+    customOption.textContent = 'Custom...';
+    modelSelect.appendChild(customOption);
+
+    // Sort models by ID (name)
+    if (Array.isArray(models)) {
+        models.sort((a, b) => a.id.localeCompare(b.id));
+        // Add models from the API
+        models.forEach(model => {
+            const option = document.createElement('option');
+            option.value = model.id;
+            option.textContent = model.id;
+            modelSelect.appendChild(option);
+        });
+    }
+
+    // Try to restore the last selection from the dropdown's state
+    if (lastSelectedOption && Array.from(modelSelect.options).some(opt => opt.value === lastSelectedOption)) {
+        modelSelect.value = lastSelectedOption;
+    } else {
+        // Fallback to a default if no selection was stored or it's no longer valid
+        const defaultModel = 'gpt-4o'; // A sensible default
+        if(Array.from(modelSelect.options).some(opt => opt.value === defaultModel)) {
+            modelSelect.value = defaultModel;
+        } else if (modelSelect.options.length > 1) {
+            modelSelect.selectedIndex = 1; // Select the first model in the list
+        }
+    }
+    
+    // If the last selected option was 'custom', restore the custom input text
+    if (modelSelect.value === 'custom' && lastCustomName) {
+        customModelInput.value = lastCustomName;
+    }
+    
+    // Trigger the change handler to set UI visibility correctly
+    handleModelSelectionChange();
+}
+
+
+// Handles changes in the model selection dropdown.
+function handleModelSelectionChange() {
+    if (modelSelect.value === 'custom') {
+        customModelInput.style.display = 'block';
+    } else {
+        customModelInput.style.display = 'none';
+    }
+    saveGeneralSettings(); // Save the new selection state
 }
 
 // --- UI MANIPULATION (Refactored) ---
@@ -1793,6 +2046,8 @@ function bindEventListeners() {
     togglePayloadBtn.addEventListener('click', handleTogglePayload);
     toggleResponseBtn.addEventListener('click', handleToggleResponse);
     providerSelect.addEventListener('change', handleProviderChange);
+    modelSelect.addEventListener('change', handleModelSelectionChange);
+    refreshModelsBtn.addEventListener('click', fetchModels);
 
     // Generation type and options
     generationTypeRadios.forEach(radio => {
@@ -1862,7 +2117,7 @@ function bindEventListeners() {
 
     // Inputs that trigger a settings save
     const inputsToSave = [
-        modelInput, promptInput, enableStreamingCheckbox, customQualityInput,
+        customModelInput, promptInput, enableStreamingCheckbox, customQualityInput,
         imageWidthInput, imageHeightInput, voiceInput, videoDurationInput,
         videoAspectRatioSelect, systemPromptInput, maxTokensInput, inferenceEffortInput,
         // NEW: Checkbox toggles trigger save as well:
@@ -1897,6 +2152,30 @@ function bindEventListeners() {
             setStoredValue(key, details.open);
         });
     });
+
+    // --- Provider Configuration Listeners ---
+    if (saveConfigBtn) {
+        saveConfigBtn.addEventListener('click', saveConfiguration);
+    }
+
+    if (savedConfigsList) {
+        savedConfigsList.addEventListener('click', (e) => {
+            const target = e.target;
+            // Ensure we are targeting a button with the correct data attribute
+            if (target.tagName === 'BUTTON' && target.dataset.configName) {
+                const configName = target.dataset.configName;
+
+                if (target.classList.contains('restore-btn')) {
+                    restoreConfiguration(configName);
+                } else if (target.classList.contains('delete-btn')) {
+                    // Add a confirmation dialog before deleting
+                    if (confirm(`Are you sure you want to delete the "${configName}" configuration?`)) {
+                        deleteConfiguration(configName);
+                    }
+                }
+            }
+        });
+    }
 }
 
 // --- EVENT HANDLER FUNCTIONS ---
@@ -1907,7 +2186,9 @@ async function handleSendClick() {
 
     const provider = providerSelect.value;
     const apiKey = apiKeyInput.value.trim();
-    const model = modelInput.value.trim();
+    const model = modelSelect.value === 'custom'
+        ? customModelInput.value.trim()
+        : modelSelect.value;
     const prompt = promptInput.value.trim();
     const baseUrl = baseUrlInput.value.trim();
     const generationType = document.querySelector('input[name="generation-type"]:checked').value;
@@ -1981,6 +2262,7 @@ async function handleProviderChange() {
     await saveGeneralSettings();
     await loadProviderCredentials(providerSelect.value);
     toggleBaseUrlInput();
+    fetchModels(); // Refresh models when provider changes
 }
 
 async function handleGenerationTypeChange() {
@@ -2076,6 +2358,8 @@ async function initializeApp() {
     await loadGeneralSettings();
     await loadProviderCredentials(providerSelect.value);
     toggleBaseUrlInput();
+    await fetchModels(); // Fetch models on initial load
+    await renderSavedConfigs(); // Render the list of saved configurations
     await checkMicrophonePermission();
     updateMicrophoneUI();
     bindEventListeners();
