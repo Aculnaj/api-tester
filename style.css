@@ -590,6 +590,16 @@ body.dark-mode select {
     z-index: 1;
 }
 
+/* Clear All Data Button - Special Warning Style */
+#clear-all-data-btn:hover {
+    background-color: var(--error-color);
+    color: white;
+}
+
+#clear-all-data-btn:focus {
+    box-shadow: 0 0 0 2px var(--error-color);
+}
+
 /* --- DARK MODE SPECIFIC OVERRIDES --- */
 /* These rules ensure that specific sections correctly adopt dark theme colors. */
 body.dark-mode #output-area { /* Apply background to the container itself */

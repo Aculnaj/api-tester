@@ -86,6 +86,7 @@ const modelContainer = document.getElementById('model-container');
 const configNameInput = document.getElementById('config-name-input');
 const saveConfigBtn = document.getElementById('save-config-btn');
 const savedConfigsList = document.getElementById('saved-configs-list');
+const clearAllDataBtn = document.getElementById('clear-all-data-btn');
 
 
 // --- STATE VARIABLES ---
@@ -570,6 +571,52 @@ async function deleteConfiguration(name) {
         }
 
         await renderSavedConfigs();
+    }
+}
+
+// --- CLEAR ALL DATA FUNCTIONALITY ---
+
+// Clears all stored data for the current site
+async function clearAllStorageData() {
+    try {
+        // Clear Electron Store if available
+        if (window.electronAPI && window.electronAPI.clearAllStore) {
+            await window.electronAPI.clearAllStore();
+        }
+        
+        // Clear localStorage with our app prefix
+        const keysToRemove = [];
+        for (let i = 0; i < localStorage.length; i++) {
+            const key = localStorage.key(i);
+            if (key && key.startsWith('app_storage_')) {
+                keysToRemove.push(key);
+            }
+        }
+        
+        keysToRemove.forEach(key => {
+            localStorage.removeItem(key);
+        });
+        
+        // Also clear any other potential storage keys that might not have the prefix
+        const otherKeys = [
+            'user-theme',
+            'apiCredentials',
+            'lastProvider',
+            'lastModel',
+            'savedProviderConfigurations'
+        ];
+        
+        otherKeys.forEach(key => {
+            localStorage.removeItem(key);
+            localStorage.removeItem(`app_storage_${key}`);
+        });
+        
+        console.log('All storage data cleared successfully');
+        return true;
+        
+    } catch (error) {
+        console.error('Error clearing storage data:', error);
+        return false;
     }
 }
 
@@ -2304,6 +2351,32 @@ function bindEventListeners() {
         }
     }
 
+    // Clear All Data button listener
+    if (clearAllDataBtn) {
+        clearAllDataBtn.addEventListener('click', async () => {
+            const confirmed = confirm(
+                'Are you sure you want to clear ALL stored data?\n\n' +
+                'This will remove:\n' +
+                '• All saved provider configurations\n' +
+                '• API keys and credentials\n' +
+                '• Theme preferences\n' +
+                '• All other app settings\n\n' +
+                'This action cannot be undone!'
+            );
+            
+            if (confirmed) {
+                const success = await clearAllStorageData();
+                if (success) {
+                    alert('All storage data has been cleared successfully.\n\nThe page will now reload to reset the application.');
+                    // Reload the page to reset the UI to default state
+                    window.location.reload();
+                } else {
+                    alert('There was an error clearing some data. Please check the console for details.');
+                }
+            }
+        });
+    }
+
     // Listeners for all collapsible sections to save their state
     document.querySelectorAll('.settings-details').forEach(details => {
         details.addEventListener('toggle', () => {
@@ -2312,9 +2385,12 @@ function bindEventListeners() {
         });
     });
 
-    // --- Provider Configuration Listeners ---
     if (saveConfigBtn) {
-        saveConfigBtn.addEventListener('click', saveConfiguration);
+        saveConfigBtn.addEventListener('click', () => {
+            saveConfiguration();
+        });
+    } else {
+        console.error('ERROR: saveConfigBtn not found! Element with ID "save-config-btn" does not exist.');
     }
 
     if (savedConfigsList) {
@@ -2323,7 +2399,6 @@ function bindEventListeners() {
             // Ensure we are targeting a button with the correct data attribute
             if (target.tagName === 'BUTTON' && target.dataset.configName) {
                 const configName = target.dataset.configName;
-
                 if (target.classList.contains('restore-btn')) {
                     restoreConfiguration(configName);
                 } else if (target.classList.contains('delete-btn')) {
@@ -2334,13 +2409,15 @@ function bindEventListeners() {
                 }
             }
         });
+    } else {
+        console.error('ERROR: savedConfigsList not found! Element with ID "saved-configs-list" does not exist.');
     }
 
     // --- Custom Parameters Enhancement ---
     // JSON formatting functionality
     const formatJsonBtn = document.getElementById('format-json-btn');
     const clearJsonBtn = document.getElementById('clear-json-btn');
-    const customParamsInput = document.getElementById('custom-params-input');
+    // customParamsInput is already declared globally at the top of the file
 
     if (formatJsonBtn && customParamsInput) {
         formatJsonBtn.addEventListener('click', () => {
@@ -2631,7 +2708,7 @@ async function initializeApp() {
             details.open = typeof isOpen === 'boolean' ? isOpen : true; // Default others to open
         }
     }
-
+    
     initializeTheme();
     await loadGeneralSettings();
     await loadProviderCredentials(providerSelect.value);
