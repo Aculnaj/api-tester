@@ -107,6 +107,15 @@
                         </div>
                     </div>
 
+                    <!-- Audio Type removed from here: now will be in Advanced Options -->
+                    <!-- Audio Type - now back at the top of the Generation Task -->
+                    <div id="audio-type-row" style="display:none; margin-bottom: 10px;">
+                        <label for="audio-type-select">Audio Type:</label>
+                        <select id="audio-type-select">
+                            <option value="tts" selected>Text-to-Speech (TTS)</option>
+                            <option value="stt">Speech-to-Text (STT)</option>
+                        </select>
+                    </div>
                     <div id="model-container">
                         <label for="model-select">Model:</label>
                         <div class="model-selection-wrapper">
@@ -121,8 +130,22 @@
                         <input type="text" id="custom-model-input" placeholder="Enter custom model name" style="display:none; margin-top: 8px;">
                     </div>
                     <label for="prompt-input" id="prompt-label">Prompt / Image Description:</label>
-                    <button id="upload-text-btn" class="upload-btn" title="Upload a file for prompt">Upload File</button>
                     <textarea id="prompt-input" rows="4" placeholder="Enter text prompt or image description..."></textarea>
+
+                    <div id="audio-generation-controls" style="display: none;">
+                        <div id="stt-input-container" style="display: none;">
+                            <label for="audio-file-input">Audio File:</label>
+                            <input type="file" id="audio-file-input" accept="audio/*">
+                        </div>
+                        <div id="recorder-controls" style="display:none;">
+                            <button type="button" id="record-btn">Start Recording</button>
+                            <audio id="recording-preview" controls style="display:none;"></audio>
+                        </div>
+                        <div id="voice-options-container" style="display:none;">
+                            <label for="voice-input">Voice:</label>
+                            <input type="text" id="voice-input" placeholder="Enter voice name">
+                        </div>
+                    </div>
                 </fieldset>
             </details>
         </section>
@@ -206,6 +229,26 @@
                             </label>
                         </div>
                     </div>
+                    <!-- Audio Advanced Options in Advanced Options (displayed contextually by script.js) -->
+                    <div id="tts-advanced-options" style="display:none; margin-top:18px;">
+                        <label for="tts-format-select">TTS Audio Format:</label>
+                        <select id="tts-format-select">
+                            <option value="mp3" selected>mp3</option>
+                            <option value="wav">wav</option>
+                            <option value="opus">opus</option>
+                            <option value="custom">Custom</option>
+                        </select>
+                        <input type="text" id="custom-tts-format-input" placeholder="Enter custom format" style="display:none; margin-top: 8px;">
+                    </div>
+                    <div id="stt-advanced-options" style="display:none; margin-top:18px;">
+                        <label for="stt-streaming-checkbox">
+                            <span>Streaming (STT)</span>
+                            <span class="switch">
+                                <input type="checkbox" id="stt-streaming-checkbox" checked>
+                                <span class="slider"></span>
+                            </span>
+                        </label>
+                    </div>
 
                     <!-- Image Options -->
                     <div id="image-options-container" style="display: none;">
@@ -241,25 +284,8 @@
                     </div>
 
                     <!-- Audio Options -->
-                    <div id="audio-options-container" style="display: none;">
-                        <label for="audio-type-select">Audio Type:</label>
-                        <select id="audio-type-select">
-                            <option value="tts" selected>Text-to-Speech (TTS)</option>
-                            <option value="stt">Speech-to-Text (STT)</option>
-                        </select>
-                        <div id="stt-input-container" style="display: none;">
-                            <label for="audio-file-input">Audio File:</label>
-                            <input type="file" id="audio-file-input" accept="audio/*">
-                        </div>
-                        <div id="recorder-controls" style="display:none;">
-                            <button type="button" id="record-btn">Start Recording</button>
-                            <audio id="recording-preview" controls style="display:none;"></audio>
-                        </div>
-                        <div id="voice-options-container" style="display:none;">
-                            <label for="voice-input">Voice:</label>
-                            <input type="text" id="voice-input" placeholder="Enter voice name">
-                        </div>
-                    </div>
+                   <!-- Audio Options (now only for legacy/fallback, will be hidden by JS) -->
+                   <div id="audio-options-container" style="display: none;"></div>
 
                     <!-- Video Options -->
                     <div id="video-options-container" style="display: none;">
@@ -293,6 +319,9 @@
                 </fieldset>
             </details>
         </section>
+
+        <!-- Advanced Option for TTS format -->
+        <!-- TTS format option section removed, now in main Advanced Options above -->
 
         <button id="send-button">Generate</button>
 

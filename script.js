@@ -29,18 +29,26 @@ const imageWidthInput = document.getElementById('image-width-input');
 const imageHeightInput = document.getElementById('image-height-input');
 const downloadImageBtn = document.getElementById('download-image-btn');
 
-// Audio Options
-const audioOptionsContainer = document.getElementById('audio-options-container');
+/* --- Audio Controls (new location: Generation Task) --- */
+const audioGenerationControls = document.getElementById('audio-generation-controls');
+const audioTypeRow = document.getElementById('audio-type-row');
 const audioTypeSelect = document.getElementById('audio-type-select');
-const sttInputContainer = document.getElementById('stt-input-container');
-const audioFileInput = document.getElementById('audio-file-input');
-const voiceOptionsContainer = document.getElementById('voice-options-container');
-const voiceInput = document.getElementById('voice-input');
-const recorderControls = document.getElementById('recorder-controls');
-const recordBtn = document.getElementById('record-btn');
-const recordingPreview = document.getElementById('recording-preview');
+const sttInputContainer = document.querySelector('#audio-generation-controls #stt-input-container');
+const audioFileInput = document.querySelector('#audio-generation-controls #audio-file-input');
+const voiceOptionsContainer = document.querySelector('#audio-generation-controls #voice-options-container');
+const voiceInput = document.querySelector('#audio-generation-controls #voice-input');
+const recorderControls = document.querySelector('#audio-generation-controls #recorder-controls');
+const recordBtn = document.querySelector('#audio-generation-controls #record-btn');
+const recordingPreview = document.querySelector('#audio-generation-controls #recording-preview');
 const outputAudio = document.getElementById('output-audio');
 const downloadAudio = document.getElementById('download-audio');
+/* --- TTS/Audio Advanced Options - ensure only one block declaration. --- */
+const ttsFormatOptions = document.getElementById('tts-format-options');
+const ttsFormatSelect = document.getElementById('tts-format-select');
+const customTtsFormatInput = document.getElementById('custom-tts-format-input');
+const sttStreamingContainer = document.getElementById('stt-streaming-advanced-container');
+const sttStreamingCheckbox = document.getElementById('stt-streaming-checkbox');
+/* --- Removed duplicate TTS format/block declarations (handled above for deduplication) --- */
 
 // Video Options
 const videoOptionsContainer = document.getElementById('video-options-container');
@@ -63,7 +71,6 @@ const topPValue = document.getElementById('top-p-value');
 const enableTopPCheckbox = document.getElementById('enable-top-p-checkbox');
 const maxTokensInput = document.getElementById('max-tokens-input');
 const enableMaxTokensCheckbox = document.getElementById('enable-max-tokens-checkbox');
-const uploadTextBtn = document.getElementById('upload-text-btn');
 const inferenceEffortInput = document.getElementById('inference-effort-input');
 const enableInferenceEffortCheckbox = document.getElementById('enable-inference-effort-checkbox');
 
@@ -695,16 +702,19 @@ function toggleGenerationOptions() {
     const generationType = document.querySelector('input[name="generation-type"]:checked')?.value;
     if (!generationType) return;
 
-    // Hide all advanced option groups first
+    // Hide all advanced/parameter groups
     textGenerationOptions.style.display = 'none';
     imageOptionsContainer.style.display = 'none';
-    audioOptionsContainer.style.display = 'none';
     videoOptionsContainer.style.display = 'none';
+    if (audioGenerationControls) audioGenerationControls.style.display = 'none';
+    // audioTypeRow is now for Advanced Options, not Generation Task. Hide by default.
+    // only show dropdown when Audio is selected
+    if (audioTypeRow) audioTypeRow.style.display = generationType === 'audio' ? 'block' : 'none';
+    if (ttsFormatOptions) ttsFormatOptions.style.display = 'none';
+    if (sttStreamingContainer) sttStreamingContainer.style.display = 'none';
 
     // Always show prompt input, but hide for STT
     promptInput.style.display = 'block';
-    uploadTextBtn.style.display = 'inline-block';
-
 
     // Configure UI based on the selected generation type
     switch (generationType) {
@@ -715,55 +725,62 @@ function toggleGenerationOptions() {
         case 'image':
             imageOptionsContainer.style.display = 'block';
             document.getElementById('prompt-label').textContent = 'Prompt / Image Description:';
-            // Visibility of quality options container is now primarily controlled by its toggle
-            // but ensure it's hidden if the main image options are hidden.
-             const enableQualityToggle = document.getElementById('enable-quality-checkbox');
+            const enableQualityToggle = document.getElementById('enable-quality-checkbox');
             if (enableQualityToggle) {
                  qualityOptionsContainer.style.display = enableQualityToggle.checked ? 'block' : 'none';
                  customQualityInput.style.display = (enableQualityToggle.checked && qualitySelect.value === 'custom') ? 'block' : 'none';
-             }
+            }
             break;
         case 'audio':
-            audioOptionsContainer.style.display = 'block';
-            const audioTypeSelectEl = document.getElementById('audio-type-select');
-            const audioTypeToggle = document.querySelector('.param-toggle[data-param-id="audio-type-select"]');
-            const audioType = audioTypeSelectEl ? audioTypeSelectEl.value : 'tts';
+            // Audio Type select always appears as first row of Generation Task for AUDIO (not in Advanced)
+            if (audioTypeRow) audioTypeRow.style.display = 'block';
 
-            // Only show audio sub-options if the audio type select is enabled and its toggle is checked
-            if (audioTypeSelectEl && audioTypeToggle && audioTypeToggle.checked) {
-                if (audioType === 'tts') {
-                    voiceOptionsContainer.style.display = 'block';
-                    sttInputContainer.style.display = 'none';
-                    recorderControls.style.display = 'none';
-                    document.getElementById('prompt-label').textContent = 'Text to Speak:';
-                } else { // STT
-                    voiceOptionsContainer.style.display = 'none';
-                    sttInputContainer.style.display = 'block';
-                    recorderControls.style.display = 'block';
-                    promptInput.style.display = 'none'; // Prompt input is not used for STT
-                    uploadTextBtn.style.display = 'none'; // Upload Text button is not used for STT
-                    document.getElementById('prompt-label').textContent = 'Upload or Record Audio:';
-                }
+            // Show audio controls section for prompt/upload/record (but not audio type switcher itself)
+            if (audioGenerationControls) audioGenerationControls.style.display = 'block';
+
+            // Get audio type
+            const audioType = audioTypeSelect ? audioTypeSelect.value : 'tts';
+
+            // Show/hide TTS and STT advanced options (replacement for legacy toggles)
+            if (audioType === 'tts') {
+                const ttsAdv = document.getElementById('tts-advanced-options');
+                if (ttsAdv) ttsAdv.style.display = 'block';
+                const sttAdv = document.getElementById('stt-advanced-options');
+                if (sttAdv) sttAdv.style.display = 'none';
+            } else if (audioType === 'stt') {
+                const ttsAdv = document.getElementById('tts-advanced-options');
+                if (ttsAdv) ttsAdv.style.display = 'none';
+                const sttAdv = document.getElementById('stt-advanced-options');
+                if (sttAdv) sttAdv.style.display = 'block';
             } else {
-                 // If audio type select is disabled or its toggle is off, hide all audio sub-options
-                voiceOptionsContainer.style.display = 'none';
-                sttInputContainer.style.display = 'none';
-                recorderControls.style.display = 'none';
-                // Restore prompt input visibility and Upload File button for other types if audio section is off
-                 promptInput.style.display = 'block';
-                 uploadTextBtn.style.display = 'inline-block'; // Re-show the upload button
+                const ttsAdv = document.getElementById('tts-advanced-options');
+                if (ttsAdv) ttsAdv.style.display = 'none';
+                const sttAdv = document.getElementById('stt-advanced-options');
+                if (sttAdv) sttAdv.style.display = 'none';
+            }
+
+            // Show audio sub-options
+            if (audioType === 'tts') {
+                if (voiceOptionsContainer) voiceOptionsContainer.style.display = 'block';
+                if (sttInputContainer) sttInputContainer.style.display = 'none';
+                if (recorderControls) recorderControls.style.display = 'none';
+                promptInput.style.display = 'block';
+                document.getElementById('prompt-label').textContent = 'Text to Speak:';
+            } else { // STT
+                if (voiceOptionsContainer) voiceOptionsContainer.style.display = 'none';
+                if (sttInputContainer) sttInputContainer.style.display = 'block';
+                if (recorderControls) recorderControls.style.display = 'block';
+                promptInput.style.display = 'none'; // Prompt input is not used for STT
+                document.getElementById('prompt-label').textContent = 'Upload or Record Audio:';
             }
             break;
         case 'video':
             videoOptionsContainer.style.display = 'block';
             document.getElementById('prompt-label').textContent = 'Video Description:';
-            // Aspect ratio group visibility is now primarily controlled by its toggle
             const aspectRatioToggle = document.getElementById('video-aspect-ratio-enabled');
             if (aspectRatioToggle) {
                  aspectRatioGroup.style.display = aspectRatioToggle.checked ? 'block' : 'none';
             }
-             // Ensure Upload File button is hidden for video
-             uploadTextBtn.style.display = 'none';
             break;
     }
 }
@@ -1103,6 +1120,13 @@ async function callTextApi(provider, apiKey, baseUrl, model, prompt) {
             // Prompt tokens estimated from user input (should match frontend logic)
             const promptTokensEstimate = estimateTokens(prompt);
 
+            // New: Buffer for all provider responses during streaming (to reconstruct original)
+            let streamedProviderJsons = [];
+            // Accumulate for merged pretty JSON:
+            let streamedTopMeta = null;
+            let streamedFinishReason = null;
+            let streamedAllDeltas = [];
+
             async function processStream() {
                 // --- Live Stats for Streaming ---
                 let lastLiveStatsUpdate = 0;
@@ -1122,16 +1146,18 @@ async function callTextApi(provider, apiKey, baseUrl, model, prompt) {
                         statsArea.innerHTML = `
                             <span><strong>Time:</strong> ${elapsed.toFixed(2)}s</span>
                             <span><strong>Tokens/Sec:</strong> ${tokensPerSecondFinal}</span>
-                            <span><strong>Prompt Tokens:</strong> ${promptTokensEstimate} (est)</span>
-                            <span><strong>Completion Tokens:</strong> ${completionTokensFinal} (est)</span>
-                            <span><strong>Total Tokens:</strong> ${totalTokensFinal} (est)</span>
+                            <span><strong>Prompt Tokens:</strong> ${promptTokensEstimate}</span>
+                            <span><strong>Completion Tokens:</strong> ${completionTokensFinal}</span>
+                            <span><strong>Total Tokens:</strong> ${totalTokensFinal}</span>
                             <br><small>Usage data may not be available for streamed responses. Token values are estimated.</small>
                         `;
                         statsArea.style.display = 'block';
+
                         // Ensure any final buffered content is displayed (though typically not needed with SSE)
                         if (accumulatedResponse.startsWith("data: ")) {
                             const jsonStr = accumulatedResponse.substring(6).trim();
                             if (jsonStr && jsonStr !== "[DONE]") {
+                                streamedProviderJsons.push(jsonStr);
                                 try {
                                     const parsed = JSON.parse(jsonStr);
                                     if (parsed.choices && parsed.choices[0] && parsed.choices[0].delta && parsed.choices[0].delta.content) {
@@ -1159,14 +1185,22 @@ async function callTextApi(provider, apiKey, baseUrl, model, prompt) {
                                 // Stream is finished — handoff to the above "done" clause
                                 return;
                             }
+                            streamedProviderJsons.push(jsonStr);
                             try {
                                 const parsed = JSON.parse(jsonStr);
+                                streamedTopMeta = parsed; // Last non-empty JSON has latest meta (id, created, model, etc.)
+                                streamedAllDeltas.push(parsed.choices[0] && parsed.choices[0].delta ? parsed.choices[0].delta : {});
+                                // The actual text:
                                 if (parsed.choices && parsed.choices[0] && parsed.choices[0].delta && parsed.choices[0].delta.content) {
                                     const textChunk = parsed.choices[0].delta.content;
                                     contentBuffer += textChunk;
                                     outputText.innerHTML += textChunk.replace(/\n/g, '<br>');
                                     streamedTokenCount = estimateTokens(contentBuffer);
                                     updateStatsNow = true;
+                                }
+                                // Finish reason may only come on last chunk (OpenAI)
+                                if (parsed.choices && parsed.choices[0] && parsed.choices[0].finish_reason) {
+                                    streamedFinishReason = parsed.choices[0].finish_reason;
                                 }
                             } catch (e) {
                                 console.warn("Error parsing streamed JSON chunk:", e, "Chunk:", jsonStr);
@@ -1186,9 +1220,9 @@ async function callTextApi(provider, apiKey, baseUrl, model, prompt) {
                         statsArea.innerHTML = `
                             <span><strong>Time:</strong> ${liveTime.toFixed(2)}s</span>
                             <span><strong>Tokens/Sec:</strong> ${tokensPerSecond}</span>
-                            <span><strong>Prompt Tokens:</strong> ${promptTokensEstimate} (est)</span>
-                            <span><strong>Completion Tokens:</strong> ${liveTokens} (est)</span>
-                            <span><strong>Total Tokens:</strong> ${totalTokens} (est)</span>
+                            <span><strong>Prompt Tokens:</strong> ${promptTokensEstimate}</span>
+                            <span><strong>Completion Tokens:</strong> ${liveTokens}</span>
+                            <span><strong>Total Tokens:</strong> ${totalTokens}</span>
                             <br><small>Live stats update – values estimated from streamed content.</small>
                         `;
                         statsArea.style.display = 'block';
@@ -1196,9 +1230,35 @@ async function callTextApi(provider, apiKey, baseUrl, model, prompt) {
                 }
             }
             await processStream();
-            // For streamed responses, lastApiResponse will show a summary,
-            // as the full JSON is processed chunk by chunk and not stored as a single object.
-            lastApiResponse = `{\n  "info": "Response was streamed.",\n  "model": "${model}",\n  "duration_seconds": ${durationInSeconds.toFixed(2)},\n  "accumulated_content_length": ${contentBuffer.length}\n}`;
+            // Reconstruct pretty, merged JSON response if possible
+            if (streamedTopMeta) {
+                // Compose full content:
+                const fullContent = streamedAllDeltas
+                  .map(d => d.content || "")
+                  .join("");
+                // Start with top meta, but remove choices
+                const resp = {};
+                for (const k of Object.keys(streamedTopMeta)) {
+                  if (k !== "choices") resp[k] = streamedTopMeta[k];
+                }
+                resp.choices = [
+                  {
+                    finish_reason: streamedFinishReason || null,
+                    message: {
+                      role: (streamedTopMeta.choices && streamedTopMeta.choices[0] && streamedTopMeta.choices[0].delta && streamedTopMeta.choices[0].delta.role) || "assistant",
+                      content: fullContent
+                    }
+                  }
+                ];
+                lastApiResponse = JSON.stringify(resp, null, 2);
+            } else {
+                // Fallback: dump all received JSON lines, as before
+                const jsonl = streamedProviderJsons
+                  .filter(js => js && js !== "[DONE]")
+                  .map(js => js.trim())
+                  .join('\n');
+                lastApiResponse = jsonl || '{ "error": "no provider response captured (streaming)" }';
+            }
 
         } else {
             // Existing non-streaming logic
@@ -1464,7 +1524,7 @@ async function callImageApi(provider, apiKey, baseUrl, model, prompt) {
 }
 
 // Handles Text-to-Speech (TTS) API calls.
-async function callTtsApi(provider, apiKey, baseUrl, model, text, voice) {
+async function callTtsApi(provider, apiKey, baseUrl, model, text, voice, format) {
     showLoader(); // Show loader at the start
     clearOutput();
     outputText.innerHTML = 'Generating TTS...';
@@ -1480,14 +1540,14 @@ async function callTtsApi(provider, apiKey, baseUrl, model, text, voice) {
         case 'openai':
             apiUrl = 'https://api.openai.com/v1/audio/speech';
             headers = { 'Content-Type': 'application/json', 'Authorization': `Bearer ${apiKey}` };
-            body = { model: model, input: text, voice: voice };
+            body = { model: model, input: text, voice: voice, ...(format && { response_format: format }) };
             break;
         case 'openai_compatible':
             if (!baseUrl) return displayError('Base URL is required for OpenAI Compatible TTS.');
             const cleanBase = baseUrl.endsWith('/') ? baseUrl.slice(0, -1) : baseUrl;
             apiUrl = `${cleanBase}/audio/speech`;
             headers = { 'Content-Type': 'application/json', 'Authorization': `Bearer ${apiKey}` };
-            body = { model: model, input: text, voice: voice };
+            body = { model: model, input: text, voice: voice, ...(format && { response_format: format }) };
             break;
         default:
             return displayError('TTS is only supported for OpenAI and OpenAI Compatible providers.');
@@ -1569,7 +1629,7 @@ async function callTtsApi(provider, apiKey, baseUrl, model, text, voice) {
 }
 
 // Handles Speech-to-Text (STT) API calls.
-async function callSttApi(provider, apiKey, baseUrl, model, file) {
+async function callSttApi(provider, apiKey, baseUrl, model, file, streaming = true) {
     showLoader(); // Show loader at the start
     clearOutput();
     outputText.innerHTML = 'Transcribing audio...';
@@ -1579,12 +1639,13 @@ async function callSttApi(provider, apiKey, baseUrl, model, file) {
     downloadAudio.style.display = 'none';
 
     // Can't easily stringify FormData, so we store what we can
-    const payloadInfo = { 
+    const payloadInfo = {
         provider: provider,
         model: model,
         fileName: file.name,
         fileSizeKB: (file.size / 1024).toFixed(2),
-        fileType: file.type
+        fileType: file.type,
+        streaming: streaming
     };
     lastRequestPayload = JSON.stringify(payloadInfo, null, 2);
     payloadContainer.style.display = 'block';
@@ -1610,6 +1671,10 @@ async function callSttApi(provider, apiKey, baseUrl, model, file) {
         const formData = new FormData();
         formData.append('file', file);
         formData.append('model', model);
+        // Attach streaming flag if api supports (OpenAI does)
+        if (typeof streaming !== "undefined" && streaming !== null) {
+            formData.append('stream', streaming ? "true" : "false");
+        }
 
         const response = await fetch(apiUrl, {
             method: 'POST',
@@ -1619,52 +1684,93 @@ async function callSttApi(provider, apiKey, baseUrl, model, file) {
 
         const endTime = performance.now();
         const durationInSeconds = ((endTime - startTime) / 1000).toFixed(2);
-        
-        const data = await handleApiResponse(response);
 
-        const transcript = data.text || data.transcript || JSON.stringify(data);
-        outputText.innerHTML = `<strong>Transcribed by ${model}:</strong><br>${transcript.replace(/\\n/g, '<br>')}`;
-        
-        // Display stats
-        statsArea.innerHTML = `
-            <span><strong>Transcription Time:</strong> ${durationInSeconds}s</span>
-            <span><strong>File Size:</strong> ${fileSize} KB</span>
-            <span><strong>Model:</strong> ${model}</span>
-            <span><strong>Characters Generated:</strong> ${transcript.length}</span>
-        `;
-        
-        // Add file duration if we can get it
-        if (file.type.includes('audio')) {
-            const audio = new Audio();
-            audio.src = URL.createObjectURL(file);
-            audio.onloadedmetadata = () => {
-                const audioDuration = audio.duration.toFixed(2);
-                if (audioDuration && audioDuration > 0) {
-                    statsArea.innerHTML += `<span><strong>Audio Length:</strong> ${audioDuration}s</span>`;
-                    
-                    // Add processing speed relative to audio length
-                    const processingRatio = (audioDuration / durationInSeconds).toFixed(2);
-                    statsArea.innerHTML += `<span><strong>Processing Speed:</strong> ${processingRatio}x realtime</span>`;
+        // Check for streaming (OpenAI style: SSE Multipart)
+        const isStreamingMode = !!streaming && response && response.headers.get("content-type") && response.headers.get("content-type").includes("text/event-stream");
+        if (isStreamingMode) {
+            // SSE "streaming" response. Parse line-by-line.
+            let partialTranscript = "";
+            const reader = response.body.getReader();
+            const decoder = new TextDecoder("utf-8");
+            let done = false;
+            outputText.innerHTML = `<strong>Transcribed by ${model} (partial):</strong><br>`;
+            while (!done) {
+                const { value, done: streamDone } = await reader.read();
+                done = streamDone;
+                if (value) {
+                    const chunk = decoder.decode(value);
+                    // Each SSE chunk: look for lines starting with "data: "
+                    chunk.split("\n").forEach(line => {
+                        if (line.startsWith("data: ")) {
+                            const dataStr = line.replace("data: ", "").trim();
+                            if (dataStr && dataStr !== "[DONE]") {
+                                try {
+                                    const parsed = JSON.parse(dataStr);
+                                    if (parsed.text || parsed.transcript || parsed.partial) {
+                                        const token = parsed.text || parsed.transcript || parsed.partial;
+                                        partialTranscript += token;
+                                        outputText.innerHTML = `<strong>Transcribed by ${model} (partial):</strong><br>${partialTranscript.replace(/\\n/g, '<br>')}`;
+                                    }
+                                } catch {
+                                    // Not valid JSON, skip
+                                }
+                            }
+                        }
+                    });
                 }
-            };
-            audio.load();
+            }
+            // Final stats for streaming STT
+            outputText.innerHTML = `<strong>Transcribed by ${model}:</strong><br>${partialTranscript.replace(/\\n/g, '<br>')}`;
+            statsArea.innerHTML = `
+                <span><strong>Transcription Time:</strong> ${durationInSeconds}s</span>
+                <span><strong>File Size:</strong> ${fileSize} KB</span>
+                <span><strong>Model:</strong> ${model}</span>
+                <span><strong>Characters Generated:</strong> ${partialTranscript.length}</span>
+                <span><strong>Mode:</strong> Streaming</span>
+            `;
+            statsArea.style.display = 'block';
+            lastApiResponse = partialTranscript;
+        } else {
+            // Non-streaming response (regular)
+            const data = await handleApiResponse(response);
+            const transcript = data.text || data.transcript || JSON.stringify(data);
+            outputText.innerHTML = `<strong>Transcribed by ${model}:</strong><br>${transcript.replace(/\\n/g, '<br>')}`;
+            // Display stats
+            statsArea.innerHTML = `
+                <span><strong>Transcription Time:</strong> ${durationInSeconds}s</span>
+                <span><strong>File Size:</strong> ${fileSize} KB</span>
+                <span><strong>Model:</strong> ${model}</span>
+                <span><strong>Characters Generated:</strong> ${transcript.length}</span>
+            `;
+            // Add file duration if we can get it
+            if (file.type.includes('audio')) {
+                const audio = new Audio();
+                audio.src = URL.createObjectURL(file);
+                audio.onloadedmetadata = () => {
+                    const audioDuration = audio.duration.toFixed(2);
+                    if (audioDuration && audioDuration > 0) {
+                        statsArea.innerHTML += `<span><strong>Audio Length:</strong> ${audioDuration}s</span>`;
+                        // Add processing speed relative to audio length
+                        const processingRatio = (audioDuration / durationInSeconds).toFixed(2);
+                        statsArea.innerHTML += `<span><strong>Processing Speed:</strong> ${processingRatio}x realtime</span>`;
+                    }
+                };
+                audio.load();
+            }
+            // If we have usage data, show it
+            if (data.usage) {
+                if (data.usage.prompt_tokens) {
+                    statsArea.innerHTML += `<span><strong>Prompt Tokens:</strong> ${data.usage.prompt_tokens}</span>`;
+                }
+                if (data.usage.completion_tokens) {
+                    statsArea.innerHTML += `<span><strong>Completion Tokens:</strong> ${data.usage.completion_tokens}</span>`;
+                }
+                if (data.usage.total_tokens) {
+                    statsArea.innerHTML += `<span><strong>Total Tokens:</strong> ${data.usage.total_tokens}</span>`;
+                }
+            }
+            statsArea.style.display = 'block';
         }
-        
-        // If we have usage data, show it
-        if (data.usage) {
-            if (data.usage.prompt_tokens) {
-                statsArea.innerHTML += `<span><strong>Prompt Tokens:</strong> ${data.usage.prompt_tokens}</span>`;
-            }
-            if (data.usage.completion_tokens) {
-                statsArea.innerHTML += `<span><strong>Completion Tokens:</strong> ${data.usage.completion_tokens}</span>`;
-            }
-            if (data.usage.total_tokens) {
-                statsArea.innerHTML += `<span><strong>Total Tokens:</strong> ${data.usage.total_tokens}</span>`;
-            }
-        }
-        
-        statsArea.style.display = 'block';
-        
     } catch (err) {
         // lastApiResponse might contain error details
         displayError(err.message); // displayError will hide loader
@@ -2039,7 +2145,7 @@ async function callVideoApi(provider, apiKey, baseUrl, model, prompt) {
 
 // --- INITIALIZATION ---
 
-// Binds all event listeners for the application.
+/* Binds all event listeners for the application. */
 function bindEventListeners() {
     // Main actions
     sendButton.addEventListener('click', handleSendClick);
@@ -2049,17 +2155,35 @@ function bindEventListeners() {
     modelSelect.addEventListener('change', handleModelSelectionChange);
     refreshModelsBtn.addEventListener('click', fetchModels);
 
-    // Generation type and options
-    generationTypeRadios.forEach(radio => {
-        radio.addEventListener('click', handleGenerationTypeChange);
-    });
-    audioTypeSelect.addEventListener('change', handleAudioTypeChange);
-    recordBtn.addEventListener('click', handleRecordClick);
-    enableQualityCheckbox.addEventListener('change', handleEnableQualityChange);
-    qualitySelect.addEventListener('change', handleQualitySelectChange);
-    videoAspectRatioEnabled.addEventListener('change', handleAspectRatioToggle);
-
-    // --- NEUE SWITCH EVENT LISTENER ---
+        // Generation type and options
+        generationTypeRadios.forEach(radio => {
+            radio.addEventListener('click', handleGenerationTypeChange);
+        });
+        if (audioTypeSelect) audioTypeSelect.addEventListener('change', function() {
+            handleAudioTypeChange();
+            toggleGenerationOptions();
+        });
+        if (recordBtn) recordBtn.addEventListener('click', handleRecordClick);
+        enableQualityCheckbox.addEventListener('change', handleEnableQualityChange);
+        qualitySelect.addEventListener('change', handleQualitySelectChange);
+        videoAspectRatioEnabled.addEventListener('change', handleAspectRatioToggle);
+    
+        // --- TTS Format Dropdown logic ---
+        if (ttsFormatSelect) {
+            ttsFormatSelect.addEventListener('change', function() {
+                if (ttsFormatSelect.value === 'custom') {
+                    if (customTtsFormatInput) customTtsFormatInput.style.display = 'block';
+                } else {
+                    if (customTtsFormatInput) customTtsFormatInput.style.display = 'none';
+                }
+            });
+            // Hide custom input on load but restore if needed
+            if (customTtsFormatInput) {
+                if (ttsFormatSelect.value !== 'custom') {
+                    customTtsFormatInput.style.display = 'none';
+                }
+            }
+        }
     // --- Neue Sichtbarkeits-Logik: Umschaltbare Parameter wie Streaming ---
     function showOrHideParamGroup(groupId, checkboxEl) {
         const group = document.getElementById(groupId);
@@ -2104,7 +2228,6 @@ function bindEventListeners() {
         showOrHideParamGroup('inference-effort-group', enableInferenceEffortCheckbox);
     }
 
-    uploadTextBtn.addEventListener('click', handleUploadText);
     temperatureInput.addEventListener('input', () => {
         temperatureValue.textContent = parseFloat(temperatureInput.value).toFixed(1);
         saveGeneralSettings();
@@ -2213,11 +2336,29 @@ async function handleSendClick() {
                 if (!prompt) return displayError('Please enter text for TTS.');
                 const voice = voiceInput.value.trim();
                 if (!voice) return displayError('Please enter a voice.');
-                callTtsApi(provider, apiKey, baseUrl, model, prompt, voice);
+                // Get format
+                let selectedFormat = 'mp3';
+                if (ttsFormatSelect) {
+                    if (ttsFormatSelect.value === 'custom') {
+                        selectedFormat = customTtsFormatInput.value || "custom";
+                    } else {
+                        selectedFormat = ttsFormatSelect.value;
+                    }
+                }
+                callTtsApi(provider, apiKey, baseUrl, model, prompt, voice, selectedFormat);
             } else { // STT
-                const file = recordedChunks.length > 0 ? new File(recordedChunks, 'recording.webm', { type: 'audio/webm' }) : audioFileInput.files[0];
+                // Prefer file upload; fallback to mic. This allows STT without mic permissions!
+                let file = null;
+                if (audioFileInput && audioFileInput.files && audioFileInput.files.length > 0) {
+                    file = audioFileInput.files[0];
+                } else if (recordedChunks.length > 0) {
+                    file = new File(recordedChunks, 'recording.webm', { type: 'audio/webm' });
+                }
                 if (!file) return displayError('Please upload or record an audio file for STT.');
-                callSttApi(provider, apiKey, baseUrl, model, file);
+                // Get streaming flag
+                let sttStreaming = true;
+                if (sttStreamingCheckbox) sttStreaming = sttStreamingCheckbox.checked;
+                callSttApi(provider, apiKey, baseUrl, model, file, sttStreaming);
             }
             break;
         case 'video':
@@ -2320,25 +2461,6 @@ async function handleAspectRatioToggle() {
     toggleAspectRatio();
 }
 
-function handleUploadText() {
-    const fileInput = document.createElement('input');
-    fileInput.type = 'file';
-    fileInput.accept = '*/*'; // Accept all file types
-    fileInput.onchange = e => {
-        const file = e.target.files[0];
-        if (file) {
-            const reader = new FileReader();
-            reader.onload = event => {
-                promptInput.value = event.target.result;
-                saveGeneralSettings(); // Save the new prompt
-            };
-            // Read as text, assuming it's a text-based file
-            // Need to consider how to handle binary files if required later.
-            reader.readAsText(file);
-        }
-    };
-    fileInput.click();
-}
 
 // Main application initialization function.
 async function initializeApp() {
