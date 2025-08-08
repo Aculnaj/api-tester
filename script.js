@@ -8,6 +8,7 @@ const customModelInput = document.getElementById('custom-model-input');
 const refreshModelsBtn = document.getElementById('refresh-models-btn');
 const promptInput = document.getElementById('prompt-input');
 const sendButton = document.getElementById('send-button');
+const stopButton = document.getElementById('stop-button');
 const outputArea = document.getElementById('output-area');
 const outputText = document.getElementById('output-text');
 const outputImage = document.getElementById('output-image');
@@ -96,6 +97,7 @@ let mediaRecorder;
 let lastRequestPayload = null;
 let lastApiResponse = null;
 let microphonePermissionStatus = 'prompt'; // 'granted', 'denied', 'prompt'
+let currentRequestController = null; // To track and cancel ongoing requests
 
 // --- STORAGE HELPERS ---
 // These functions handle getting and setting values in Electron store or localStorage.
@@ -955,6 +957,16 @@ function hideLoader() {
     if (loadingIndicator) loadingIndicator.style.display = 'none';
 }
 
+function showStopButton() {
+    if (sendButton) sendButton.style.display = 'none';
+    if (stopButton) stopButton.style.display = 'inline-block';
+}
+
+function hideStopButton() {
+    if (stopButton) stopButton.style.display = 'none';
+    if (sendButton) sendButton.style.display = 'inline-block';
+}
+
 // --- API RESPONSE HELPER ---
 // Handles common API response processing tasks like JSON parsing and error checking.
 async function handleApiResponse(response) {
@@ -1001,6 +1013,7 @@ async function handleApiResponse(response) {
  */
 async function callTextApi(provider, apiKey, baseUrl, model, prompt) {
     showLoader(); // Show loader at the start
+    showStopButton(); // Show stop button
     clearOutput();
     outputText.innerHTML = 'Sending text request...';
     outputArea.style.display = 'block';
@@ -1008,6 +1021,11 @@ async function callTextApi(provider, apiKey, baseUrl, model, prompt) {
     let apiUrl = '';
     let headers = {};
     const streamEnabled = enableStreamingCheckbox ? enableStreamingCheckbox.checked : true;
+
+    // Create AbortController for cancellation
+    const controller = new AbortController();
+    const { signal } = controller;
+    currentRequestController = controller; // Store reference for cancellation
 
     // Construct messages array
     const messages = [];
@@ -1021,7 +1039,8 @@ async function callTextApi(provider, apiKey, baseUrl, model, prompt) {
     let body = {
         model: model,
         messages: messages,
-        stream: streamEnabled
+        stream: streamEnabled,
+        stream_options: { include_usage: true }
     };
 
     // Add optional parameters ONLY IF ENABLED
@@ -1047,6 +1066,7 @@ async function callTextApi(provider, apiKey, baseUrl, model, prompt) {
         case 'openai_compatible':
             if (!baseUrl) {
                 hideLoader();
+                hideStopButton();
                 return displayError('Base URL is required for OpenAI Compatible provider.');
             }
             const cleanBaseUrl = baseUrl.endsWith('/') ? baseUrl.slice(0, -1) : baseUrl;
@@ -1075,6 +1095,7 @@ async function callTextApi(provider, apiKey, baseUrl, model, prompt) {
             break;
         default:
             hideLoader();
+            hideStopButton();
             return displayError('Unknown provider selected for text generation.');
     }
 
@@ -1085,7 +1106,7 @@ async function callTextApi(provider, apiKey, baseUrl, model, prompt) {
     // Make the API call
     const startTime = performance.now(); // Record start time
     try {
-        const response = await fetch(apiUrl, { method: 'POST', headers: headers, body: JSON.stringify(body) });
+        const response = await fetch(apiUrl, { method: 'POST', headers: headers, body: JSON.stringify(body), signal });
         const endTime = performance.now(); // Record end time
         const durationInSeconds = (endTime - startTime) / 1000;
 
@@ -1117,8 +1138,9 @@ async function callTextApi(provider, apiKey, baseUrl, model, prompt) {
                 if (!text) return 0;
                 return text.trim().length > 0 ? text.trim().split(/\s+/).length : 0;
             }
-            // Prompt tokens estimated from user input (should match frontend logic)
-            const promptTokensEstimate = estimateTokens(prompt);
+             // Prompt tokens estimated from user + system prompt (if enabled)
+             const systemPromptText = (enableSystemPromptCheckbox?.checked && systemPromptInput?.value?.trim()) ? systemPromptInput.value.trim() : "";
+             const promptTokensEstimate = estimateTokens(prompt) + estimateTokens(systemPromptText);
 
             // New: Buffer for all provider responses during streaming (to reconstruct original)
             let streamedProviderJsons = [];
@@ -1126,32 +1148,87 @@ async function callTextApi(provider, apiKey, baseUrl, model, prompt) {
             let streamedTopMeta = null;
             let streamedFinishReason = null;
             let streamedAllDeltas = [];
+            let streamedUsage = null; // To store usage data from stream
 
             async function processStream() {
                 // --- Live Stats for Streaming ---
                 let lastLiveStatsUpdate = 0;
-                let streamedTokenCount = 0;
+                let streamedTokenCount = 0; // content tokens (not reasoning)
+                let firstTokenTime = null; // Track when the first token arrives (delta.content)
+                let seenDone = false; // Track if [DONE] arrived before reader reports done
+                let reasoningTokenCount = 0; // accumulate delta.reasoning_content tokens
+                let sawReasoning = false; // whether any reasoning chunks arrived
 
                 while (true) {
+                    // Check if the request was aborted
+                    if (signal.aborted) {
+                        reader.cancel();
+                        throw new DOMException('Request cancelled by user', 'AbortError');
+                    }
+
                     const { done, value } = await reader.read();
                     const now = performance.now();
                     const elapsed = (now - startTime) / 1000;
 
                     if (done) {
-                        // Final update with all stats at completion
-                        const completionTokensFinal = estimateTokens(contentBuffer);
-                        const tokensPerSecondFinal = (elapsed > 0 && completionTokensFinal > 0)
-                            ? (completionTokensFinal / elapsed).toFixed(2) : "…";
-                        const totalTokensFinal = promptTokensEstimate + completionTokensFinal;
-                        statsArea.innerHTML = `
-                            <span><strong>Time:</strong> ${elapsed.toFixed(2)}s</span>
-                            <span><strong>Tokens/Sec:</strong> ${tokensPerSecondFinal}</span>
-                            <span><strong>Prompt Tokens:</strong> ${promptTokensEstimate}</span>
-                            <span><strong>Completion Tokens:</strong> ${completionTokensFinal}</span>
-                            <span><strong>Total Tokens:</strong> ${totalTokensFinal}</span>
-                            <br><small>Usage data may not be available for streamed responses. Token values are estimated.</small>
-                        `;
-                        statsArea.style.display = 'block';
+                         // Final update with all stats at completion
+                         // Prefer server-provided usage (including reasoning_tokens) when available
+                         let promptTokensFinal, completionTokensFinal, totalTokensFinal, reasoningTokensFinal = 0;
+                        
+                         if (streamedUsage && (streamedUsage.prompt_tokens !== undefined || streamedUsage.completion_tokens !== undefined)) {
+                             promptTokensFinal = Number(streamedUsage.prompt_tokens ?? 0);
+                             completionTokensFinal = Number(streamedUsage.completion_tokens ?? 0);
+                             totalTokensFinal = Number(streamedUsage.total_tokens ?? (promptTokensFinal + completionTokensFinal));
+                             reasoningTokensFinal = Number((streamedUsage.completion_tokens_details && streamedUsage.completion_tokens_details.reasoning_tokens) ?? 0);
+                        
+                             // Time calculations
+                             const ttftSecNum = firstTokenTime ? ((firstTokenTime - startTime) / 1000) : null; // TTFT is at first "content" arrival (not reasoning_content)
+                             const elapsedSecNum = elapsed; // already in seconds
+                             const sinceFirstSecNum = ttftSecNum !== null ? Math.max(0, elapsedSecNum - ttftSecNum) : elapsedSecNum;
+                        
+                             // Token breakdown
+                             const realCompletionTokens = Math.max(0, completionTokensFinal - reasoningTokensFinal);
+                        
+                             // TPS calculations as requested:
+                             // - Reasoning TPS: reasoning_tokens / TTFT
+                             // - Completion TPS: (completion_tokens - reasoning_tokens) / time since first token
+                             // - Total TPS (displayed next to "Total Tokens"): completion_tokens / total time
+                             const reasoningTps = (ttftSecNum && ttftSecNum > 0 && reasoningTokensFinal > 0) ? (reasoningTokensFinal / ttftSecNum).toFixed(2) : "…";
+                             const completionTps = (sinceFirstSecNum > 0 && realCompletionTokens > 0) ? (realCompletionTokens / sinceFirstSecNum).toFixed(2) : "…";
+                             const totalTps = (elapsedSecNum > 0 && completionTokensFinal > 0) ? (completionTokensFinal / elapsedSecNum).toFixed(2) : "…";
+                        
+                             const ttftDisplay = ttftSecNum !== null ? `${ttftSecNum.toFixed(2)}s` : "…";
+                        
+                             statsArea.innerHTML = `
+                                 <div><strong>Time:</strong> ${elapsedSecNum.toFixed(2)}s</div>
+                                 <div><strong>Time to First Token:</strong> ${ttftDisplay}</div>
+                                 <div><strong>Prompt Tokens:</strong> ${promptTokensFinal}</div>
+                                 <div><strong>Reasoning Tokens:</strong> ${reasoningTokensFinal} (${reasoningTps} tps)</div>
+                                 <div><strong>Completion Tokens:</strong> ${realCompletionTokens} (${completionTps} tps)</div>
+                                 <div><strong>Total Tokens:</strong> ${totalTokensFinal} (${totalTps} tps)</div>
+                             `;
+                             statsArea.style.display = 'block';
+                         } else {
+                             // Fallback to previous estimation logic when usage isn't available
+                             let promptTokensEst = promptTokensEstimate;
+                             let completionTokensEst = estimateTokens(contentBuffer);
+                             let totalTokensEst = promptTokensEst + completionTokensEst;
+                             const timeSinceFirstToken = firstTokenTime ? (now - firstTokenTime) / 1000 : elapsed;
+                             const tokensPerSecondFinal = (timeSinceFirstToken > 0 && completionTokensEst > 0)
+                                 ? (completionTokensEst / timeSinceFirstToken).toFixed(2) : "…";
+                             const timeToFirstToken = firstTokenTime ? ((firstTokenTime - startTime) / 1000).toFixed(2) : "…";
+                        
+                             statsArea.innerHTML = `
+                                 <span><strong>Time:</strong> ${elapsed.toFixed(2)}s</span>
+                                 <span><strong>Time to First Token:</strong> ${timeToFirstToken}s</span>
+                                 <span><strong>Tokens/Sec:</strong> ${tokensPerSecondFinal}</span>
+                                 <span><strong>Prompt Tokens:</strong> ${promptTokensEst}</span>
+                                 <span><strong>Completion Tokens:</strong> ${completionTokensEst}</span>
+                                 <span><strong>Total Tokens:</strong> ${totalTokensEst}</span>
+                                 <br><small>Live stats update – values estimated from streamed content.</small>
+                             `;
+                             statsArea.style.display = 'block';
+                         }
 
                         // Ensure any final buffered content is displayed (though typically not needed with SSE)
                         if (accumulatedResponse.startsWith("data: ")) {
@@ -1182,14 +1259,28 @@ async function callTextApi(provider, apiKey, baseUrl, model, prompt) {
                         if (line.startsWith("data: ")) {
                             const jsonStr = line.substring(6).trim();
                             if (jsonStr === "[DONE]") {
-                                // Stream is finished — handoff to the above "done" clause
-                                return;
+                                // Mark that the provider ended the stream; finalize after loop
+                                seenDone = true;
+                                continue;
                             }
                             streamedProviderJsons.push(jsonStr);
                             try {
                                 const parsed = JSON.parse(jsonStr);
                                 streamedTopMeta = parsed; // Last non-empty JSON has latest meta (id, created, model, etc.)
                                 streamedAllDeltas.push(parsed.choices[0] && parsed.choices[0].delta ? parsed.choices[0].delta : {});
+                                
+                                // Capture usage data if available
+                                if (parsed.usage) {
+                                    streamedUsage = parsed.usage;
+                                }
+                                
+                                // Reasoning content accumulation (does not trigger TTFT)
+                                if (parsed.choices && parsed.choices[0] && parsed.choices[0].delta && parsed.choices[0].delta.reasoning_content) {
+                                    const rChunk = parsed.choices[0].delta.reasoning_content;
+                                    reasoningTokenCount += estimateTokens(rChunk);
+                                    sawReasoning = true;
+                                }
+                                
                                 // The actual text:
                                 if (parsed.choices && parsed.choices[0] && parsed.choices[0].delta && parsed.choices[0].delta.content) {
                                     const textChunk = parsed.choices[0].delta.content;
@@ -1208,24 +1299,80 @@ async function callTextApi(provider, apiKey, baseUrl, model, prompt) {
                         }
                     }
 
+                    // Track first token time
+                    if (firstTokenTime === null && updateStatsNow) {
+                        firstTokenTime = now;
+                    }
+
                     // Live update stats after chunk or every ~120ms
                     if (updateStatsNow || (now - lastLiveStatsUpdate > 120)) {
                         lastLiveStatsUpdate = now;
-                        let liveTokens = streamedTokenCount;
-                        let liveTime = ((performance.now() - startTime) / 1000);
-                        let tokensPerSecond = (liveTime > 0 && liveTokens > 0)
-                            ? (liveTokens / liveTime).toFixed(2) : "…";
-                        let totalTokens = promptTokensEstimate + liveTokens;
+                        const elapsedSec = (now - startTime) / 1000;
+                        const ttftSecNum = firstTokenTime ? ((firstTokenTime - startTime) / 1000) : null;
+                        const timeToFirstTokenDisplay = ttftSecNum !== null ? `${ttftSecNum.toFixed(2)}s` : "…";
+
+                        // Live counts
+                        const completionTokensLive = streamedTokenCount; // content tokens only
+                        const reasoningTokensLive = reasoningTokenCount;
+
+                        // TPS live calculations
+                        const reasoningDivTpsDen = (ttftSecNum !== null ? ttftSecNum : elapsedSec);
+                        const reasoningTpsLive = (reasoningTokensLive > 0 && reasoningDivTpsDen > 0) ? (reasoningTokensLive / reasoningDivTpsDen).toFixed(2) : "…";
+                        const completionTpsLive = (ttftSecNum !== null && (elapsedSec - ttftSecNum) > 0 && completionTokensLive > 0)
+                            ? (completionTokensLive / (elapsedSec - ttftSecNum)).toFixed(2) : "…";
+                        const totalTokensLive = promptTokensEstimate + reasoningTokensLive + completionTokensLive;
+                        const totalTpsLive = ((reasoningTokensLive + completionTokensLive) > 0 && elapsedSec > 0)
+                            ? ((reasoningTokensLive + completionTokensLive) / elapsedSec).toFixed(2) : "…";
+
+                        // Build reasoning line only if we actually saw reasoning chunks
+                        const reasoningLine = (sawReasoning && reasoningTokensLive > 0)
+                            ? `<div><strong>Reasoning Tokens:</strong> ${reasoningTokensLive} (${reasoningTpsLive} tps)</div>`
+                            : "";
 
                         statsArea.innerHTML = `
-                            <span><strong>Time:</strong> ${liveTime.toFixed(2)}s</span>
-                            <span><strong>Tokens/Sec:</strong> ${tokensPerSecond}</span>
-                            <span><strong>Prompt Tokens:</strong> ${promptTokensEstimate}</span>
-                            <span><strong>Completion Tokens:</strong> ${liveTokens}</span>
-                            <span><strong>Total Tokens:</strong> ${totalTokens}</span>
-                            <br><small>Live stats update – values estimated from streamed content.</small>
+                            <div><strong>Time:</strong> ${elapsedSec.toFixed(2)}s</div>
+                            <div><strong>Time to First Token:</strong> ${timeToFirstTokenDisplay}</div>
+                            <div><strong>Prompt Tokens:</strong> ${promptTokensEstimate}</div>
+                            ${reasoningLine}
+                            <div><strong>Completion Tokens:</strong> ${completionTokensLive} (${completionTpsLive} tps)</div>
+                            <div><strong>Total Tokens:</strong> ${totalTokensLive} (${totalTpsLive} tps)</div>
                         `;
                         statsArea.style.display = 'block';
+                    }
+                    
+                    // If [DONE] was seen, render final stats using server usage (if present) and exit
+                    if (seenDone) {
+                        // Prefer server-provided usage (including reasoning_tokens)
+                        let promptTokensFinal = 0, completionTokensFinal = 0, totalTokensFinal = promptTokensEstimate + streamedTokenCount, reasoningTokensFinal = 0;
+                        if (streamedUsage && (streamedUsage.prompt_tokens !== undefined || streamedUsage.completion_tokens !== undefined)) {
+                            promptTokensFinal = Number(streamedUsage.prompt_tokens ?? 0);
+                            completionTokensFinal = Number(streamedUsage.completion_tokens ?? 0);
+                            totalTokensFinal = Number(streamedUsage.total_tokens ?? (promptTokensFinal + completionTokensFinal));
+                            reasoningTokensFinal = Number((streamedUsage.completion_tokens_details && streamedUsage.completion_tokens_details.reasoning_tokens) ?? 0);
+                        } else {
+                            // fallback to estimates
+                            promptTokensFinal = promptTokensEstimate;
+                            completionTokensFinal = streamedTokenCount;
+                            totalTokensFinal = promptTokensFinal + completionTokensFinal;
+                        }
+                        const elapsedSecNum = (now - startTime) / 1000;
+                        const ttftSecNum = firstTokenTime ? ((firstTokenTime - startTime) / 1000) : null;
+                        const sinceFirstSecNum = ttftSecNum !== null ? Math.max(0, elapsedSecNum - ttftSecNum) : elapsedSecNum;
+                        const realCompletionTokens = Math.max(0, completionTokensFinal - reasoningTokensFinal);
+                        const reasoningTps = (ttftSecNum && ttftSecNum > 0 && reasoningTokensFinal > 0) ? (reasoningTokensFinal / ttftSecNum).toFixed(2) : "…";
+                        const completionTps = (sinceFirstSecNum > 0 && realCompletionTokens > 0) ? (realCompletionTokens / sinceFirstSecNum).toFixed(2) : "…";
+                        const totalTps = (elapsedSecNum > 0 && completionTokensFinal > 0) ? (completionTokensFinal / elapsedSecNum).toFixed(2) : "…";
+                        const ttftDisplay = ttftSecNum !== null ? `${ttftSecNum.toFixed(2)}s` : "…";
+                        statsArea.innerHTML = `
+                            <div><strong>Time:</strong> ${elapsedSecNum.toFixed(2)}s</div>
+                            <div><strong>Time to First Token:</strong> ${ttftDisplay}</div>
+                            <div><strong>Prompt Tokens:</strong> ${promptTokensFinal}</div>
+                            <div><strong>Reasoning Tokens:</strong> ${reasoningTokensFinal} (${reasoningTps} tps)</div>
+                            <div><strong>Completion Tokens:</strong> ${realCompletionTokens} (${completionTps} tps)</div>
+                            <div><strong>Total Tokens:</strong> ${totalTokensFinal} (${totalTps} tps)</div>
+                        `;
+                        statsArea.style.display = 'block';
+                        break; // Exit while(true)
                     }
                 }
             }
@@ -1305,23 +1452,38 @@ async function callTextApi(provider, apiKey, baseUrl, model, prompt) {
                  statsArea.style.display = 'block';
             }
         }
-
-    } catch (error) {
+} catch (error) {
+    // Handle cancellation
+    if (error.name === 'AbortError') {
+        outputText.innerHTML = 'Request cancelled by user.';
+        outputArea.style.borderColor = 'orange';
+        statsArea.style.display = 'none';
+    } else {
         // lastApiResponse might contain error details already
         displayError(error.message); // displayError will hide loader
         statsArea.style.display = 'none'; // Hide stats on error
-    } finally {
-        hideLoader(); // Ensure loader is hidden
     }
+} finally {
+    hideLoader(); // Ensure loader is hidden
+    hideStopButton(); // Hide stop button
+    currentRequestController = null; // Clear controller reference
 }
+}
+
 
 // Handles image generation API calls.
 async function callImageApi(provider, apiKey, baseUrl, model, prompt) {
     showLoader(); // Show loader at the start
+    showStopButton(); // Show stop button
     clearOutput();
     outputText.innerHTML = 'Sending image request...'; // Use text area for status
     outputArea.style.display = 'block';
     statsArea.style.display = 'none'; // Will show stats later if successful
+
+    // Create AbortController for cancellation
+    const controller = new AbortController();
+    const { signal } = controller;
+    currentRequestController = controller; // Store reference for cancellation
 
     let apiUrl = '';
     let headers = {
@@ -1334,11 +1496,15 @@ async function callImageApi(provider, apiKey, baseUrl, model, prompt) {
         apiUrl = 'https://api.openai.com/v1/images/generations';
     } else if (provider === 'openai_compatible') {
         if (!baseUrl) {
+            hideLoader();
+            hideStopButton();
             return displayError('Base URL is required for OpenAI Compatible image generation.');
         }
         const cleanBaseUrl = baseUrl.endsWith('/') ? baseUrl.slice(0, -1) : baseUrl;
         apiUrl = `${cleanBaseUrl}/images/generations`;
     } else {
+        hideLoader();
+        hideStopButton();
         return displayError(`Image generation is currently only supported for OpenAI and potentially OpenAI Compatible providers in this example.`);
     }
 
@@ -1380,7 +1546,8 @@ async function callImageApi(provider, apiKey, baseUrl, model, prompt) {
         const response = await fetch(apiUrl, {
             method: 'POST',
             headers: headers,
-            body: JSON.stringify(body)
+            body: JSON.stringify(body),
+            signal: signal
         });
 
         const endTime = performance.now();
@@ -1458,79 +1625,102 @@ async function callImageApi(provider, apiKey, baseUrl, model, prompt) {
         }
 
     } catch (error) {
-        if (error.message.includes('Invalid quality')) {
-            console.warn('Invalid quality parameter unsupported, retrying without quality...');
-            // Retry without quality param
-            const fallbackBody = { ...body };
-            delete fallbackBody.quality;
-            try {
-                const retryStartTime = performance.now();
-                const retryResponse = await fetch(apiUrl, {
-                    method: 'POST',
-                    headers: headers,
-                    body: JSON.stringify(fallbackBody)
-                });
-                
-                const retryEndTime = performance.now();
-                const retryDuration = ((retryEndTime - retryStartTime) / 1000).toFixed(2);
-
-                const retryData = await handleApiResponse(retryResponse); // Use helper for retry
-                
-                // Extract image URL
-                if (retryData.data && retryData.data.length > 0 && retryData.data[0].url) {
-                    const imageUrl2 = retryData.data[0].url;
-                    outputText.innerHTML = `Image generated successfully by ${model}.`;
-                    outputImage.src = imageUrl2;
-                    outputImage.style.display = 'block';
-                    outputArea.style.borderColor = '#ccc';
-                    
-                    // Display stats for retry
-                    statsArea.innerHTML = `
-                        <span><strong>Generation Time:</strong> ${retryDuration}s</span>
-                        <span><strong>Resolution:</strong> ${width}x${height}</span>
-                        <span><strong>Model:</strong> ${model}</span>
-                        <span><strong>Note:</strong> Quality param was removed due to API incompatibility</span>
-                    `;
-                    statsArea.style.display = 'block';
-                    
-                    // Update resolution on image load
-                    outputImage.onload = () => {
-                        const actualWidth = outputImage.naturalWidth;
-                        const actualHeight = outputImage.naturalHeight;
-                        const resolutionSpan = statsArea.querySelector('span:nth-child(2)');
-                        if (resolutionSpan) {
-                            resolutionSpan.innerHTML = `<strong>Resolution:</strong> ${actualWidth}x${actualHeight}`;
-                        }
-                    };
-                    
-                    downloadImageBtn.href = imageUrl2;
-                    downloadImageBtn.download = `image-${model}-${Date.now()}-retry.png`;
-                    downloadImageBtn.style.display = 'inline-block';
-                    
-                    return;
-                } else {
-                    throw new Error('Could not find image URL in API response after retry.');
-                }
-            } catch (retryError) {
-                displayError(retryError.message);
-                return;
-            }
+        // Handle cancellation
+        if (error.name === 'AbortError') {
+            outputText.innerHTML = 'Request cancelled by user.';
+            outputArea.style.borderColor = 'orange';
+            statsArea.style.display = 'none';
         } else {
-            displayError(error.message); // displayError will hide loader
+            if (error.message.includes('Invalid quality')) {
+                console.warn('Invalid quality parameter unsupported, retrying without quality...');
+                // Retry without quality param
+                const fallbackBody = { ...body };
+                delete fallbackBody.quality;
+                try {
+                    const retryStartTime = performance.now();
+                    const retryResponse = await fetch(apiUrl, {
+                        method: 'POST',
+                        headers: headers,
+                        body: JSON.stringify(fallbackBody),
+                        signal: signal
+                    });
+                    
+                    const retryEndTime = performance.now();
+                    const retryDuration = ((retryEndTime - retryStartTime) / 1000).toFixed(2);
+
+                    const retryData = await handleApiResponse(retryResponse); // Use helper for retry
+                    
+                    // Extract image URL
+                    if (retryData.data && retryData.data.length > 0 && retryData.data[0].url) {
+                        const imageUrl2 = retryData.data[0].url;
+                        outputText.innerHTML = `Image generated successfully by ${model}.`;
+                        outputImage.src = imageUrl2;
+                        outputImage.style.display = 'block';
+                        outputArea.style.borderColor = '#ccc';
+                        
+                        // Display stats for retry
+                        statsArea.innerHTML = `
+                            <span><strong>Generation Time:</strong> ${retryDuration}s</span>
+                            <span><strong>Resolution:</strong> ${width}x${height}</span>
+                            <span><strong>Model:</strong> ${model}</span>
+                            <span><strong>Note:</strong> Quality param was removed due to API incompatibility</span>
+                        `;
+                        statsArea.style.display = 'block';
+                        
+                        // Update resolution on image load
+                        outputImage.onload = () => {
+                            const actualWidth = outputImage.naturalWidth;
+                            const actualHeight = outputImage.naturalHeight;
+                            const resolutionSpan = statsArea.querySelector('span:nth-child(2)');
+                            if (resolutionSpan) {
+                                resolutionSpan.innerHTML = `<strong>Resolution:</strong> ${actualWidth}x${actualHeight}`;
+                            }
+                        };
+                        
+                        downloadImageBtn.href = imageUrl2;
+                        downloadImageBtn.download = `image-${model}-${Date.now()}-retry.png`;
+                        downloadImageBtn.style.display = 'inline-block';
+                        
+                        return;
+                    } else {
+                        throw new Error('Could not find image URL in API response after retry.');
+                    }
+                } catch (retryError) {
+                    // Handle cancellation during retry
+                    if (retryError.name === 'AbortError') {
+                        outputText.innerHTML = 'Request cancelled by user.';
+                        outputArea.style.borderColor = 'orange';
+                        statsArea.style.display = 'none';
+                    } else {
+                        displayError(retryError.message);
+                    }
+                    return;
+                }
+            } else {
+                displayError(error.message); // displayError will hide loader
+            }
         }
     } finally {
-        hideLoader();
+        hideLoader(); // Ensure loader is hidden
+        hideStopButton(); // Hide stop button
+        currentRequestController = null; // Clear controller reference
     }
 }
 
 // Handles Text-to-Speech (TTS) API calls.
 async function callTtsApi(provider, apiKey, baseUrl, model, text, voice, format) {
     showLoader(); // Show loader at the start
+    showStopButton(); // Show stop button
     clearOutput();
     outputText.innerHTML = 'Generating TTS...';
     outputAudio.style.display = 'none';
     downloadAudio.style.display = 'none';
     outputArea.style.display = 'block';
+
+    // Create AbortController for cancellation
+    const controller = new AbortController();
+    const { signal } = controller;
+    currentRequestController = controller; // Store reference for cancellation
 
     let apiUrl = '';
     let headers = {};
@@ -1543,13 +1733,19 @@ async function callTtsApi(provider, apiKey, baseUrl, model, text, voice, format)
             body = { model: model, input: text, voice: voice, ...(format && { response_format: format }) };
             break;
         case 'openai_compatible':
-            if (!baseUrl) return displayError('Base URL is required for OpenAI Compatible TTS.');
+            if (!baseUrl) {
+                hideLoader();
+                hideStopButton();
+                return displayError('Base URL is required for OpenAI Compatible TTS.');
+            }
             const cleanBase = baseUrl.endsWith('/') ? baseUrl.slice(0, -1) : baseUrl;
             apiUrl = `${cleanBase}/audio/speech`;
             headers = { 'Content-Type': 'application/json', 'Authorization': `Bearer ${apiKey}` };
             body = { model: model, input: text, voice: voice, ...(format && { response_format: format }) };
             break;
         default:
+            hideLoader();
+            hideStopButton();
             return displayError('TTS is only supported for OpenAI and OpenAI Compatible providers.');
     }
 
@@ -1565,6 +1761,7 @@ async function callTtsApi(provider, apiKey, baseUrl, model, text, voice, format)
             method: 'POST',
             headers: headers,
             body: JSON.stringify(body),
+            signal: signal
         });
         
         const endTime = performance.now();
@@ -1620,23 +1817,38 @@ async function callTtsApi(provider, apiKey, baseUrl, model, text, voice, format)
         
         outputAudio.load();
     } catch (err) {
-        // lastApiResponse might be set from the !response.ok block
-        displayError(err.message); // displayError will hide loader
-        statsArea.style.display = 'none'; // Hide stats on error
+        // Handle cancellation
+        if (err.name === 'AbortError') {
+            outputText.innerHTML = 'Request cancelled by user.';
+            outputArea.style.borderColor = 'orange';
+            statsArea.style.display = 'none';
+        } else {
+            // lastApiResponse might be set from the !response.ok block
+            displayError(err.message); // displayError will hide loader
+            statsArea.style.display = 'none'; // Hide stats on error
+        }
     } finally {
         hideLoader(); // Ensure loader is hidden
+        hideStopButton(); // Hide stop button
+        currentRequestController = null; // Clear controller reference
     }
 }
 
 // Handles Speech-to-Text (STT) API calls.
 async function callSttApi(provider, apiKey, baseUrl, model, file, streaming = true) {
     showLoader(); // Show loader at the start
+    showStopButton(); // Show stop button
     clearOutput();
     outputText.innerHTML = 'Transcribing audio...';
     outputArea.style.display = 'block';
     outputImage.style.display = 'none';
     outputAudio.style.display = 'none';
     downloadAudio.style.display = 'none';
+
+    // Create AbortController for cancellation
+    const controller = new AbortController();
+    const { signal } = controller;
+    currentRequestController = controller; // Store reference for cancellation
 
     // Can't easily stringify FormData, so we store what we can
     const payloadInfo = {
@@ -1661,10 +1873,16 @@ async function callSttApi(provider, apiKey, baseUrl, model, file, streaming = tr
         if (provider === 'openai') {
             apiUrl = 'https://api.openai.com/v1/audio/transcriptions';
         } else if (provider === 'openai_compatible') {
-            if (!baseUrl) return displayError('Base URL is required for OpenAI Compatible STT.');
+            if (!baseUrl) {
+                hideLoader();
+                hideStopButton();
+                return displayError('Base URL is required for OpenAI Compatible STT.');
+            }
             const cleanBase = baseUrl.endsWith('/') ? baseUrl.slice(0, -1) : baseUrl;
             apiUrl = `${cleanBase}/audio/transcriptions`;
         } else {
+            hideLoader();
+            hideStopButton();
             return displayError('STT is not supported for selected provider.');
         }
 
@@ -1679,7 +1897,8 @@ async function callSttApi(provider, apiKey, baseUrl, model, file, streaming = tr
         const response = await fetch(apiUrl, {
             method: 'POST',
             headers: headers,
-            body: formData
+            body: formData,
+            signal: signal
         });
 
         const endTime = performance.now();
@@ -1772,11 +1991,20 @@ async function callSttApi(provider, apiKey, baseUrl, model, file, streaming = tr
             statsArea.style.display = 'block';
         }
     } catch (err) {
-        // lastApiResponse might contain error details
-        displayError(err.message); // displayError will hide loader
-        statsArea.style.display = 'none'; // Hide stats on error
+        // Handle cancellation
+        if (err.name === 'AbortError') {
+            outputText.innerHTML = 'Request cancelled by user.';
+            outputArea.style.borderColor = 'orange';
+            statsArea.style.display = 'none';
+        } else {
+            // lastApiResponse might contain error details
+            displayError(err.message); // displayError will hide loader
+            statsArea.style.display = 'none'; // Hide stats on error
+        }
     } finally {
         hideLoader(); // Ensure loader is hidden
+        hideStopButton(); // Hide stop button
+        currentRequestController = null; // Clear controller reference
     }
 }
 
@@ -2149,6 +2377,7 @@ async function callVideoApi(provider, apiKey, baseUrl, model, prompt) {
 function bindEventListeners() {
     // Main actions
     sendButton.addEventListener('click', handleSendClick);
+    stopButton.addEventListener('click', handleStopClick);
     togglePayloadBtn.addEventListener('click', handleTogglePayload);
     toggleResponseBtn.addEventListener('click', handleToggleResponse);
     providerSelect.addEventListener('change', handleProviderChange);
@@ -2442,6 +2671,19 @@ async function handleRecordClick() {
         }
     } else {
         mediaRecorder.stop();
+    }
+}
+
+// Handle stop button click to cancel ongoing requests
+function handleStopClick() {
+    if (currentRequestController) {
+        currentRequestController.abort();
+        currentRequestController = null;
+        hideStopButton();
+        hideLoader();
+        outputText.innerHTML = 'Request cancelled by user.';
+        outputArea.style.display = 'block';
+        outputArea.style.borderColor = 'orange';
     }
 }
 
