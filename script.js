@@ -30,26 +30,18 @@ const imageWidthInput = document.getElementById('image-width-input');
 const imageHeightInput = document.getElementById('image-height-input');
 const downloadImageBtn = document.getElementById('download-image-btn');
 
-/* --- Audio Controls (new location: Generation Task) --- */
-const audioGenerationControls = document.getElementById('audio-generation-controls');
-const audioTypeRow = document.getElementById('audio-type-row');
+// Audio Options
+const audioOptionsContainer = document.getElementById('audio-options-container');
 const audioTypeSelect = document.getElementById('audio-type-select');
-const sttInputContainer = document.querySelector('#audio-generation-controls #stt-input-container');
-const audioFileInput = document.querySelector('#audio-generation-controls #audio-file-input');
-const voiceOptionsContainer = document.querySelector('#audio-generation-controls #voice-options-container');
-const voiceInput = document.querySelector('#audio-generation-controls #voice-input');
-const recorderControls = document.querySelector('#audio-generation-controls #recorder-controls');
-const recordBtn = document.querySelector('#audio-generation-controls #record-btn');
-const recordingPreview = document.querySelector('#audio-generation-controls #recording-preview');
+const sttInputContainer = document.getElementById('stt-input-container');
+const audioFileInput = document.getElementById('audio-file-input');
+const voiceOptionsContainer = document.getElementById('voice-options-container');
+const voiceInput = document.getElementById('voice-input');
+const recorderControls = document.getElementById('recorder-controls');
+const recordBtn = document.getElementById('record-btn');
+const recordingPreview = document.getElementById('recording-preview');
 const outputAudio = document.getElementById('output-audio');
 const downloadAudio = document.getElementById('download-audio');
-/* --- TTS/Audio Advanced Options - ensure only one block declaration. --- */
-const ttsFormatOptions = document.getElementById('tts-format-options');
-const ttsFormatSelect = document.getElementById('tts-format-select');
-const customTtsFormatInput = document.getElementById('custom-tts-format-input');
-const sttStreamingContainer = document.getElementById('stt-streaming-advanced-container');
-const sttStreamingCheckbox = document.getElementById('stt-streaming-checkbox');
-/* --- Removed duplicate TTS format/block declarations (handled above for deduplication) --- */
 
 // Video Options
 const videoOptionsContainer = document.getElementById('video-options-container');
@@ -72,8 +64,14 @@ const topPValue = document.getElementById('top-p-value');
 const enableTopPCheckbox = document.getElementById('enable-top-p-checkbox');
 const maxTokensInput = document.getElementById('max-tokens-input');
 const enableMaxTokensCheckbox = document.getElementById('enable-max-tokens-checkbox');
-const inferenceEffortInput = document.getElementById('inference-effort-input');
-const enableInferenceEffortCheckbox = document.getElementById('enable-inference-effort-checkbox');
+const uploadTextBtn = document.getElementById('upload-text-btn');
+const topKInput = document.getElementById('top-k-input');
+const topKValue = document.getElementById('top-k-value');
+const enableTopKCheckbox = document.getElementById('enable-top-k-checkbox');
+const reasoningEffortSelect = document.getElementById('reasoning-effort-select');
+const enableReasoningEffortCheckbox = document.getElementById('enable-reasoning-effort-checkbox');
+const customParamsInput = document.getElementById('custom-params-input');
+const enableCustomParamsCheckbox = document.getElementById('enable-custom-params-checkbox');
 
 // Payload/Response Display
 const payloadContainer = document.getElementById('payload-container');
@@ -89,6 +87,7 @@ const modelContainer = document.getElementById('model-container');
 const configNameInput = document.getElementById('config-name-input');
 const saveConfigBtn = document.getElementById('save-config-btn');
 const savedConfigsList = document.getElementById('saved-configs-list');
+const clearAllDataBtn = document.getElementById('clear-all-data-btn');
 
 
 // --- STATE VARIABLES ---
@@ -170,14 +169,18 @@ const LAST_STREAMING_ENABLED_KEY = 'lastStreamingEnabled';
 const LAST_ENABLE_SYSTEM_PROMPT_KEY = 'lastEnableSystemPrompt';
 const LAST_ENABLE_TEMPERATURE_KEY = 'lastEnableTemperature';
 const LAST_ENABLE_TOP_P_KEY = 'lastEnableTopP';
+const LAST_ENABLE_TOP_K_KEY = 'lastEnableTopK';
 const LAST_ENABLE_MAX_TOKENS_KEY = 'lastEnableMaxTokens';
-const LAST_ENABLE_INFERENCE_EFFORT_KEY = 'lastEnableInferenceEffort';
+const LAST_ENABLE_REASONING_EFFORT_KEY = 'lastEnableReasoningEffort';
+const LAST_ENABLE_CUSTOM_PARAMS_KEY = 'lastEnableCustomParams';
 
 const LAST_SYSTEM_PROMPT_KEY = 'lastSystemPrompt';
 const LAST_TEMPERATURE_KEY = 'lastTemperature';
 const LAST_TOP_P_KEY = 'lastTopP';
+const LAST_TOP_K_KEY = 'lastTopK';
 const LAST_MAX_TOKENS_KEY = 'lastMaxTokens';
-const LAST_INFERENCE_EFFORT_KEY = 'lastInferenceEffort';
+const LAST_REASONING_EFFORT_KEY = 'lastReasoningEffort';
+const LAST_CUSTOM_PARAMS_KEY = 'lastCustomParams';
 const LAST_SELECTED_MODEL_OPTION_KEY = 'lastSelectedModelOption';
 const LAST_CUSTOM_MODEL_NAME_KEY = 'lastCustomModelName';
 const SAVED_PROVIDER_CONFIGS_KEY = 'savedProviderConfigurations';
@@ -277,19 +280,27 @@ async function loadGeneralSettings() {
     }
     if (enableTemperatureCheckbox) {
         const en = await getStoredValue(LAST_ENABLE_TEMPERATURE_KEY);
-        enableTemperatureCheckbox.checked = typeof en === "boolean" ? en : true;
+        enableTemperatureCheckbox.checked = typeof en === "boolean" ? en : false;
     }
     if (enableTopPCheckbox) {
         const en = await getStoredValue(LAST_ENABLE_TOP_P_KEY);
         enableTopPCheckbox.checked = typeof en === "boolean" ? en : false;
     }
+    if (enableTopKCheckbox) {
+        const en = await getStoredValue(LAST_ENABLE_TOP_K_KEY);
+        enableTopKCheckbox.checked = typeof en === "boolean" ? en : false;
+    }
     if (enableMaxTokensCheckbox) {
         const en = await getStoredValue(LAST_ENABLE_MAX_TOKENS_KEY);
-        enableMaxTokensCheckbox.checked = typeof en === "boolean" ? en : true;
+        enableMaxTokensCheckbox.checked = typeof en === "boolean" ? en : false;
     }
-    if (enableInferenceEffortCheckbox) {
-        const en = await getStoredValue(LAST_ENABLE_INFERENCE_EFFORT_KEY);
-        enableInferenceEffortCheckbox.checked = typeof en === "boolean" ? en : true;
+    if (enableReasoningEffortCheckbox) {
+        const en = await getStoredValue(LAST_ENABLE_REASONING_EFFORT_KEY);
+        enableReasoningEffortCheckbox.checked = typeof en === "boolean" ? en : false;
+    }
+    if (enableCustomParamsCheckbox) {
+        const en = await getStoredValue(LAST_ENABLE_CUSTOM_PARAMS_KEY);
+        enableCustomParamsCheckbox.checked = typeof en === "boolean" ? en : false;
     }
 
     // Load text generation settings
@@ -300,15 +311,15 @@ async function loadGeneralSettings() {
     const lastTopP = await getStoredValue(LAST_TOP_P_KEY);
     topPInput.value = lastTopP !== undefined ? lastTopP : 1;
     topPValue.textContent = parseFloat(topPInput.value).toFixed(2);
-    maxTokensInput.value = await getStoredValue(LAST_MAX_TOKENS_KEY) || '';
-    inferenceEffortInput.value = await getStoredValue(LAST_INFERENCE_EFFORT_KEY) || '';
+    const lastTopK = await getStoredValue(LAST_TOP_K_KEY);
+    topKInput.value = lastTopK !== undefined ? lastTopK : 50;
+    topKValue.textContent = topKInput.value;
+    maxTokensInput.value = await getStoredValue(LAST_MAX_TOKENS_KEY) || '1024';
+    reasoningEffortSelect.value = await getStoredValue(LAST_REASONING_EFFORT_KEY) || 'medium';
+    customParamsInput.value = await getStoredValue(LAST_CUSTOM_PARAMS_KEY) || '';
 
-    // NEW: Enable/disable input fields
-    if (enableSystemPromptCheckbox) systemPromptInput.disabled = !enableSystemPromptCheckbox.checked;
-    if (enableTemperatureCheckbox) temperatureInput.disabled = !enableTemperatureCheckbox.checked;
-    if (enableTopPCheckbox) topPInput.disabled = !enableTopPCheckbox.checked;
-    if (enableMaxTokensCheckbox) maxTokensInput.disabled = !enableMaxTokensCheckbox.checked;
-    if (enableInferenceEffortCheckbox) inferenceEffortInput.disabled = !enableInferenceEffortCheckbox.checked;
+    // Remove disabled state logic - only use visibility control
+    // Elements should never be disabled, only hidden when toggle is off
 
     toggleGenerationOptions(); // Update UI based on loaded settings
     toggleBaseUrlInput(); // Ensure base URL visibility
@@ -348,8 +359,10 @@ async function saveGeneralSettings() {
     if (enableSystemPromptCheckbox) await setStoredValue(LAST_ENABLE_SYSTEM_PROMPT_KEY, enableSystemPromptCheckbox.checked);
     if (enableTemperatureCheckbox) await setStoredValue(LAST_ENABLE_TEMPERATURE_KEY, enableTemperatureCheckbox.checked);
     if (enableTopPCheckbox) await setStoredValue(LAST_ENABLE_TOP_P_KEY, enableTopPCheckbox.checked);
+    if (enableTopKCheckbox) await setStoredValue(LAST_ENABLE_TOP_K_KEY, enableTopKCheckbox.checked);
     if (enableMaxTokensCheckbox) await setStoredValue(LAST_ENABLE_MAX_TOKENS_KEY, enableMaxTokensCheckbox.checked);
-    if (enableInferenceEffortCheckbox) await setStoredValue(LAST_ENABLE_INFERENCE_EFFORT_KEY, enableInferenceEffortCheckbox.checked);
+    if (enableReasoningEffortCheckbox) await setStoredValue(LAST_ENABLE_REASONING_EFFORT_KEY, enableReasoningEffortCheckbox.checked);
+    if (enableCustomParamsCheckbox) await setStoredValue(LAST_ENABLE_CUSTOM_PARAMS_KEY, enableCustomParamsCheckbox.checked);
 
     // Save video settings
     if (videoDurationInput) await setStoredValue(LAST_VIDEO_DURATION_KEY, videoDurationInput.value);
@@ -360,8 +373,10 @@ async function saveGeneralSettings() {
     await setStoredValue(LAST_SYSTEM_PROMPT_KEY, systemPromptInput.value);
     await setStoredValue(LAST_TEMPERATURE_KEY, temperatureInput.value);
     await setStoredValue(LAST_TOP_P_KEY, topPInput.value);
+    await setStoredValue(LAST_TOP_K_KEY, topKInput.value);
     await setStoredValue(LAST_MAX_TOKENS_KEY, maxTokensInput.value);
-    await setStoredValue(LAST_INFERENCE_EFFORT_KEY, inferenceEffortInput.value);
+    await setStoredValue(LAST_REASONING_EFFORT_KEY, reasoningEffortSelect.value);
+    await setStoredValue(LAST_CUSTOM_PARAMS_KEY, customParamsInput.value);
 }
 
 // --- THEME MANAGEMENT ---
@@ -561,6 +576,75 @@ async function deleteConfiguration(name) {
     }
 }
 
+// --- CLEAR ALL DATA FUNCTIONALITY ---
+
+// Clears all stored data for the current site
+async function clearAllStorageData() {
+    try {
+        // Clear Electron Store if available
+        if (window.electronAPI && window.electronAPI.clearAllStore) {
+            await window.electronAPI.clearAllStore();
+        }
+        
+        // Clear localStorage with our app prefix
+        const keysToRemove = [];
+        for (let i = 0; i < localStorage.length; i++) {
+            const key = localStorage.key(i);
+            if (key && key.startsWith('app_storage_')) {
+                keysToRemove.push(key);
+            }
+        }
+        
+        keysToRemove.forEach(key => {
+            localStorage.removeItem(key);
+        });
+        
+        // Also clear any other potential storage keys that might not have the prefix
+        const otherKeys = [
+            'user-theme',
+            'apiCredentials',
+            'lastProvider',
+            'lastModel',
+            'savedProviderConfigurations'
+        ];
+        
+        otherKeys.forEach(key => {
+            localStorage.removeItem(key);
+            localStorage.removeItem(`app_storage_${key}`);
+        });
+        
+        console.log('All storage data cleared successfully');
+        return true;
+        
+    } catch (error) {
+        console.error('Error clearing storage data:', error);
+        return false;
+    }
+}
+
+// --- PARAMETER VALIDATION ---
+// Function to validate parameter compatibility with selected provider
+function validateParameterCompatibility(provider) {
+    let warnings = [];
+    
+    // Top K parameter - only supported by OpenAI Compatible, Deepseek, OpenRouter
+    if (enableTopKCheckbox?.checked && !['openai_compatible', 'deepseek', 'openrouter'].includes(provider)) {
+        warnings.push('Top K parameter is not supported by ' + provider + '. It will be ignored.');
+    }
+    
+    // Reasoning effort - primarily for Antrophic and some OpenAI models
+    if (enableReasoningEffortCheckbox?.checked && !['antrophic', 'openai'].includes(provider)) {
+        warnings.push('Reasoning effort parameter may not be supported by ' + provider + '.');
+    }
+    
+    // Custom parameters - mainly for OpenAI Compatible and OpenRouter
+    if (enableCustomParamsCheckbox?.checked && !['openai_compatible', 'openrouter'].includes(provider)) {
+        warnings.push('Custom parameters may not be fully supported by ' + provider + '.');
+    }
+    
+    return warnings;
+}
+
 // --- UI MANIPULATION ---
 // Functions that control the visibility and state of UI elements.
 
@@ -595,16 +679,17 @@ async function fetchModels() {
     const baseUrl = baseUrlInput.value.trim();
 
     // Don't fetch for providers that don't support it or if key is missing
-    if (!apiKey || ['claude', 'deepseek'].includes(provider)) {
+    if (!apiKey || ['deepseek'].includes(provider)) {
         populateModelDropdown([]); // Populate with just "Custom"
         return;
     }
 
     let apiUrl = '';
-    let headers = { 'Authorization': `Bearer ${apiKey}` };
+    let headers = {};
 
     if (provider === 'openai') {
         apiUrl = 'https://api.openai.com/v1/models';
+        headers = { 'Authorization': `Bearer ${apiKey}` };
     } else if (provider === 'openai_compatible') {
         if (!baseUrl) {
             populateModelDropdown([]); // Can't fetch without base URL
@@ -612,8 +697,16 @@ async function fetchModels() {
         }
         const cleanBaseUrl = baseUrl.endsWith('/') ? baseUrl.slice(0, -1) : baseUrl;
         apiUrl = `${cleanBaseUrl}/models`;
+        headers = { 'Authorization': `Bearer ${apiKey}` };
     } else if (provider === 'openrouter') {
         apiUrl = 'https://openrouter.ai/api/v1/models';
+        headers = { 'Authorization': `Bearer ${apiKey}` };
+    } else if (provider === 'antrophic') {
+        apiUrl = 'https://api.anthropic.com/v1/models';
+        headers = {
+            'x-api-key': apiKey,
+            'anthropic-version': '2023-06-01'
+        };
     } else {
         populateModelDropdown([]); // Unsupported provider for this feature
         return;
@@ -704,19 +797,16 @@ function toggleGenerationOptions() {
     const generationType = document.querySelector('input[name="generation-type"]:checked')?.value;
     if (!generationType) return;
 
-    // Hide all advanced/parameter groups
+    // Hide all advanced option groups first
     textGenerationOptions.style.display = 'none';
     imageOptionsContainer.style.display = 'none';
+    audioOptionsContainer.style.display = 'none';
     videoOptionsContainer.style.display = 'none';
-    if (audioGenerationControls) audioGenerationControls.style.display = 'none';
-    // audioTypeRow is now for Advanced Options, not Generation Task. Hide by default.
-    // only show dropdown when Audio is selected
-    if (audioTypeRow) audioTypeRow.style.display = generationType === 'audio' ? 'block' : 'none';
-    if (ttsFormatOptions) ttsFormatOptions.style.display = 'none';
-    if (sttStreamingContainer) sttStreamingContainer.style.display = 'none';
 
     // Always show prompt input, but hide for STT
     promptInput.style.display = 'block';
+    uploadTextBtn.style.display = 'inline-block';
+
 
     // Configure UI based on the selected generation type
     switch (generationType) {
@@ -727,62 +817,55 @@ function toggleGenerationOptions() {
         case 'image':
             imageOptionsContainer.style.display = 'block';
             document.getElementById('prompt-label').textContent = 'Prompt / Image Description:';
-            const enableQualityToggle = document.getElementById('enable-quality-checkbox');
+            // Visibility of quality options container is now primarily controlled by its toggle
+            // but ensure it's hidden if the main image options are hidden.
+             const enableQualityToggle = document.getElementById('enable-quality-checkbox');
             if (enableQualityToggle) {
                  qualityOptionsContainer.style.display = enableQualityToggle.checked ? 'block' : 'none';
                  customQualityInput.style.display = (enableQualityToggle.checked && qualitySelect.value === 'custom') ? 'block' : 'none';
-            }
+             }
             break;
         case 'audio':
-            // Audio Type select always appears as first row of Generation Task for AUDIO (not in Advanced)
-            if (audioTypeRow) audioTypeRow.style.display = 'block';
+            audioOptionsContainer.style.display = 'block';
+            const audioTypeSelectEl = document.getElementById('audio-type-select');
+            const audioTypeToggle = document.querySelector('.param-toggle[data-param-id="audio-type-select"]');
+            const audioType = audioTypeSelectEl ? audioTypeSelectEl.value : 'tts';
 
-            // Show audio controls section for prompt/upload/record (but not audio type switcher itself)
-            if (audioGenerationControls) audioGenerationControls.style.display = 'block';
-
-            // Get audio type
-            const audioType = audioTypeSelect ? audioTypeSelect.value : 'tts';
-
-            // Show/hide TTS and STT advanced options (replacement for legacy toggles)
-            if (audioType === 'tts') {
-                const ttsAdv = document.getElementById('tts-advanced-options');
-                if (ttsAdv) ttsAdv.style.display = 'block';
-                const sttAdv = document.getElementById('stt-advanced-options');
-                if (sttAdv) sttAdv.style.display = 'none';
-            } else if (audioType === 'stt') {
-                const ttsAdv = document.getElementById('tts-advanced-options');
-                if (ttsAdv) ttsAdv.style.display = 'none';
-                const sttAdv = document.getElementById('stt-advanced-options');
-                if (sttAdv) sttAdv.style.display = 'block';
+            // Only show audio sub-options if the audio type select is enabled and its toggle is checked
+            if (audioTypeSelectEl && audioTypeToggle && audioTypeToggle.checked) {
+                if (audioType === 'tts') {
+                    voiceOptionsContainer.style.display = 'block';
+                    sttInputContainer.style.display = 'none';
+                    recorderControls.style.display = 'none';
+                    document.getElementById('prompt-label').textContent = 'Text to Speak:';
+                } else { // STT
+                    voiceOptionsContainer.style.display = 'none';
+                    sttInputContainer.style.display = 'block';
+                    recorderControls.style.display = 'block';
+                    promptInput.style.display = 'none'; // Prompt input is not used for STT
+                    uploadTextBtn.style.display = 'none'; // Upload Text button is not used for STT
+                    document.getElementById('prompt-label').textContent = 'Upload or Record Audio:';
+                }
             } else {
-                const ttsAdv = document.getElementById('tts-advanced-options');
-                if (ttsAdv) ttsAdv.style.display = 'none';
-                const sttAdv = document.getElementById('stt-advanced-options');
-                if (sttAdv) sttAdv.style.display = 'none';
-            }
-
-            // Show audio sub-options
-            if (audioType === 'tts') {
-                if (voiceOptionsContainer) voiceOptionsContainer.style.display = 'block';
-                if (sttInputContainer) sttInputContainer.style.display = 'none';
-                if (recorderControls) recorderControls.style.display = 'none';
-                promptInput.style.display = 'block';
-                document.getElementById('prompt-label').textContent = 'Text to Speak:';
-            } else { // STT
-                if (voiceOptionsContainer) voiceOptionsContainer.style.display = 'none';
-                if (sttInputContainer) sttInputContainer.style.display = 'block';
-                if (recorderControls) recorderControls.style.display = 'block';
-                promptInput.style.display = 'none'; // Prompt input is not used for STT
-                document.getElementById('prompt-label').textContent = 'Upload or Record Audio:';
+                 // If audio type select is disabled or its toggle is off, hide all audio sub-options
+                voiceOptionsContainer.style.display = 'none';
+                sttInputContainer.style.display = 'none';
+                recorderControls.style.display = 'none';
+                // Restore prompt input visibility and Upload File button for other types if audio section is off
+                 promptInput.style.display = 'block';
+                 uploadTextBtn.style.display = 'inline-block'; // Re-show the upload button
             }
             break;
         case 'video':
             videoOptionsContainer.style.display = 'block';
             document.getElementById('prompt-label').textContent = 'Video Description:';
+            // Aspect ratio group visibility is now primarily controlled by its toggle
             const aspectRatioToggle = document.getElementById('video-aspect-ratio-enabled');
             if (aspectRatioToggle) {
                  aspectRatioGroup.style.display = aspectRatioToggle.checked ? 'block' : 'none';
             }
+             // Ensure Upload File button is hidden for video
+             uploadTextBtn.style.display = 'none';
             break;
     }
 }
@@ -1046,9 +1129,31 @@ async function callTextApi(provider, apiKey, baseUrl, model, prompt) {
     // Add optional parameters ONLY IF ENABLED
     if (enableTemperatureCheckbox?.checked && temperatureInput.value) body.temperature = parseFloat(temperatureInput.value);
     if (enableTopPCheckbox?.checked && topPInput.value) body.top_p = parseFloat(topPInput.value);
+    
+    // Top K parameter (only for compatible providers)
+    if (enableTopKCheckbox?.checked && topKInput.value && ['openai_compatible', 'deepseek', 'openrouter'].includes(provider)) {
+        body.top_k = parseInt(topKInput.value, 10);
+    }
+    
     if (enableMaxTokensCheckbox?.checked && maxTokensInput.value) body.max_tokens = parseInt(maxTokensInput.value, 10);
-    if (enableInferenceEffortCheckbox?.checked && inferenceEffortInput && inferenceEffortInput.value.trim()) {
-        body.reasoning_effort = inferenceEffortInput.value.trim();
+    
+    // Reasoning effort parameter
+    if (enableReasoningEffortCheckbox?.checked && reasoningEffortSelect && reasoningEffortSelect.value.trim()) {
+        body.reasoning_effort = reasoningEffortSelect.value.trim();
+    }
+
+    // Custom parameters support
+    if (enableCustomParamsCheckbox?.checked && customParamsInput && customParamsInput.value.trim()) {
+        try {
+            const customParams = JSON.parse(customParamsInput.value.trim());
+            if (typeof customParams === 'object' && customParams !== null && !Array.isArray(customParams)) {
+                // Merge custom parameters with the body (custom params take precedence)
+                Object.assign(body, customParams);
+            }
+        } catch (error) {
+            hideLoader();
+            return displayError(`Custom Parameters JSON is invalid: ${error.message}`);
+        }
     }
 
 
@@ -1073,19 +1178,44 @@ async function callTextApi(provider, apiKey, baseUrl, model, prompt) {
             apiUrl = `${cleanBaseUrl}/chat/completions`;
             headers = { 'Content-Type': 'application/json', 'Authorization': `Bearer ${apiKey}` };
             break;
-        case 'claude':
+        case 'antrophic':
             apiUrl = 'https://api.anthropic.com/v1/messages';
             headers = { 'Content-Type': 'application/json', 'x-api-key': apiKey, 'anthropic-version': '2023-06-01' };
-            // Claude has a different body structure
+            // Antrophic has a different body structure - rebuild it properly
             body = {
                 model: model,
-                system: systemPromptInput.value.trim() || undefined,
                 messages: [{ role: 'user', content: prompt }],
-                max_tokens: parseInt(maxTokensInput.value, 10) || 4096,
-                temperature: parseFloat(temperatureInput.value),
-                top_p: parseFloat(topPInput.value)
+                max_tokens: (enableMaxTokensCheckbox?.checked && maxTokensInput.value) ? parseInt(maxTokensInput.value, 10) : 4096
             };
-            delete body.stream; // Claude doesn't use the 'stream' property here
+            
+            // Add system prompt if enabled
+            if (enableSystemPromptCheckbox?.checked && systemPromptInput.value.trim()) {
+                body.system = systemPromptInput.value.trim();
+            }
+            
+            // Add optional parameters only if enabled
+            if (enableTemperatureCheckbox?.checked && temperatureInput.value) {
+                body.temperature = parseFloat(temperatureInput.value);
+            }
+            if (enableTopPCheckbox?.checked && topPInput.value) {
+                body.top_p = parseFloat(topPInput.value);
+            }
+            if (enableReasoningEffortCheckbox?.checked && reasoningEffortSelect && reasoningEffortSelect.value.trim()) {
+                body.reasoning_effort = reasoningEffortSelect.value.trim();
+            }
+            
+            // Add custom parameters for Antrophic if enabled
+            if (enableCustomParamsCheckbox?.checked && customParamsInput && customParamsInput.value.trim()) {
+                try {
+                    const customParams = JSON.parse(customParamsInput.value.trim());
+                    if (typeof customParams === 'object' && customParams !== null && !Array.isArray(customParams)) {
+                        Object.assign(body, customParams);
+                    }
+                } catch (error) {
+                    hideLoader();
+                    return displayError(`Custom Parameters JSON is invalid: ${error.message}`);
+                }
+            }
             break;
         case 'openrouter':
             apiUrl = 'https://openrouter.ai/api/v1/chat/completions';
@@ -1234,7 +1364,6 @@ async function callTextApi(provider, apiKey, baseUrl, model, prompt) {
                         if (accumulatedResponse.startsWith("data: ")) {
                             const jsonStr = accumulatedResponse.substring(6).trim();
                             if (jsonStr && jsonStr !== "[DONE]") {
-                                streamedProviderJsons.push(jsonStr);
                                 try {
                                     const parsed = JSON.parse(jsonStr);
                                     if (parsed.choices && parsed.choices[0] && parsed.choices[0].delta && parsed.choices[0].delta.content) {
@@ -1263,7 +1392,6 @@ async function callTextApi(provider, apiKey, baseUrl, model, prompt) {
                                 seenDone = true;
                                 continue;
                             }
-                            streamedProviderJsons.push(jsonStr);
                             try {
                                 const parsed = JSON.parse(jsonStr);
                                 streamedTopMeta = parsed; // Last non-empty JSON has latest meta (id, created, model, etc.)
@@ -1288,10 +1416,6 @@ async function callTextApi(provider, apiKey, baseUrl, model, prompt) {
                                     outputText.innerHTML += textChunk.replace(/\n/g, '<br>');
                                     streamedTokenCount = estimateTokens(contentBuffer);
                                     updateStatsNow = true;
-                                }
-                                // Finish reason may only come on last chunk (OpenAI)
-                                if (parsed.choices && parsed.choices[0] && parsed.choices[0].finish_reason) {
-                                    streamedFinishReason = parsed.choices[0].finish_reason;
                                 }
                             } catch (e) {
                                 console.warn("Error parsing streamed JSON chunk:", e, "Chunk:", jsonStr);
@@ -1377,35 +1501,9 @@ async function callTextApi(provider, apiKey, baseUrl, model, prompt) {
                 }
             }
             await processStream();
-            // Reconstruct pretty, merged JSON response if possible
-            if (streamedTopMeta) {
-                // Compose full content:
-                const fullContent = streamedAllDeltas
-                  .map(d => d.content || "")
-                  .join("");
-                // Start with top meta, but remove choices
-                const resp = {};
-                for (const k of Object.keys(streamedTopMeta)) {
-                  if (k !== "choices") resp[k] = streamedTopMeta[k];
-                }
-                resp.choices = [
-                  {
-                    finish_reason: streamedFinishReason || null,
-                    message: {
-                      role: (streamedTopMeta.choices && streamedTopMeta.choices[0] && streamedTopMeta.choices[0].delta && streamedTopMeta.choices[0].delta.role) || "assistant",
-                      content: fullContent
-                    }
-                  }
-                ];
-                lastApiResponse = JSON.stringify(resp, null, 2);
-            } else {
-                // Fallback: dump all received JSON lines, as before
-                const jsonl = streamedProviderJsons
-                  .filter(js => js && js !== "[DONE]")
-                  .map(js => js.trim())
-                  .join('\n');
-                lastApiResponse = jsonl || '{ "error": "no provider response captured (streaming)" }';
-            }
+            // For streamed responses, lastApiResponse will show a summary,
+            // as the full JSON is processed chunk by chunk and not stored as a single object.
+            lastApiResponse = `{\n  "info": "Response was streamed.",\n  "model": "${model}",\n  "duration_seconds": ${durationInSeconds.toFixed(2)},\n  "accumulated_content_length": ${contentBuffer.length}\n}`;
 
         } else {
             // Existing non-streaming logic
@@ -1415,9 +1513,9 @@ async function callTextApi(provider, apiKey, baseUrl, model, prompt) {
 
             // Extract content
             let aiContent = '';
-            if (provider === 'claude') {
+            if (provider === 'antrophic') {
                 if (data.content && data.content.length > 0 && data.content[0].text) aiContent = data.content[0].text;
-                else throw new Error('Could not find text content in Claude response.');
+                else throw new Error('Could not find text content in Antrophic response.');
             } else { // OpenAI/Compatible (non-streaming), Deepseek, OpenRouter
                 if (data.choices && data.choices.length > 0 && data.choices[0].message && data.choices[0].message.content) aiContent = data.choices[0].message.content;
                 else throw new Error('Could not find message content in API response.');
@@ -1708,7 +1806,7 @@ async function callImageApi(provider, apiKey, baseUrl, model, prompt) {
 }
 
 // Handles Text-to-Speech (TTS) API calls.
-async function callTtsApi(provider, apiKey, baseUrl, model, text, voice, format) {
+async function callTtsApi(provider, apiKey, baseUrl, model, text, voice) {
     showLoader(); // Show loader at the start
     showStopButton(); // Show stop button
     clearOutput();
@@ -1730,7 +1828,7 @@ async function callTtsApi(provider, apiKey, baseUrl, model, text, voice, format)
         case 'openai':
             apiUrl = 'https://api.openai.com/v1/audio/speech';
             headers = { 'Content-Type': 'application/json', 'Authorization': `Bearer ${apiKey}` };
-            body = { model: model, input: text, voice: voice, ...(format && { response_format: format }) };
+            body = { model: model, input: text, voice: voice };
             break;
         case 'openai_compatible':
             if (!baseUrl) {
@@ -1741,7 +1839,7 @@ async function callTtsApi(provider, apiKey, baseUrl, model, text, voice, format)
             const cleanBase = baseUrl.endsWith('/') ? baseUrl.slice(0, -1) : baseUrl;
             apiUrl = `${cleanBase}/audio/speech`;
             headers = { 'Content-Type': 'application/json', 'Authorization': `Bearer ${apiKey}` };
-            body = { model: model, input: text, voice: voice, ...(format && { response_format: format }) };
+            body = { model: model, input: text, voice: voice };
             break;
         default:
             hideLoader();
@@ -1835,7 +1933,7 @@ async function callTtsApi(provider, apiKey, baseUrl, model, text, voice, format)
 }
 
 // Handles Speech-to-Text (STT) API calls.
-async function callSttApi(provider, apiKey, baseUrl, model, file, streaming = true) {
+async function callSttApi(provider, apiKey, baseUrl, model, file) {
     showLoader(); // Show loader at the start
     showStopButton(); // Show stop button
     clearOutput();
@@ -1851,13 +1949,12 @@ async function callSttApi(provider, apiKey, baseUrl, model, file, streaming = tr
     currentRequestController = controller; // Store reference for cancellation
 
     // Can't easily stringify FormData, so we store what we can
-    const payloadInfo = {
+    const payloadInfo = { 
         provider: provider,
         model: model,
         fileName: file.name,
         fileSizeKB: (file.size / 1024).toFixed(2),
-        fileType: file.type,
-        streaming: streaming
+        fileType: file.type
     };
     lastRequestPayload = JSON.stringify(payloadInfo, null, 2);
     payloadContainer.style.display = 'block';
@@ -1889,10 +1986,6 @@ async function callSttApi(provider, apiKey, baseUrl, model, file, streaming = tr
         const formData = new FormData();
         formData.append('file', file);
         formData.append('model', model);
-        // Attach streaming flag if api supports (OpenAI does)
-        if (typeof streaming !== "undefined" && streaming !== null) {
-            formData.append('stream', streaming ? "true" : "false");
-        }
 
         const response = await fetch(apiUrl, {
             method: 'POST',
@@ -1903,93 +1996,52 @@ async function callSttApi(provider, apiKey, baseUrl, model, file, streaming = tr
 
         const endTime = performance.now();
         const durationInSeconds = ((endTime - startTime) / 1000).toFixed(2);
+        
+        const data = await handleApiResponse(response);
 
-        // Check for streaming (OpenAI style: SSE Multipart)
-        const isStreamingMode = !!streaming && response && response.headers.get("content-type") && response.headers.get("content-type").includes("text/event-stream");
-        if (isStreamingMode) {
-            // SSE "streaming" response. Parse line-by-line.
-            let partialTranscript = "";
-            const reader = response.body.getReader();
-            const decoder = new TextDecoder("utf-8");
-            let done = false;
-            outputText.innerHTML = `<strong>Transcribed by ${model} (partial):</strong><br>`;
-            while (!done) {
-                const { value, done: streamDone } = await reader.read();
-                done = streamDone;
-                if (value) {
-                    const chunk = decoder.decode(value);
-                    // Each SSE chunk: look for lines starting with "data: "
-                    chunk.split("\n").forEach(line => {
-                        if (line.startsWith("data: ")) {
-                            const dataStr = line.replace("data: ", "").trim();
-                            if (dataStr && dataStr !== "[DONE]") {
-                                try {
-                                    const parsed = JSON.parse(dataStr);
-                                    if (parsed.text || parsed.transcript || parsed.partial) {
-                                        const token = parsed.text || parsed.transcript || parsed.partial;
-                                        partialTranscript += token;
-                                        outputText.innerHTML = `<strong>Transcribed by ${model} (partial):</strong><br>${partialTranscript.replace(/\\n/g, '<br>')}`;
-                                    }
-                                } catch {
-                                    // Not valid JSON, skip
-                                }
-                            }
-                        }
-                    });
+        const transcript = data.text || data.transcript || JSON.stringify(data);
+        outputText.innerHTML = `<strong>Transcribed by ${model}:</strong><br>${transcript.replace(/\\n/g, '<br>')}`;
+        
+        // Display stats
+        statsArea.innerHTML = `
+            <span><strong>Transcription Time:</strong> ${durationInSeconds}s</span>
+            <span><strong>File Size:</strong> ${fileSize} KB</span>
+            <span><strong>Model:</strong> ${model}</span>
+            <span><strong>Characters Generated:</strong> ${transcript.length}</span>
+        `;
+        
+        // Add file duration if we can get it
+        if (file.type.includes('audio')) {
+            const audio = new Audio();
+            audio.src = URL.createObjectURL(file);
+            audio.onloadedmetadata = () => {
+                const audioDuration = audio.duration.toFixed(2);
+                if (audioDuration && audioDuration > 0) {
+                    statsArea.innerHTML += `<span><strong>Audio Length:</strong> ${audioDuration}s</span>`;
+                    
+                    // Add processing speed relative to audio length
+                    const processingRatio = (audioDuration / durationInSeconds).toFixed(2);
+                    statsArea.innerHTML += `<span><strong>Processing Speed:</strong> ${processingRatio}x realtime</span>`;
                 }
-            }
-            // Final stats for streaming STT
-            outputText.innerHTML = `<strong>Transcribed by ${model}:</strong><br>${partialTranscript.replace(/\\n/g, '<br>')}`;
-            statsArea.innerHTML = `
-                <span><strong>Transcription Time:</strong> ${durationInSeconds}s</span>
-                <span><strong>File Size:</strong> ${fileSize} KB</span>
-                <span><strong>Model:</strong> ${model}</span>
-                <span><strong>Characters Generated:</strong> ${partialTranscript.length}</span>
-                <span><strong>Mode:</strong> Streaming</span>
-            `;
-            statsArea.style.display = 'block';
-            lastApiResponse = partialTranscript;
-        } else {
-            // Non-streaming response (regular)
-            const data = await handleApiResponse(response);
-            const transcript = data.text || data.transcript || JSON.stringify(data);
-            outputText.innerHTML = `<strong>Transcribed by ${model}:</strong><br>${transcript.replace(/\\n/g, '<br>')}`;
-            // Display stats
-            statsArea.innerHTML = `
-                <span><strong>Transcription Time:</strong> ${durationInSeconds}s</span>
-                <span><strong>File Size:</strong> ${fileSize} KB</span>
-                <span><strong>Model:</strong> ${model}</span>
-                <span><strong>Characters Generated:</strong> ${transcript.length}</span>
-            `;
-            // Add file duration if we can get it
-            if (file.type.includes('audio')) {
-                const audio = new Audio();
-                audio.src = URL.createObjectURL(file);
-                audio.onloadedmetadata = () => {
-                    const audioDuration = audio.duration.toFixed(2);
-                    if (audioDuration && audioDuration > 0) {
-                        statsArea.innerHTML += `<span><strong>Audio Length:</strong> ${audioDuration}s</span>`;
-                        // Add processing speed relative to audio length
-                        const processingRatio = (audioDuration / durationInSeconds).toFixed(2);
-                        statsArea.innerHTML += `<span><strong>Processing Speed:</strong> ${processingRatio}x realtime</span>`;
-                    }
-                };
-                audio.load();
-            }
-            // If we have usage data, show it
-            if (data.usage) {
-                if (data.usage.prompt_tokens) {
-                    statsArea.innerHTML += `<span><strong>Prompt Tokens:</strong> ${data.usage.prompt_tokens}</span>`;
-                }
-                if (data.usage.completion_tokens) {
-                    statsArea.innerHTML += `<span><strong>Completion Tokens:</strong> ${data.usage.completion_tokens}</span>`;
-                }
-                if (data.usage.total_tokens) {
-                    statsArea.innerHTML += `<span><strong>Total Tokens:</strong> ${data.usage.total_tokens}</span>`;
-                }
-            }
-            statsArea.style.display = 'block';
+            };
+            audio.load();
         }
+        
+        // If we have usage data, show it
+        if (data.usage) {
+            if (data.usage.prompt_tokens) {
+                statsArea.innerHTML += `<span><strong>Prompt Tokens:</strong> ${data.usage.prompt_tokens}</span>`;
+            }
+            if (data.usage.completion_tokens) {
+                statsArea.innerHTML += `<span><strong>Completion Tokens:</strong> ${data.usage.completion_tokens}</span>`;
+            }
+            if (data.usage.total_tokens) {
+                statsArea.innerHTML += `<span><strong>Total Tokens:</strong> ${data.usage.total_tokens}</span>`;
+            }
+        }
+        
+        statsArea.style.display = 'block';
+        
     } catch (err) {
         // Handle cancellation
         if (err.name === 'AbortError') {
@@ -2262,8 +2314,8 @@ async function callVideoApi(provider, apiKey, baseUrl, model, prompt) {
         case 'deepseek':
             displayError('Deepseek does not currently support video generation. Try using a different provider.');
             return;
-        case 'claude':
-            displayError('Claude does not currently support video generation. Try using a different provider.');
+        case 'antrophic':
+            displayError('Antrophic does not currently support video generation. Try using a different provider.');
             return;
         case 'openrouter':
             // OpenRouter might have video models available
@@ -2363,7 +2415,7 @@ async function callVideoApi(provider, apiKey, baseUrl, model, prompt) {
         statsArea.style.display = 'none';
     } finally {
         // Ensure loader is hidden for all other cases, including successful calls or other errors
-        if (!(provider === 'openai' || provider === 'deepseek' || provider === 'claude')) {
+        if (!(provider === 'openai' || provider === 'deepseek' || provider === 'antrophic')) {
             hideLoader();
         }
     }
@@ -2373,7 +2425,7 @@ async function callVideoApi(provider, apiKey, baseUrl, model, prompt) {
 
 // --- INITIALIZATION ---
 
-/* Binds all event listeners for the application. */
+// Binds all event listeners for the application.
 function bindEventListeners() {
     // Main actions
     sendButton.addEventListener('click', handleSendClick);
@@ -2384,79 +2436,116 @@ function bindEventListeners() {
     modelSelect.addEventListener('change', handleModelSelectionChange);
     refreshModelsBtn.addEventListener('click', fetchModels);
 
-        // Generation type and options
-        generationTypeRadios.forEach(radio => {
-            radio.addEventListener('click', handleGenerationTypeChange);
-        });
-        if (audioTypeSelect) audioTypeSelect.addEventListener('change', function() {
-            handleAudioTypeChange();
-            toggleGenerationOptions();
-        });
-        if (recordBtn) recordBtn.addEventListener('click', handleRecordClick);
-        enableQualityCheckbox.addEventListener('change', handleEnableQualityChange);
-        qualitySelect.addEventListener('change', handleQualitySelectChange);
-        videoAspectRatioEnabled.addEventListener('change', handleAspectRatioToggle);
-    
-        // --- TTS Format Dropdown logic ---
-        if (ttsFormatSelect) {
-            ttsFormatSelect.addEventListener('change', function() {
-                if (ttsFormatSelect.value === 'custom') {
-                    if (customTtsFormatInput) customTtsFormatInput.style.display = 'block';
-                } else {
-                    if (customTtsFormatInput) customTtsFormatInput.style.display = 'none';
-                }
-            });
-            // Hide custom input on load but restore if needed
-            if (customTtsFormatInput) {
-                if (ttsFormatSelect.value !== 'custom') {
-                    customTtsFormatInput.style.display = 'none';
-                }
-            }
-        }
-    // --- Neue Sichtbarkeits-Logik: Umschaltbare Parameter wie Streaming ---
-    function showOrHideParamGroup(groupId, checkboxEl) {
+    // Generation type and options
+    generationTypeRadios.forEach(radio => {
+        radio.addEventListener('click', handleGenerationTypeChange);
+    });
+    audioTypeSelect.addEventListener('change', handleAudioTypeChange);
+    recordBtn.addEventListener('click', handleRecordClick);
+    enableQualityCheckbox.addEventListener('change', handleEnableQualityChange);
+    qualitySelect.addEventListener('change', handleQualitySelectChange);
+    videoAspectRatioEnabled.addEventListener('change', handleAspectRatioToggle);
+
+    // --- PARAMETER TOGGLE MANAGEMENT ---
+    // Control visibility and reset to defaults when enabled
+    function handleParamToggle(groupId, checkboxEl, resetFunction = null) {
         const group = document.getElementById(groupId);
         if (!group || !checkboxEl) return;
-        group.style.display = checkboxEl.checked ? '' : 'none';
+        
+        if (checkboxEl.checked) {
+            group.style.display = '';
+            // Reset to default value when toggle is turned ON (except for custom params)
+            if (resetFunction && groupId !== 'custom-params-group') {
+                resetFunction();
+            }
+        } else {
+            group.style.display = 'none';
+        }
     }
 
-    // Listener und Initialzustand für alle Param-Switches
+    // Default value reset functions
+    const resetToDefaults = {
+        temperature: () => {
+            temperatureInput.value = 1;
+            temperatureValue.textContent = '1.0';
+        },
+        topP: () => {
+            topPInput.value = 1;
+            topPValue.textContent = '1.00';
+        },
+        topK: () => {
+            topKInput.value = 50;
+            topKValue.textContent = '50';
+        },
+        maxTokens: () => {
+            maxTokensInput.value = '1024';
+        },
+        reasoningEffort: () => {
+            reasoningEffortSelect.value = 'medium';
+        },
+        systemPrompt: () => {
+            // Don't reset system prompt as it's usually intentional content
+        }
+    };
+
+    // Setup listeners for all parameter switches
     if (enableSystemPromptCheckbox) {
         enableSystemPromptCheckbox.addEventListener('change', () => {
-            showOrHideParamGroup('system-prompt-group', enableSystemPromptCheckbox);
+            handleParamToggle('system-prompt-group', enableSystemPromptCheckbox, resetToDefaults.systemPrompt);
             saveGeneralSettings();
         });
-        showOrHideParamGroup('system-prompt-group', enableSystemPromptCheckbox);
+        handleParamToggle('system-prompt-group', enableSystemPromptCheckbox);
     }
+    
     if (enableTemperatureCheckbox) {
         enableTemperatureCheckbox.addEventListener('change', () => {
-            showOrHideParamGroup('temperature-group', enableTemperatureCheckbox);
+            handleParamToggle('temperature-group', enableTemperatureCheckbox, resetToDefaults.temperature);
             saveGeneralSettings();
         });
-        showOrHideParamGroup('temperature-group', enableTemperatureCheckbox);
+        handleParamToggle('temperature-group', enableTemperatureCheckbox);
     }
+    
     if (enableTopPCheckbox) {
         enableTopPCheckbox.addEventListener('change', () => {
-            showOrHideParamGroup('top-p-group', enableTopPCheckbox);
+            handleParamToggle('top-p-group', enableTopPCheckbox, resetToDefaults.topP);
             saveGeneralSettings();
         });
-        showOrHideParamGroup('top-p-group', enableTopPCheckbox);
+        handleParamToggle('top-p-group', enableTopPCheckbox);
     }
+    
+    if (enableTopKCheckbox) {
+        enableTopKCheckbox.addEventListener('change', () => {
+            handleParamToggle('top-k-group', enableTopKCheckbox, resetToDefaults.topK);
+            saveGeneralSettings();
+        });
+        handleParamToggle('top-k-group', enableTopKCheckbox);
+    }
+    
     if (enableMaxTokensCheckbox) {
         enableMaxTokensCheckbox.addEventListener('change', () => {
-            showOrHideParamGroup('max-tokens-group', enableMaxTokensCheckbox);
+            handleParamToggle('max-tokens-group', enableMaxTokensCheckbox, resetToDefaults.maxTokens);
             saveGeneralSettings();
         });
-        showOrHideParamGroup('max-tokens-group', enableMaxTokensCheckbox);
+        handleParamToggle('max-tokens-group', enableMaxTokensCheckbox);
     }
-    if (enableInferenceEffortCheckbox) {
-        enableInferenceEffortCheckbox.addEventListener('change', () => {
-            showOrHideParamGroup('inference-effort-group', enableInferenceEffortCheckbox);
+    
+    if (enableReasoningEffortCheckbox) {
+        enableReasoningEffortCheckbox.addEventListener('change', () => {
+            handleParamToggle('reasoning-effort-group', enableReasoningEffortCheckbox, resetToDefaults.reasoningEffort);
             saveGeneralSettings();
         });
-        showOrHideParamGroup('inference-effort-group', enableInferenceEffortCheckbox);
+        handleParamToggle('reasoning-effort-group', enableReasoningEffortCheckbox);
+    }
+    
+    if (enableCustomParamsCheckbox) {
+        enableCustomParamsCheckbox.addEventListener('change', () => {
+            handleParamToggle('custom-params-group', enableCustomParamsCheckbox);
+            saveGeneralSettings();
+        });
+        handleParamToggle('custom-params-group', enableCustomParamsCheckbox);
     }
 
+    uploadTextBtn.addEventListener('click', handleUploadText);
     temperatureInput.addEventListener('input', () => {
         temperatureValue.textContent = parseFloat(temperatureInput.value).toFixed(1);
         saveGeneralSettings();
@@ -2465,15 +2554,20 @@ function bindEventListeners() {
         topPValue.textContent = parseFloat(topPInput.value).toFixed(2);
         saveGeneralSettings();
     });
+    topKInput.addEventListener('input', () => {
+        topKValue.textContent = topKInput.value;
+        saveGeneralSettings();
+    });
 
 
     // Inputs that trigger a settings save
     const inputsToSave = [
         customModelInput, promptInput, enableStreamingCheckbox, customQualityInput,
         imageWidthInput, imageHeightInput, voiceInput, videoDurationInput,
-        videoAspectRatioSelect, systemPromptInput, maxTokensInput, inferenceEffortInput,
+        videoAspectRatioSelect, systemPromptInput, maxTokensInput, reasoningEffortSelect, customParamsInput,
         // NEW: Checkbox toggles trigger save as well:
-        enableSystemPromptCheckbox, enableTemperatureCheckbox, enableTopPCheckbox, enableMaxTokensCheckbox, enableInferenceEffortCheckbox
+        enableSystemPromptCheckbox, enableTemperatureCheckbox, enableTopPCheckbox, enableTopKCheckbox,
+        enableMaxTokensCheckbox, enableReasoningEffortCheckbox, enableCustomParamsCheckbox
     ];
     inputsToSave.forEach(input => {
         if (input) { // Ensure element exists before adding listener
@@ -2497,6 +2591,32 @@ function bindEventListeners() {
         }
     }
 
+    // Clear All Data button listener
+    if (clearAllDataBtn) {
+        clearAllDataBtn.addEventListener('click', async () => {
+            const confirmed = confirm(
+                'Are you sure you want to clear ALL stored data?\n\n' +
+                'This will remove:\n' +
+                '• All saved provider configurations\n' +
+                '• API keys and credentials\n' +
+                '• Theme preferences\n' +
+                '• All other app settings\n\n' +
+                'This action cannot be undone!'
+            );
+            
+            if (confirmed) {
+                const success = await clearAllStorageData();
+                if (success) {
+                    alert('All storage data has been cleared successfully.\n\nThe page will now reload to reset the application.');
+                    // Reload the page to reset the UI to default state
+                    window.location.reload();
+                } else {
+                    alert('There was an error clearing some data. Please check the console for details.');
+                }
+            }
+        });
+    }
+
     // Listeners for all collapsible sections to save their state
     document.querySelectorAll('.settings-details').forEach(details => {
         details.addEventListener('toggle', () => {
@@ -2505,9 +2625,12 @@ function bindEventListeners() {
         });
     });
 
-    // --- Provider Configuration Listeners ---
     if (saveConfigBtn) {
-        saveConfigBtn.addEventListener('click', saveConfiguration);
+        saveConfigBtn.addEventListener('click', () => {
+            saveConfiguration();
+        });
+    } else {
+        console.error('ERROR: saveConfigBtn not found! Element with ID "save-config-btn" does not exist.');
     }
 
     if (savedConfigsList) {
@@ -2516,7 +2639,6 @@ function bindEventListeners() {
             // Ensure we are targeting a button with the correct data attribute
             if (target.tagName === 'BUTTON' && target.dataset.configName) {
                 const configName = target.dataset.configName;
-
                 if (target.classList.contains('restore-btn')) {
                     restoreConfiguration(configName);
                 } else if (target.classList.contains('delete-btn')) {
@@ -2525,6 +2647,127 @@ function bindEventListeners() {
                         deleteConfiguration(configName);
                     }
                 }
+            }
+        });
+    } else {
+        console.error('ERROR: savedConfigsList not found! Element with ID "saved-configs-list" does not exist.');
+    }
+
+    // --- Custom Parameters Enhancement ---
+    // JSON formatting functionality
+    const formatJsonBtn = document.getElementById('format-json-btn');
+    const clearJsonBtn = document.getElementById('clear-json-btn');
+    // customParamsInput is already declared globally at the top of the file
+
+    if (formatJsonBtn && customParamsInput) {
+        formatJsonBtn.addEventListener('click', () => {
+            try {
+                const value = customParamsInput.value.trim();
+                if (!value) return;
+                
+                const parsed = JSON.parse(value);
+                const formatted = JSON.stringify(parsed, null, 2);
+                customParamsInput.value = formatted;
+                
+                // Visual feedback
+                formatJsonBtn.style.background = 'var(--success-color)';
+                formatJsonBtn.querySelector('svg').style.color = 'white';
+                setTimeout(() => {
+                    formatJsonBtn.style.background = '';
+                    formatJsonBtn.querySelector('svg').style.color = '';
+                }, 1000);
+            } catch (error) {
+                // Visual feedback for error
+                formatJsonBtn.style.background = 'var(--error-color)';
+                formatJsonBtn.querySelector('svg').style.color = 'white';
+                setTimeout(() => {
+                    formatJsonBtn.style.background = '';
+                    formatJsonBtn.querySelector('svg').style.color = '';
+                }, 1000);
+                console.warn('Invalid JSON for formatting:', error.message);
+            }
+        });
+    }
+
+    if (clearJsonBtn && customParamsInput) {
+        clearJsonBtn.addEventListener('click', () => {
+            if (customParamsInput.value.trim() && confirm('Clear all custom parameters?')) {
+                customParamsInput.value = '';
+                saveGeneralSettings();
+            }
+        });
+    }
+
+    // Parameter examples functionality
+    const paramExamples = document.querySelectorAll('.param-example');
+    paramExamples.forEach(example => {
+        example.addEventListener('click', () => {
+            try {
+                const paramData = JSON.parse(example.dataset.param);
+                const currentValue = customParamsInput.value.trim();
+                
+                let currentParams = {};
+                if (currentValue) {
+                    try {
+                        currentParams = JSON.parse(currentValue);
+                    } catch (error) {
+                        console.warn('Current JSON is invalid, starting fresh:', error.message);
+                    }
+                }
+
+                // Merge the new parameter
+                Object.assign(currentParams, paramData);
+                
+                // Format and set the new value
+                const formatted = JSON.stringify(currentParams, null, 2);
+                customParamsInput.value = formatted;
+                
+                // Save settings
+                saveGeneralSettings();
+                
+                // Visual feedback
+                example.style.transform = 'scale(0.95)';
+                setTimeout(() => {
+                    example.style.transform = '';
+                }, 150);
+                
+            } catch (error) {
+                console.error('Error adding parameter example:', error);
+            }
+        });
+    });
+
+    // Enhanced JSON validation with real-time feedback
+    if (customParamsInput) {
+        let validationTimeout;
+        customParamsInput.addEventListener('input', () => {
+            clearTimeout(validationTimeout);
+            validationTimeout = setTimeout(() => {
+                const value = customParamsInput.value.trim();
+                if (!value) {
+                    customParamsInput.style.borderColor = '';
+                    customParamsInput.style.boxShadow = '';
+                    return;
+                }
+                
+                try {
+                    JSON.parse(value);
+                    // Valid JSON
+                    customParamsInput.style.borderColor = 'var(--success-color)';
+                    customParamsInput.style.boxShadow = 'inset 0 1px 3px rgba(0, 0, 0, 0.1), 0 0 0 3px rgba(40, 167, 69, 0.1)';
+                } catch (error) {
+                    // Invalid JSON
+                    customParamsInput.style.borderColor = 'var(--error-color)';
+                    customParamsInput.style.boxShadow = 'inset 0 1px 3px rgba(0, 0, 0, 0.1), 0 0 0 3px rgba(220, 53, 69, 0.1)';
+                }
+            }, 500);
+        });
+
+        // Reset border on focus out if empty
+        customParamsInput.addEventListener('blur', () => {
+            if (!customParamsInput.value.trim()) {
+                customParamsInput.style.borderColor = '';
+                customParamsInput.style.boxShadow = '';
             }
         });
     }
@@ -2565,29 +2808,11 @@ async function handleSendClick() {
                 if (!prompt) return displayError('Please enter text for TTS.');
                 const voice = voiceInput.value.trim();
                 if (!voice) return displayError('Please enter a voice.');
-                // Get format
-                let selectedFormat = 'mp3';
-                if (ttsFormatSelect) {
-                    if (ttsFormatSelect.value === 'custom') {
-                        selectedFormat = customTtsFormatInput.value || "custom";
-                    } else {
-                        selectedFormat = ttsFormatSelect.value;
-                    }
-                }
-                callTtsApi(provider, apiKey, baseUrl, model, prompt, voice, selectedFormat);
+                callTtsApi(provider, apiKey, baseUrl, model, prompt, voice);
             } else { // STT
-                // Prefer file upload; fallback to mic. This allows STT without mic permissions!
-                let file = null;
-                if (audioFileInput && audioFileInput.files && audioFileInput.files.length > 0) {
-                    file = audioFileInput.files[0];
-                } else if (recordedChunks.length > 0) {
-                    file = new File(recordedChunks, 'recording.webm', { type: 'audio/webm' });
-                }
+                const file = recordedChunks.length > 0 ? new File(recordedChunks, 'recording.webm', { type: 'audio/webm' }) : audioFileInput.files[0];
                 if (!file) return displayError('Please upload or record an audio file for STT.');
-                // Get streaming flag
-                let sttStreaming = true;
-                if (sttStreamingCheckbox) sttStreaming = sttStreamingCheckbox.checked;
-                callSttApi(provider, apiKey, baseUrl, model, file, sttStreaming);
+                callSttApi(provider, apiKey, baseUrl, model, file);
             }
             break;
         case 'video':
@@ -2703,6 +2928,25 @@ async function handleAspectRatioToggle() {
     toggleAspectRatio();
 }
 
+function handleUploadText() {
+    const fileInput = document.createElement('input');
+    fileInput.type = 'file';
+    fileInput.accept = '*/*'; // Accept all file types
+    fileInput.onchange = e => {
+        const file = e.target.files[0];
+        if (file) {
+            const reader = new FileReader();
+            reader.onload = event => {
+                promptInput.value = event.target.result;
+                saveGeneralSettings(); // Save the new prompt
+            };
+            // Read as text, assuming it's a text-based file
+            // Need to consider how to handle binary files if required later.
+            reader.readAsText(file);
+        }
+    };
+    fileInput.click();
+}
 
 // Main application initialization function.
 async function initializeApp() {
@@ -2717,7 +2961,7 @@ async function initializeApp() {
             details.open = typeof isOpen === 'boolean' ? isOpen : true; // Default others to open
         }
     }
-
+    
     initializeTheme();
     await loadGeneralSettings();
     await loadProviderCredentials(providerSelect.value);
