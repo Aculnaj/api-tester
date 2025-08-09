@@ -68,7 +68,10 @@ const dom = {
     enableTopKCheckbox: document.getElementById('enable-top-k-checkbox'),
     reasoningEffortSelect: document.getElementById('reasoning-effort-select'),
     enableReasoningEffortCheckbox: document.getElementById('enable-reasoning-effort-checkbox'),
-    customParamsInput: document.getElementById('custom-params-input'),
+    paramNameInput: document.getElementById('param-name-input'),
+    paramValueInput: document.getElementById('param-value-input'),
+    addParamBtn: document.getElementById('add-param-btn'),
+    customParamsList: document.getElementById('custom-params-list'),
     enableCustomParamsCheckbox: document.getElementById('enable-custom-params-checkbox'),
     payloadContainer: document.getElementById('payload-container'),
     togglePayloadBtn: document.getElementById('toggle-payload-btn'),
@@ -82,11 +85,66 @@ const dom = {
     clearAllDataBtn: document.getElementById('clear-all-data-btn'),
 };
 
+// --- Custom Parameters Management ---
+let customParameters = {};
+
+function addCustomParameter(name, value) {
+    if (!name || !name.trim()) return false;
+    
+    // Try to parse the value as JSON if possible, otherwise keep as string
+    let parsedValue;
+    try {
+        parsedValue = JSON.parse(value);
+    } catch {
+        // If it's not valid JSON, try to determine the type
+        if (!isNaN(value) && !isNaN(parseFloat(value))) {
+            parsedValue = parseFloat(value);
+        } else if (value.toLowerCase() === 'true') {
+            parsedValue = true;
+        } else if (value.toLowerCase() === 'false') {
+            parsedValue = false;
+        } else {
+            parsedValue = value;
+        }
+    }
+    
+    customParameters[name.trim()] = parsedValue;
+    renderCustomParameters();
+    return true;
+}
+
+function removeCustomParameter(name) {
+    delete customParameters[name];
+    renderCustomParameters();
+}
+
+function renderCustomParameters() {
+    if (!dom.customParamsList) return;
+    
+    dom.customParamsList.innerHTML = '';
+    
+    for (const [name, value] of Object.entries(customParameters)) {
+        const paramItem = document.createElement('div');
+        paramItem.className = 'custom-param-item';
+        paramItem.innerHTML = `
+            <div class="param-display">
+                <span class="param-name">"${name}"</span>: <span class="param-value">${JSON.stringify(value)}</span>
+            </div>
+            <button type="button" class="remove-param-btn" data-param="${name}" title="Remove Parameter">
+                <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" fill="currentColor" viewBox="0 0 16 16">
+                    <path d="M4.646 4.646a.5.5 0 0 1 .708 0L8 7.293l2.646-2.647a.5.5 0 0 1 .708.708L8.707 8l2.647 2.646a.5.5 0 0 1-.708.708L8 8.707l-2.646 2.647a.5.5 0 0 1-.708-.708L7.293 8 4.646 5.354a.5.5 0 0 1 0-.708z"/>
+                </svg>
+            </button>
+        `;
+        dom.customParamsList.appendChild(paramItem);
+    }
+}
 
 // --- STATE VARIABLES ---
 let lastRequestPayload = null;
 let lastApiResponse = null;
 let currentRequestController = null; // To track and cancel ongoing requests
+
 
 // --- STORAGE HELPERS ---
 // These functions handle getting and setting values in Electron store or localStorage.
@@ -356,7 +414,16 @@ async function loadGeneralSettings() {
     dom.topKValue.textContent = dom.topKInput.value;
     dom.maxTokensInput.value = await getStoredValue(LAST_MAX_TOKENS_KEY) || '1024';
     dom.reasoningEffortSelect.value = await getStoredValue(LAST_REASONING_EFFORT_KEY) || 'medium';
-    dom.customParamsInput.value = await getStoredValue(LAST_CUSTOM_PARAMS_KEY) || '';
+    // Load custom parameters from storage
+    const storedCustomParams = await getStoredValue(LAST_CUSTOM_PARAMS_KEY);
+    if (storedCustomParams) {
+        try {
+            customParameters = JSON.parse(storedCustomParams);
+            renderCustomParameters();
+        } catch (e) {
+            console.warn('Failed to parse stored custom parameters:', e);
+        }
+    }
 
     // Remove disabled state logic - only use visibility control
     // Elements should never be disabled, only hidden when toggle is off
@@ -424,7 +491,7 @@ async function saveGeneralSettings() {
     await setStoredValue(LAST_TOP_K_KEY, dom.topKInput.value);
     await setStoredValue(LAST_MAX_TOKENS_KEY, dom.maxTokensInput.value);
     await setStoredValue(LAST_REASONING_EFFORT_KEY, dom.reasoningEffortSelect.value);
-    await setStoredValue(LAST_CUSTOM_PARAMS_KEY, dom.customParamsInput.value);
+    await setStoredValue(LAST_CUSTOM_PARAMS_KEY, JSON.stringify(customParameters));
 }
 
 // --- THEME MANAGEMENT ---
@@ -1385,17 +1452,9 @@ async function callTextApi(provider, apiKey, baseUrl, model, prompt) {
     }
 
     // Custom parameters support
-    if (dom.enableCustomParamsCheckbox?.checked && dom.customParamsInput && dom.customParamsInput.value.trim()) {
-        try {
-            const customParams = JSON.parse(dom.customParamsInput.value.trim());
-            if (typeof customParams === 'object' && customParams !== null && !Array.isArray(customParams)) {
-                // Merge custom parameters with the body (custom params take precedence)
-                Object.assign(body, customParams);
-            }
-        } catch (error) {
-            hideLoader();
-            return displayError(`Custom Parameters JSON is invalid: ${error.message}`);
-        }
+    if (dom.enableCustomParamsCheckbox?.checked && Object.keys(customParameters).length > 0) {
+        // Merge custom parameters with the body (custom params take precedence)
+        Object.assign(body, customParameters);
     }
 
 
@@ -1436,16 +1495,9 @@ async function callTextApi(provider, apiKey, baseUrl, model, prompt) {
             }
             
             // Add custom parameters for Antrophic if enabled
-            if (dom.enableCustomParamsCheckbox?.checked && dom.customParamsInput && dom.customParamsInput.value.trim()) {
-                try {
-                    const customParams = JSON.parse(dom.customParamsInput.value.trim());
-                    if (typeof customParams === 'object' && customParams !== null && !Array.isArray(customParams)) {
-                        Object.assign(body, customParams);
-                    }
-                } catch (error) {
-                    hideLoader();
-                    return displayError(`Custom Parameters JSON is invalid: ${error.message}`);
-                }
+            if (dom.enableCustomParamsCheckbox?.checked && Object.keys(customParameters).length > 0) {
+                // Merge custom parameters with the body
+                Object.assign(body, customParameters);
             }
             break;
         default:
@@ -2352,10 +2404,11 @@ document.addEventListener('DOMContentLoaded', () => {
     loadGeneralSettings().then(() => {
         // After general settings are loaded, load provider-specific credentials
         loadProviderCredentials(dom.providerSelect.value);
-        // Then fetch models for the initially selected provider
-        fetchModels();
         // Update the visibility of the toggles
         updateAllToggleVisibility();
+        
+        // Fetch models asynchronously without blocking page initialization
+        setTimeout(() => fetchModels(), 0);
     });
     renderSavedConfigs();
     toggleGenerationOptions(); // Set initial UI state based on default/loaded settings
@@ -2365,7 +2418,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const selectedProvider = dom.providerSelect.value;
         loadProviderCredentials(selectedProvider);
         saveGeneralSettings(); // Save the new provider selection
-        fetchModels(); // Fetch models for the new provider
+        fetchModels(); // Fetch models for the new provider immediately
     });
 
     dom.apiKeyInput.addEventListener('input', () => {
@@ -2447,7 +2500,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // --- Settings Persistence (on input change) ---
     const inputsToSave = [
         dom.promptInput, dom.systemPromptInput, dom.temperatureInput, dom.topPInput,
-        dom.topKInput, dom.maxTokensInput, dom.customParamsInput, dom.imageModelTypeSelect,
+        dom.topKInput, dom.maxTokensInput, dom.imageModelTypeSelect,
         dom.qualitySelect, dom.customQualityInput, dom.imageResolutionSelect,
         dom.imageAspectRatioSelect, dom.fluxOrientationSelect, dom.fluxAspectRatioSelect,
         dom.fluxStepsInput, dom.audioTypeSelect, dom.voiceSelect, dom.ttsInstructionsInput,
@@ -2589,6 +2642,55 @@ document.addEventListener('DOMContentLoaded', () => {
             } else {
                 // Fallback for web version
                 window.open(location.href, '_blank');
+            }
+        });
+    }
+
+    // --- Custom Parameters Event Listeners ---
+    if (dom.addParamBtn) {
+        dom.addParamBtn.addEventListener('click', () => {
+            const name = dom.paramNameInput.value.trim();
+            const value = dom.paramValueInput.value.trim();
+            
+            if (name && value) {
+                if (addCustomParameter(name, value)) {
+                    dom.paramNameInput.value = '';
+                    dom.paramValueInput.value = '';
+                }
+            }
+        });
+    }
+
+    // Handle preset parameter buttons
+    document.querySelectorAll('.param-preset-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+            const name = btn.dataset.name;
+            const value = btn.dataset.value;
+            
+            if (name && value) {
+                dom.paramNameInput.value = name;
+                dom.paramValueInput.value = value;
+            }
+        });
+    });
+
+    // Handle parameter removal (using event delegation)
+    if (dom.customParamsList) {
+        dom.customParamsList.addEventListener('click', (e) => {
+            if (e.target.closest('.remove-param-btn')) {
+                const paramName = e.target.closest('.remove-param-btn').dataset.param;
+                if (paramName) {
+                    removeCustomParameter(paramName);
+                }
+            }
+        });
+    }
+
+    // Allow adding parameters with Enter key
+    if (dom.paramValueInput) {
+        dom.paramValueInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                dom.addParamBtn.click();
             }
         });
     }

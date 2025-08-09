@@ -660,32 +660,124 @@ button.copy-btn {
 }
 
 /* --- CUSTOM PARAMETERS --- */
-.custom-params-form {
-    background: linear-gradient(135deg, var(--bg-color) 0%, var(--output-bg-color) 100%);
+.custom-params-container {
+    margin-top: 12px;
+    padding: 16px;
     border: 1px solid var(--border-color);
-    border-radius: 12px;
-    padding: 20px;
-    margin-top: 15px;
-    animation: fadeInUp 0.3s ease-out;
+    border-radius: 8px;
+    background-color: var(--output-bg-color);
+    margin-bottom: 12px;
 }
 
-@keyframes fadeInUp {
-    from { opacity: 0; transform: translateY(10px); }
-    to { opacity: 1; transform: translateY(0); }
+.custom-param-add-section {
+    margin-bottom: 16px;
 }
 
-#custom-params-input {
+.custom-param-inputs {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+}
+
+.param-name-input {
+    flex: 1;
+    margin: 0 !important;
+}
+
+.param-value-input {
+    flex: 1;
+    margin: 0 !important;
+}
+
+.add-param-btn {
+    background-color: var(--button-bg-color) !important;
+    color: var(--button-text-color) !important;
+}
+
+.add-param-btn:hover {
+    background-color: var(--button-hover-bg-color) !important;
+}
+
+.custom-params-list {
+    margin-bottom: 16px;
+}
+
+.custom-param-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 8px 12px;
+    margin-bottom: 6px;
+    border: 1px solid var(--border-color);
+    border-radius: 6px;
+    background-color: var(--input-bg-color);
+}
+
+.param-display {
     font-family: 'SF Mono', 'Monaco', 'Inconsolata', 'Roboto Mono', 'Source Code Pro', monospace;
     font-size: 0.9em;
-    line-height: 1.5;
-    border-width: 2px;
-    padding: 16px;
-    min-height: 120px;
-    box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.1);
+    color: var(--text-color);
 }
 
-.dark-mode #custom-params-input:focus {
-    box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.2), 0 0 0 3px rgba(13, 110, 253, 0.15);
+.param-name {
+    color: var(--button-bg-color);
+    font-weight: 600;
+}
+
+.param-value {
+    color: var(--text-color-muted);
+}
+
+.remove-param-btn {
+    background: transparent !important;
+    color: var(--error-color) !important;
+    border: 1px solid var(--error-color) !important;
+    padding: 4px !important;
+    margin: 0 !important;
+    aspect-ratio: 1;
+    width: auto !important;
+}
+
+.remove-param-btn:hover {
+    background-color: var(--error-color) !important;
+    color: white !important;
+}
+
+.custom-params-presets {
+    border-top: 1px solid var(--border-color);
+    padding-top: 12px;
+}
+
+.presets-label {
+    font-size: 0.9em;
+    font-weight: 600;
+    color: var(--text-color-muted);
+    margin-bottom: 8px;
+}
+
+.param-presets {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+}
+
+.param-preset-btn {
+    background: transparent !important;
+    color: var(--text-color-muted) !important;
+    border: 1px solid var(--border-color) !important;
+    border-radius: 4px !important;
+    padding: 4px 8px !important;
+    font-size: 0.85em !important;
+    margin: 0 !important;
+    width: auto !important;
+    font-family: 'SF Mono', 'Monaco', 'Inconsolata', 'Roboto Mono', 'Source Code Pro', monospace;
+}
+
+.param-preset-btn:hover {
+    background-color: var(--hover-bg-color) !important;
+    color: var(--text-color) !important;
+    border-color: var(--button-bg-color) !important;
+    transform: none;
 }
 
 /* --- MODEL SELECTION WRAPPER --- */
