@@ -442,14 +442,6 @@ body.dark-mode .enable-quality-container {
     margin: 0; /* Remove default h3 margin */
 }
 
-/* Theming for recorder controls */
-#recorder-controls button {
-    margin-bottom: 5px;
-}
-
-#recording-preview {
-    margin-top: 10px;
-}
 
 /* Error specific styling */
 #output-area.error-active {

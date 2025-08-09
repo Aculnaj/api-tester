@@ -128,6 +128,17 @@
                     </div>
                     <label for="prompt-input" id="prompt-label">Prompt / Image Description:</label>
                     <button id="upload-text-btn" class="upload-btn" title="Upload a file for prompt">Upload File</button>
+                    <div id="audio-input-container" style="display: none;">
+                        <label for="audio-type-select">Audio Type:</label>
+                        <select id="audio-type-select">
+                            <option value="tts" selected>Text-to-Speech (TTS)</option>
+                            <option value="stt">Speech-to-Text (STT)</option>
+                        </select>
+                        <div id="stt-input-container" style="display: none;">
+                            <label for="audio-file-input">Audio File:</label>
+                            <input type="file" id="audio-file-input" accept="audio/*">
+                        </div>
+                    </div>
                     <textarea id="prompt-input" rows="4" placeholder="Enter text prompt or image description..."></textarea>
                 </fieldset>
             </details>
@@ -371,18 +382,14 @@
 
                     <!-- Audio Options -->
                     <div id="audio-options-container" style="display: none;">
-                        <label for="audio-type-select">Audio Type:</label>
-                        <select id="audio-type-select">
-                            <option value="tts" selected>Text-to-Speech (TTS)</option>
-                            <option value="stt">Speech-to-Text (STT)</option>
-                        </select>
-                        <div id="stt-input-container" style="display: none;">
-                            <label for="audio-file-input">Audio File:</label>
-                            <input type="file" id="audio-file-input" accept="audio/*">
-                        </div>
-                        <div id="recorder-controls" style="display:none;">
-                            <button type="button" id="record-btn">Start Recording</button>
-                            <audio id="recording-preview" controls style="display:none;"></audio>
+                        <div class="enable-streaming-container">
+                            <label class="enable-streaming-title" for="enable-stt-streaming-checkbox">
+                                <span>Streaming</span>
+                                <span class="switch">
+                                    <input type="checkbox" id="enable-stt-streaming-checkbox">
+                                    <span class="slider"></span>
+                                </span>
+                            </label>
                         </div>
                         <div id="voice-options-container" style="display:none;">
                             <label for="voice-select">Voice:</label>

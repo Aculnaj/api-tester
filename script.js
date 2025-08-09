@@ -47,9 +47,7 @@ const voiceOptionsContainer = document.getElementById('voice-options-container')
 const voiceSelect = document.getElementById('voice-select');
 const ttsInstructionsInput = document.getElementById('tts-instructions-input');
 const responseFormatSelect = document.getElementById('response-format-select');
-const recorderControls = document.getElementById('recorder-controls');
-const recordBtn = document.getElementById('record-btn');
-const recordingPreview = document.getElementById('recording-preview');
+const enableSttStreamingCheckbox = document.getElementById('enable-stt-streaming-checkbox');
 const outputAudio = document.getElementById('output-audio');
 const downloadAudio = document.getElementById('download-audio');
 
@@ -101,11 +99,8 @@ const clearAllDataBtn = document.getElementById('clear-all-data-btn');
 
 
 // --- STATE VARIABLES ---
-let recordedChunks = [];
-let mediaRecorder;
 let lastRequestPayload = null;
 let lastApiResponse = null;
-let microphonePermissionStatus = 'prompt'; // 'granted', 'denied', 'prompt'
 let currentRequestController = null; // To track and cancel ongoing requests
 
 // --- STORAGE HELPERS ---
@@ -189,6 +184,7 @@ const LAST_ENABLE_TOP_K_KEY = 'lastEnableTopK';
 const LAST_ENABLE_MAX_TOKENS_KEY = 'lastEnableMaxTokens';
 const LAST_ENABLE_REASONING_EFFORT_KEY = 'lastEnableReasoningEffort';
 const LAST_ENABLE_CUSTOM_PARAMS_KEY = 'lastEnableCustomParams';
+const LAST_ENABLE_STT_STREAMING_KEY = 'lastEnableSttStreaming';
 
 const LAST_SYSTEM_PROMPT_KEY = 'lastSystemPrompt';
 const LAST_TEMPERATURE_KEY = 'lastTemperature';
@@ -357,6 +353,10 @@ async function loadGeneralSettings() {
         const en = await getStoredValue(LAST_ENABLE_CUSTOM_PARAMS_KEY);
         enableCustomParamsCheckbox.checked = typeof en === "boolean" ? en : false;
     }
+    if (enableSttStreamingCheckbox) {
+        const en = await getStoredValue(LAST_ENABLE_STT_STREAMING_KEY);
+        enableSttStreamingCheckbox.checked = typeof en === "boolean" ? en : false;
+    }
 
     // Load text generation settings
     systemPromptInput.value = await getStoredValue(LAST_SYSTEM_PROMPT_KEY) || '';
@@ -424,6 +424,7 @@ async function saveGeneralSettings() {
     if (enableMaxTokensCheckbox) await setStoredValue(LAST_ENABLE_MAX_TOKENS_KEY, enableMaxTokensCheckbox.checked);
     if (enableReasoningEffortCheckbox) await setStoredValue(LAST_ENABLE_REASONING_EFFORT_KEY, enableReasoningEffortCheckbox.checked);
     if (enableCustomParamsCheckbox) await setStoredValue(LAST_ENABLE_CUSTOM_PARAMS_KEY, enableCustomParamsCheckbox.checked);
+    if (enableSttStreamingCheckbox) await setStoredValue(LAST_ENABLE_STT_STREAMING_KEY, enableSttStreamingCheckbox.checked);
 
     // Save video settings
     if (videoDurationInput) await setStoredValue(LAST_VIDEO_DURATION_KEY, videoDurationInput.value);
@@ -1045,34 +1046,48 @@ function toggleGenerationOptions() {
     switch (generationType) {
         case 'text':
             textGenerationOptions.style.display = 'block';
-            document.getElementById('prompt-label').textContent = 'Prompt:';
+            const promptLabelElText = document.getElementById('prompt-label');
+            if (promptLabelElText) {
+                promptLabelElText.style.display = 'inline-block';
+                promptLabelElText.textContent = 'Prompt:';
+            }
             break;
         case 'image':
             imageOptionsContainer.style.display = 'block';
-            document.getElementById('prompt-label').textContent = 'Prompt / Image Description:';
+            const promptLabelElImage = document.getElementById('prompt-label');
+            if (promptLabelElImage) {
+                promptLabelElImage.style.display = 'inline-block';
+                promptLabelElImage.textContent = 'Prompt / Image Description:';
+            }
             // Update image options UI based on selected model type
             updateImageOptionsUI();
             break;
         case 'audio':
+            
             audioOptionsContainer.style.display = 'block';
+            const audioInputContainer = document.getElementById('audio-input-container');
+            if (audioInputContainer) audioInputContainer.style.display = 'block';
             const audioTypeSelectEl = document.getElementById('audio-type-select');
             const audioType = audioTypeSelectEl ? audioTypeSelectEl.value : 'tts';
+            const promptLabel = document.getElementById('prompt-label');
+            const enableSttStreamingContainer = document.querySelector('.enable-streaming-container');
 
             // Always show audio sub-options based on audio type selection
             if (audioType === 'tts') {
+                if (enableSttStreamingContainer) enableSttStreamingContainer.style.display = 'none';
                 voiceOptionsContainer.style.display = 'block';
-                sttInputContainer.style.display = 'none';
-                recorderControls.style.display = 'none';
-                document.getElementById('prompt-label').textContent = 'Text to Speak:';
+                if (sttInputContainer) sttInputContainer.style.display = 'none';
+                promptLabel.style.display = 'inline-block'; // Show label for TTS
+                promptLabel.textContent = 'Text to Speak:';
                 promptInput.style.display = 'block';
                 uploadTextBtn.style.display = 'inline-block';
             } else { // STT
+                if (enableSttStreamingContainer) enableSttStreamingContainer.style.display = 'block';
                 voiceOptionsContainer.style.display = 'none';
-                sttInputContainer.style.display = 'block';
-                recorderControls.style.display = 'block';
+                if (sttInputContainer) sttInputContainer.style.display = 'block';
+                promptLabel.style.display = 'none'; // Hide label for STT
                 promptInput.style.display = 'none'; // Prompt input is not used for STT
                 uploadTextBtn.style.display = 'none'; // Upload Text button is not used for STT
-                document.getElementById('prompt-label').textContent = 'Upload or Record Audio:';
             }
             break;
         case 'video':
@@ -1090,96 +1105,6 @@ function toggleGenerationOptions() {
 }
 
 
-// Function to check microphone permission status
-async function checkMicrophonePermission() {
-    try {
-        // Check if the browser supports permissions API
-        if (navigator.permissions && navigator.permissions.query) {
-            const permissionStatus = await navigator.permissions.query({ name: 'microphone' });
-            microphonePermissionStatus = permissionStatus.state;
-            
-            // Listen for permission changes
-            permissionStatus.onchange = () => {
-                microphonePermissionStatus = permissionStatus.state;
-                updateMicrophoneUI();
-            };
-            
-            return microphonePermissionStatus;
-        } else {
-            // For browsers that don't support permissions API, we can't check proactively
-            return 'prompt';
-        }
-    } catch (error) {
-        console.error('Error checking microphone permission:', error);
-        return 'prompt';
-    }
-}
-
-// Function to request microphone permission proactively
-async function requestMicrophonePermission() {
-    try {
-        // The getUserMedia call will trigger the permission prompt
-        const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-        
-        // If we get here, permission was granted
-        microphonePermissionStatus = 'granted';
-        
-        // Stop the tracks immediately since we're just checking permission
-        stream.getTracks().forEach(track => track.stop());
-        
-        updateMicrophoneUI();
-        return true;
-    } catch (error) {
-        // Permission denied or other error
-        microphonePermissionStatus = 'denied';
-        updateMicrophoneUI();
-        console.error('Microphone permission error:', error);
-        return false;
-    }
-}
-
-// Function to update UI based on microphone permission status
-function updateMicrophoneUI() {
-    // Create status element if it doesn't exist
-    let micStatusEl = document.getElementById('mic-status');
-    if (!micStatusEl && recorderControls) {
-        micStatusEl = document.createElement('div');
-        micStatusEl.id = 'mic-status';
-        micStatusEl.style.marginBottom = '8px';
-        recorderControls.insertBefore(micStatusEl, recordBtn);
-    }
-    
-    // Update the status message and styling
-    if (micStatusEl) {
-        if (microphonePermissionStatus === 'granted') {
-            micStatusEl.innerHTML = '🎤 <span style="color: green;">Microphone access granted</span>';
-            recordBtn.disabled = false;
-        } else if (microphonePermissionStatus === 'denied') {
-            micStatusEl.innerHTML = '🚫 <span style="color: red;">Microphone access denied</span> <button id="retry-mic-btn">Request Access</button>';
-            recordBtn.disabled = true;
-            
-            // Add event listener to retry button
-            const retryBtn = document.getElementById('retry-mic-btn');
-            if (retryBtn) {
-                retryBtn.onclick = () => {
-                    requestMicrophonePermission();
-                };
-            }
-        } else {
-            // prompt state
-            micStatusEl.innerHTML = '🎤 <span style="color: orange;">Microphone permission needed</span> <button id="request-mic-btn">Allow Microphone</button>';
-            recordBtn.disabled = false;
-            
-            // Add event listener to request button
-            const requestBtn = document.getElementById('request-mic-btn');
-            if (requestBtn) {
-                requestBtn.onclick = () => {
-                    requestMicrophonePermission();
-                };
-            }
-        }
-    }
-}
 
 
 // --- HELPER FUNCTIONS ---
@@ -2292,6 +2217,210 @@ async function callTtsApi(provider, apiKey, baseUrl, model, text, voice, instruc
     }
 }
 
+// Handles streaming STT response
+async function handleSttStreamingResponse(response, model, fileSize, file, startTime) {
+    const reader = response.body.getReader();
+    const decoder = new TextDecoder("utf-8");
+    
+    // Initialize output area for streaming
+    outputText.innerHTML = `<strong>Transcribing with ${model} (Streaming):</strong><br><br>`;
+    outputArea.style.display = 'block';
+    outputArea.style.borderColor = '#ccc';
+    
+    let accumulatedResponse = "";
+    let fullTranscript = "";
+    let finalDuration = null;
+    let hasStreamingData = false;
+    
+    try {
+        // Show stats area with initial stats
+        const currentTime = performance.now();
+        const durationInSeconds = ((currentTime - startTime) / 1000).toFixed(2);
+        
+        statsArea.innerHTML = `
+            <span><strong>Transcription Time:</strong> ${durationInSeconds}s</span>
+            <span><strong>File Size:</strong> ${fileSize} KB</span>
+            <span><strong>Model:</strong> ${model}</span>
+            <span><strong>Characters Generated:</strong> 0</span>
+        `;
+        statsArea.style.display = 'block';
+        
+        while (true) {
+            // Check if the request was aborted
+            if (currentRequestController && currentRequestController.signal.aborted) {
+                reader.cancel();
+                throw new DOMException('Request cancelled by user', 'AbortError');
+            }
+            
+            const { done, value } = await reader.read();
+            
+            if (done) {
+                // Final update
+                const endTime = performance.now();
+                finalDuration = ((endTime - startTime) / 1000).toFixed(2);
+                
+                // If no streaming data was received, try to parse as single JSON response
+                if (!hasStreamingData && accumulatedResponse.trim()) {
+                    try {
+                        const singleResponse = JSON.parse(accumulatedResponse.trim());
+                        if (singleResponse.text) {
+                            fullTranscript = singleResponse.text;
+                            outputText.innerHTML = `<strong>Transcribed by ${model}:</strong><br>${fullTranscript.replace(/\n/g, '<br>')}`;
+                            
+                            // Update stats with usage data if available
+                            let statsHtml = `
+                                <span><strong>Transcription Time:</strong> ${finalDuration}s</span>
+                                <span><strong>File Size:</strong> ${fileSize} KB</span>
+                                <span><strong>Model:</strong> ${model}</span>
+                                <span><strong>Characters Generated:</strong> ${fullTranscript.length}</span>
+                            `;
+                            
+                            if (singleResponse.usage) {
+                                if (singleResponse.usage.input_tokens) {
+                                    statsHtml += `<span><strong>Input Tokens:</strong> ${singleResponse.usage.input_tokens}</span>`;
+                                }
+                                if (singleResponse.usage.output_tokens) {
+                                    statsHtml += `<span><strong>Output Tokens:</strong> ${singleResponse.usage.output_tokens}</span>`;
+                                }
+                                if (singleResponse.usage.total_tokens) {
+                                    statsHtml += `<span><strong>Total Tokens:</strong> ${singleResponse.usage.total_tokens}</span>`;
+                                }
+                            }
+                            
+                            statsArea.innerHTML = statsHtml;
+                        }
+                    } catch (e) {
+                        console.warn("Could not parse as single JSON response:", e);
+                    }
+                } else {
+                    // Regular streaming completion
+                    statsArea.innerHTML = `
+                        <span><strong>Transcription Time:</strong> ${finalDuration}s</span>
+                        <span><strong>File Size:</strong> ${fileSize} KB</span>
+                        <span><strong>Model:</strong> ${model}</span>
+                        <span><strong>Characters Generated:</strong> ${fullTranscript.length}</span>
+                    `;
+                }
+                
+                // Add file duration if we can get it
+                if (file.type.includes('audio')) {
+                    const audio = new Audio();
+                    audio.src = URL.createObjectURL(file);
+                    audio.onloadedmetadata = () => {
+                        const audioDuration = audio.duration.toFixed(2);
+                        if (audioDuration && audioDuration > 0) {
+                            statsArea.innerHTML += `<span><strong>Audio Length:</strong> ${audioDuration}s</span>`;
+                            
+                            // Add processing speed relative to audio length
+                            const processingRatio = (audioDuration / finalDuration).toFixed(2);
+                            statsArea.innerHTML += `<span><strong>Processing Speed:</strong> ${processingRatio}x realtime</span>`;
+                        }
+                    };
+                    audio.load();
+                }
+                
+                break;
+            }
+            
+            accumulatedResponse += decoder.decode(value, { stream: true });
+            let lines = accumulatedResponse.split('\n');
+            accumulatedResponse = lines.pop() || "";
+            
+            for (const line of lines) {
+                if (line.startsWith("data: ")) {
+                    hasStreamingData = true;
+                    const jsonStr = line.substring(6).trim();
+                    if (jsonStr === "[DONE]") {
+                        continue;
+                    }
+                    try {
+                        const parsed = JSON.parse(jsonStr);
+                        
+                        // Handle OpenAI STT streaming format
+                        if (parsed.type === "transcript.text.delta" && parsed.delta) {
+                            // Add the delta to the transcript
+                            fullTranscript += parsed.delta;
+                            // Update the display with the new text
+                            outputText.innerHTML = `<strong>Transcribing with ${model} (Streaming):</strong><br><br>${fullTranscript}`;
+                            
+                            // Update character count in stats
+                            const statsLines = Array.from(statsArea.querySelectorAll('span'));
+                            for (const line of statsLines) {
+                                if (line.textContent.includes('Characters Generated:')) {
+                                    line.innerHTML = `<strong>Characters Generated:</strong> ${fullTranscript.length}`;
+                                    break;
+                                }
+                            }
+                        } else if (parsed.type === "transcript.text.done" && parsed.text) {
+                            // Final transcript - use the complete text from done event
+                            fullTranscript = parsed.text;
+                            outputText.innerHTML = `<strong>Transcribed by ${model}:</strong><br>${fullTranscript.replace(/\n/g, '<br>')}`;
+                            
+                            // Update character count in stats with final count
+                            const statsLines = Array.from(statsArea.querySelectorAll('span'));
+                            for (const line of statsLines) {
+                                if (line.textContent.includes('Characters Generated:')) {
+                                    line.innerHTML = `<strong>Characters Generated:</strong> ${fullTranscript.length}`;
+                                    break;
+                                }
+                            }
+                            
+                            // Update final stats with usage data if available
+                            if (parsed.usage) {
+                                const currentTime = performance.now();
+                                const currentDuration = ((currentTime - startTime) / 1000).toFixed(2);
+                                
+                                // Rebuild stats with usage data
+                                let statsHtml = `
+                                    <span><strong>Transcription Time:</strong> ${currentDuration}s</span>
+                                    <span><strong>File Size:</strong> ${fileSize} KB</span>
+                                    <span><strong>Model:</strong> ${model}</span>
+                                    <span><strong>Characters Generated:</strong> ${fullTranscript.length}</span>
+                                `;
+                                
+                                if (parsed.usage.input_tokens) {
+                                    statsHtml += `<span><strong>Input Tokens:</strong> ${parsed.usage.input_tokens}</span>`;
+                                }
+                                if (parsed.usage.output_tokens) {
+                                    statsHtml += `<span><strong>Output Tokens:</strong> ${parsed.usage.output_tokens}</span>`;
+                                }
+                                if (parsed.usage.total_tokens) {
+                                    statsHtml += `<span><strong>Total Tokens:</strong> ${parsed.usage.total_tokens}</span>`;
+                                }
+                                
+                                statsArea.innerHTML = statsHtml;
+                            }
+                        } else if (parsed.text) {
+                            // Alternative format: direct text field (some providers)
+                            fullTranscript = parsed.text;
+                            outputText.innerHTML = `<strong>Transcribed by ${model}:</strong><br>${fullTranscript.replace(/\n/g, '<br>')}`;
+                            
+                            // Update character count in stats
+                            const statsLines = Array.from(statsArea.querySelectorAll('span'));
+                            for (const line of statsLines) {
+                                if (line.textContent.includes('Characters Generated:')) {
+                                    line.innerHTML = `<strong>Characters Generated:</strong> ${fullTranscript.length}`;
+                                    break;
+                                }
+                            }
+                        } else {
+                            // Log unknown format for debugging
+                            console.log('Unknown STT streaming format:', parsed);
+                        }
+                    } catch (e) {
+                        console.warn("Error parsing streamed JSON chunk:", e, "Chunk:", jsonStr);
+                    }
+                }
+            }
+        }
+        return { transcript: fullTranscript, durationSeconds: finalDuration };
+    } catch (error) {
+        throw error; // Re-throw to be handled by the calling function
+    } finally {
+        reader.releaseLock();
+    }
+}
+
 // Handles Speech-to-Text (STT) API calls.
 async function callSttApi(provider, apiKey, baseUrl, model, file) {
     showLoader(); // Show loader at the start
@@ -2368,6 +2497,11 @@ async function callSttApi(provider, apiKey, baseUrl, model, file) {
         formData.append('file', actualFile);
         // Use the selected model from dropdown
         formData.append('model', model);
+        
+        // Add streaming parameter if enabled
+        if (enableSttStreamingCheckbox && enableSttStreamingCheckbox.checked) {
+            formData.append('stream', 'true');
+        }
 
         const response = await fetch(apiUrl, {
             method: 'POST',
@@ -2376,53 +2510,67 @@ async function callSttApi(provider, apiKey, baseUrl, model, file) {
             signal: signal
         });
 
-        const endTime = performance.now();
-        const durationInSeconds = ((endTime - startTime) / 1000).toFixed(2);
-        
-        const data = await handleApiResponse(response);
+        // Handle streaming vs non-streaming responses
+        if (enableSttStreamingCheckbox && enableSttStreamingCheckbox.checked && response.body) {
+            // Handle streaming response
+            const sttResult = await handleSttStreamingResponse(response, model, fileSize, actualFile, startTime);
+            lastApiResponse = JSON.stringify({ 
+                info: 'Response was streamed.', 
+                model, 
+                duration_seconds: sttResult?.durationSeconds ?? null, 
+                characters: sttResult?.transcript?.length ?? 0,
+                transcript_preview: sttResult?.transcript?.substring(0, 100) + (sttResult?.transcript?.length > 100 ? '...' : '') ?? 'No transcript'
+            }, null, 2);
+        } else {
+            // Handle non-streaming response (existing code)
+            const endTime = performance.now();
+            const durationInSeconds = ((endTime - startTime) / 1000).toFixed(2);
+            
+            const data = await handleApiResponse(response);
 
-        const transcript = data.text || data.transcript || JSON.stringify(data);
-        outputText.innerHTML = `<strong>Transcribed by ${model}:</strong><br>${transcript.replace(/\\n/g, '<br>')}`;
-        
-        // Display stats
-        statsArea.innerHTML = `
-            <span><strong>Transcription Time:</strong> ${durationInSeconds}s</span>
-            <span><strong>File Size:</strong> ${fileSize} KB</span>
-            <span><strong>Model:</strong> ${model}</span>
-            <span><strong>Characters Generated:</strong> ${transcript.length}</span>
-        `;
-        
-        // Add file duration if we can get it
-        if (file.type.includes('audio')) {
-            const audio = new Audio();
-            audio.src = URL.createObjectURL(file);
-            audio.onloadedmetadata = () => {
-                const audioDuration = audio.duration.toFixed(2);
-                if (audioDuration && audioDuration > 0) {
-                    statsArea.innerHTML += `<span><strong>Audio Length:</strong> ${audioDuration}s</span>`;
-                    
-                    // Add processing speed relative to audio length
-                    const processingRatio = (audioDuration / durationInSeconds).toFixed(2);
-                    statsArea.innerHTML += `<span><strong>Processing Speed:</strong> ${processingRatio}x realtime</span>`;
+            const transcript = data.text || data.transcript || JSON.stringify(data);
+            outputText.innerHTML = `<strong>Transcribed by ${model}:</strong><br>${transcript.replace(/\\n/g, '<br>')}`;
+            
+            // Display stats
+            statsArea.innerHTML = `
+                <span><strong>Transcription Time:</strong> ${durationInSeconds}s</span>
+                <span><strong>File Size:</strong> ${fileSize} KB</span>
+                <span><strong>Model:</strong> ${model}</span>
+                <span><strong>Characters Generated:</strong> ${transcript.length}</span>
+            `;
+            
+            // Add file duration if we can get it
+            if (actualFile.type.includes('audio')) {
+                const audio = new Audio();
+                audio.src = URL.createObjectURL(actualFile);
+                audio.onloadedmetadata = () => {
+                    const audioDuration = audio.duration.toFixed(2);
+                    if (audioDuration && audioDuration > 0) {
+                        statsArea.innerHTML += `<span><strong>Audio Length:</strong> ${audioDuration}s</span>`;
+                        
+                        // Add processing speed relative to audio length
+                        const processingRatio = (audioDuration / durationInSeconds).toFixed(2);
+                        statsArea.innerHTML += `<span><strong>Processing Speed:</strong> ${processingRatio}x realtime</span>`;
+                    }
+                };
+                audio.load();
+            }
+            
+            // If we have usage data, show it
+            if (data.usage) {
+                if (data.usage.prompt_tokens) {
+                    statsArea.innerHTML += `<span><strong>Prompt Tokens:</strong> ${data.usage.prompt_tokens}</span>`;
                 }
-            };
-            audio.load();
+                if (data.usage.completion_tokens) {
+                    statsArea.innerHTML += `<span><strong>Completion Tokens:</strong> ${data.usage.completion_tokens}</span>`;
+                }
+                if (data.usage.total_tokens) {
+                    statsArea.innerHTML += `<span><strong>Total Tokens:</strong> ${data.usage.total_tokens}</span>`;
+                }
+            }
+            
+            statsArea.style.display = 'block';
         }
-        
-        // If we have usage data, show it
-        if (data.usage) {
-            if (data.usage.prompt_tokens) {
-                statsArea.innerHTML += `<span><strong>Prompt Tokens:</strong> ${data.usage.prompt_tokens}</span>`;
-            }
-            if (data.usage.completion_tokens) {
-                statsArea.innerHTML += `<span><strong>Completion Tokens:</strong> ${data.usage.completion_tokens}</span>`;
-            }
-            if (data.usage.total_tokens) {
-                statsArea.innerHTML += `<span><strong>Total Tokens:</strong> ${data.usage.total_tokens}</span>`;
-            }
-        }
-        
-        statsArea.style.display = 'block';
         
     } catch (err) {
         // Handle cancellation
@@ -2823,7 +2971,9 @@ function bindEventListeners() {
         radio.addEventListener('click', handleGenerationTypeChange);
     });
     audioTypeSelect.addEventListener('change', handleAudioTypeChange);
-    recordBtn.addEventListener('click', handleRecordClick);
+    if (enableSttStreamingCheckbox) {
+        enableSttStreamingCheckbox.addEventListener('change', saveGeneralSettings);
+    }
     enableQualityCheckbox.addEventListener('change', handleEnableQualityChange);
     qualitySelect.addEventListener('change', handleQualitySelectChange);
     videoAspectRatioEnabled.addEventListener('change', handleAspectRatioToggle);
@@ -2976,7 +3126,8 @@ function bindEventListeners() {
         videoAspectRatioSelect, systemPromptInput, maxTokensInput, reasoningEffortSelect, customParamsInput,
         // NEW: Checkbox toggles trigger save as well:
         enableSystemPromptCheckbox, enableTemperatureCheckbox, enableTopPCheckbox, enableTopKCheckbox,
-        enableMaxTokensCheckbox, enableReasoningEffortCheckbox, enableCustomParamsCheckbox
+        enableMaxTokensCheckbox, enableReasoningEffortCheckbox, enableCustomParamsCheckbox,
+        enableSttStreamingCheckbox
     ];
     inputsToSave.forEach(input => {
         if (input) { // Ensure element exists before adding listener
@@ -3236,7 +3387,7 @@ async function handleSendClick() {
                 const responseFormat = responseFormatSelect.value || 'mp3';
                 callTtsApi(provider, apiKey, baseUrl, model, prompt, voice, instructions, responseFormat);
             } else { // STT
-                const file = recordedChunks.length > 0 ? new File(recordedChunks, 'recording.webm', { type: 'audio/webm' }) : audioFileInput.files[0];
+                const file = audioFileInput.files[0];
                 // File is optional now - will use demo.mp3 if not provided
                 callSttApi(provider, apiKey, baseUrl, model, file);
             }
@@ -3296,34 +3447,6 @@ async function handleAudioTypeChange() {
     toggleGenerationOptions();
 }
 
-async function handleRecordClick() {
-    if (!mediaRecorder || mediaRecorder.state === 'inactive') {
-        recordedChunks = [];
-        try {
-            const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-            microphonePermissionStatus = 'granted';
-            updateMicrophoneUI();
-            mediaRecorder = new MediaRecorder(stream);
-            mediaRecorder.ondataavailable = e => e.data.size > 0 && recordedChunks.push(e.data);
-            mediaRecorder.onstop = () => {
-                const blob = new Blob(recordedChunks, { type: 'audio/webm' });
-                recordingPreview.src = URL.createObjectURL(blob);
-                recordingPreview.style.display = 'block';
-                recordBtn.textContent = 'Start Recording';
-                stream.getTracks().forEach(track => track.stop());
-            };
-            mediaRecorder.start();
-            recordBtn.textContent = 'Stop Recording';
-            recordingPreview.style.display = 'none';
-        } catch (err) {
-            microphonePermissionStatus = 'denied';
-            updateMicrophoneUI();
-            displayError('Microphone access denied or unavailable.');
-        }
-    } else {
-        mediaRecorder.stop();
-    }
-}
 
 // Handle stop button click to cancel ongoing requests
 function handleStopClick() {
@@ -3394,8 +3517,6 @@ async function initializeApp() {
     toggleBaseUrlInput();
     await fetchModels(); // Fetch models on initial load
     await renderSavedConfigs(); // Render the list of saved configurations
-    await checkMicrophonePermission();
-    updateMicrophoneUI();
     bindEventListeners();
     
     // Initialize image options UI state
