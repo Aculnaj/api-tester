@@ -338,8 +338,34 @@
                             <audio id="recording-preview" controls style="display:none;"></audio>
                         </div>
                         <div id="voice-options-container" style="display:none;">
-                            <label for="voice-input">Voice:</label>
-                            <input type="text" id="voice-input" placeholder="Enter voice name">
+                            <label for="voice-select">Voice:</label>
+                            <select id="voice-select">
+                                <option value="alloy" selected>Alloy</option>
+                                <option value="ash">Ash</option>
+                                <option value="ballad">Ballad</option>
+                                <option value="coral">Coral</option>
+                                <option value="echo">Echo</option>
+                                <option value="fable">Fable</option>
+                                <option value="onyx">Onyx</option>
+                                <option value="nova">Nova</option>
+                                <option value="sage">Sage</option>
+                                <option value="shimmer">Shimmer</option>
+                                <option value="verse">Verse</option>
+                            </select>
+                            
+                            <label for="tts-instructions-input">Instructions (Optional):</label>
+                            <textarea id="tts-instructions-input" rows="2" placeholder="Control the voice with additional instructions..."></textarea>
+                            <small>Note: Instructions do not work with tts-1 or tts-1-hd models.</small>
+                            
+                            <label for="response-format-select">Audio Format:</label>
+                            <select id="response-format-select">
+                                <option value="mp3" selected>MP3</option>
+                                <option value="opus">Opus</option>
+                                <option value="aac">AAC</option>
+                                <option value="flac">FLAC</option>
+                                <option value="wav">WAV</option>
+                                <option value="pcm">PCM</option>
+                            </select>
                         </div>
                     </div>
 

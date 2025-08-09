@@ -36,7 +36,9 @@ const audioTypeSelect = document.getElementById('audio-type-select');
 const sttInputContainer = document.getElementById('stt-input-container');
 const audioFileInput = document.getElementById('audio-file-input');
 const voiceOptionsContainer = document.getElementById('voice-options-container');
-const voiceInput = document.getElementById('voice-input');
+const voiceSelect = document.getElementById('voice-select');
+const ttsInstructionsInput = document.getElementById('tts-instructions-input');
+const responseFormatSelect = document.getElementById('response-format-select');
 const recorderControls = document.getElementById('recorder-controls');
 const recordBtn = document.getElementById('record-btn');
 const recordingPreview = document.getElementById('recording-preview');
@@ -160,7 +162,9 @@ const LAST_CUSTOM_IMAGE_QUALITY_KEY = 'lastCustomImageQuality';
 const LAST_IMAGE_WIDTH_KEY = 'lastImageWidth';
 const LAST_IMAGE_HEIGHT_KEY = 'lastImageHeight';
 const LAST_AUDIO_TYPE_KEY = 'lastAudioType';
-const LAST_VOICE_KEY = 'lastVoice';
+const LAST_VOICE_SELECT_KEY = 'lastVoiceSelect';
+const LAST_TTS_INSTRUCTIONS_KEY = 'lastTtsInstructions';
+const LAST_RESPONSE_FORMAT_KEY = 'lastResponseFormat';
 const LAST_VIDEO_DURATION_KEY = 'lastVideoDuration';
 const LAST_VIDEO_ASPECT_RATIO_ENABLED_KEY = 'lastVideoAspectRatioEnabled';
 const LAST_VIDEO_ASPECT_RATIO_KEY = 'lastVideoAspectRatio';
@@ -252,7 +256,9 @@ async function loadGeneralSettings() {
          audioTypeSelect.value = lastAudioType || 'tts';
     }
 
-    if (voiceInput) voiceInput.value = await getStoredValue(LAST_VOICE_KEY) || 'alloy';
+    if (voiceSelect) voiceSelect.value = await getStoredValue(LAST_VOICE_SELECT_KEY) || 'alloy';
+    if (ttsInstructionsInput) ttsInstructionsInput.value = await getStoredValue(LAST_TTS_INSTRUCTIONS_KEY) || '';
+    if (responseFormatSelect) responseFormatSelect.value = await getStoredValue(LAST_RESPONSE_FORMAT_KEY) || 'mp3';
 
     // Load video settings
     if (videoDurationInput) videoDurationInput.value = await getStoredValue(LAST_VIDEO_DURATION_KEY) || '5';
@@ -352,7 +358,9 @@ async function saveGeneralSettings() {
     if (imageWidthInput) await setStoredValue(LAST_IMAGE_WIDTH_KEY, imageWidthInput.value);
     if (imageHeightInput) await setStoredValue(LAST_IMAGE_HEIGHT_KEY, imageHeightInput.value);
     if (audioTypeSelect) await setStoredValue(LAST_AUDIO_TYPE_KEY, audioTypeSelect.value);
-    if (voiceInput) await setStoredValue(LAST_VOICE_KEY, voiceInput.value);
+    if (voiceSelect) await setStoredValue(LAST_VOICE_SELECT_KEY, voiceSelect.value);
+    if (ttsInstructionsInput) await setStoredValue(LAST_TTS_INSTRUCTIONS_KEY, ttsInstructionsInput.value);
+    if (responseFormatSelect) await setStoredValue(LAST_RESPONSE_FORMAT_KEY, responseFormatSelect.value);
     if (enableStreamingCheckbox) await setStoredValue(LAST_STREAMING_ENABLED_KEY, enableStreamingCheckbox.checked);
 
     // Save new param enable toggles
@@ -828,32 +836,23 @@ function toggleGenerationOptions() {
         case 'audio':
             audioOptionsContainer.style.display = 'block';
             const audioTypeSelectEl = document.getElementById('audio-type-select');
-            const audioTypeToggle = document.querySelector('.param-toggle[data-param-id="audio-type-select"]');
             const audioType = audioTypeSelectEl ? audioTypeSelectEl.value : 'tts';
 
-            // Only show audio sub-options if the audio type select is enabled and its toggle is checked
-            if (audioTypeSelectEl && audioTypeToggle && audioTypeToggle.checked) {
-                if (audioType === 'tts') {
-                    voiceOptionsContainer.style.display = 'block';
-                    sttInputContainer.style.display = 'none';
-                    recorderControls.style.display = 'none';
-                    document.getElementById('prompt-label').textContent = 'Text to Speak:';
-                } else { // STT
-                    voiceOptionsContainer.style.display = 'none';
-                    sttInputContainer.style.display = 'block';
-                    recorderControls.style.display = 'block';
-                    promptInput.style.display = 'none'; // Prompt input is not used for STT
-                    uploadTextBtn.style.display = 'none'; // Upload Text button is not used for STT
-                    document.getElementById('prompt-label').textContent = 'Upload or Record Audio:';
-                }
-            } else {
-                 // If audio type select is disabled or its toggle is off, hide all audio sub-options
-                voiceOptionsContainer.style.display = 'none';
+            // Always show audio sub-options based on audio type selection
+            if (audioType === 'tts') {
+                voiceOptionsContainer.style.display = 'block';
                 sttInputContainer.style.display = 'none';
                 recorderControls.style.display = 'none';
-                // Restore prompt input visibility and Upload File button for other types if audio section is off
-                 promptInput.style.display = 'block';
-                 uploadTextBtn.style.display = 'inline-block'; // Re-show the upload button
+                document.getElementById('prompt-label').textContent = 'Text to Speak:';
+                promptInput.style.display = 'block';
+                uploadTextBtn.style.display = 'inline-block';
+            } else { // STT
+                voiceOptionsContainer.style.display = 'none';
+                sttInputContainer.style.display = 'block';
+                recorderControls.style.display = 'block';
+                promptInput.style.display = 'none'; // Prompt input is not used for STT
+                uploadTextBtn.style.display = 'none'; // Upload Text button is not used for STT
+                document.getElementById('prompt-label').textContent = 'Upload or Record Audio:';
             }
             break;
         case 'video':
@@ -1806,7 +1805,7 @@ async function callImageApi(provider, apiKey, baseUrl, model, prompt) {
 }
 
 // Handles Text-to-Speech (TTS) API calls.
-async function callTtsApi(provider, apiKey, baseUrl, model, text, voice) {
+async function callTtsApi(provider, apiKey, baseUrl, model, text, voice, instructions, responseFormat) {
     showLoader(); // Show loader at the start
     showStopButton(); // Show stop button
     clearOutput();
@@ -1828,7 +1827,21 @@ async function callTtsApi(provider, apiKey, baseUrl, model, text, voice) {
         case 'openai':
             apiUrl = 'https://api.openai.com/v1/audio/speech';
             headers = { 'Content-Type': 'application/json', 'Authorization': `Bearer ${apiKey}` };
-            body = { model: model, input: text, voice: voice };
+            // Use the selected model from dropdown instead of hardcoded model
+            body = { 
+                model: model, // Use dropdown selected model
+                input: text, 
+                voice: voice || 'alloy' // Default to alloy if no voice specified
+            };
+            
+            // Add optional parameters
+            if (instructions && instructions.trim() && !['tts-1', 'tts-1-hd'].includes(model)) {
+                body.instructions = instructions.trim();
+            }
+            
+            if (responseFormat && responseFormat !== 'mp3') {
+                body.response_format = responseFormat;
+            }
             break;
         case 'openai_compatible':
             if (!baseUrl) {
@@ -1839,7 +1852,20 @@ async function callTtsApi(provider, apiKey, baseUrl, model, text, voice) {
             const cleanBase = baseUrl.endsWith('/') ? baseUrl.slice(0, -1) : baseUrl;
             apiUrl = `${cleanBase}/audio/speech`;
             headers = { 'Content-Type': 'application/json', 'Authorization': `Bearer ${apiKey}` };
-            body = { model: model, input: text, voice: voice };
+            body = { 
+                model: model, // Use dropdown selected model
+                input: text, 
+                voice: voice || 'alloy'
+            };
+            
+            // Add optional parameters for compatible providers
+            if (instructions && instructions.trim()) {
+                body.instructions = instructions.trim();
+            }
+            
+            if (responseFormat && responseFormat !== 'mp3') {
+                body.response_format = responseFormat;
+            }
             break;
         default:
             hideLoader();
@@ -1907,7 +1933,7 @@ async function callTtsApi(provider, apiKey, baseUrl, model, text, voice) {
             
             outputAudio.style.display = 'block';
             downloadAudio.href = url;
-            downloadAudio.download = `${model}-${voice}-tts.mp3`; // Changed to mp3 as it's common for OpenAI TTS
+            downloadAudio.download = `${model}-${voice}-tts.${responseFormat || 'mp3'}`; // Use selected format
             downloadAudio.style.display = 'inline';
             outputText.innerHTML = `<strong>Voice:</strong> ${voice}`;
             outputText.style.display = 'block';
@@ -1948,20 +1974,41 @@ async function callSttApi(provider, apiKey, baseUrl, model, file) {
     const { signal } = controller;
     currentRequestController = controller; // Store reference for cancellation
 
+    // Use demo.mp3 if no file is provided
+    let actualFile = file;
+    if (!file) {
+        try {
+            // Create demo file from project root
+            const response = await fetch('./demo.mp3');
+            if (response.ok) {
+                const blob = await response.blob();
+                actualFile = new File([blob], 'demo.mp3', { type: 'audio/mpeg' });
+                outputText.innerHTML = 'Transcribing demo audio file...';
+            } else {
+                throw new Error('Demo file not found');
+            }
+        } catch (error) {
+            hideLoader();
+            hideStopButton();
+            return displayError('No audio file provided and demo.mp3 not found in project root.');
+        }
+    }
+
     // Can't easily stringify FormData, so we store what we can
     const payloadInfo = { 
         provider: provider,
         model: model,
-        fileName: file.name,
-        fileSizeKB: (file.size / 1024).toFixed(2),
-        fileType: file.type
+        fileName: actualFile.name,
+        fileSizeKB: (actualFile.size / 1024).toFixed(2),
+        fileType: actualFile.type,
+        isDemo: !file
     };
     lastRequestPayload = JSON.stringify(payloadInfo, null, 2);
     payloadContainer.style.display = 'block';
 
     // Record start time for timing stats
     const startTime = performance.now();
-    const fileSize = (file.size / 1024).toFixed(2); // KB
+    const fileSize = (actualFile.size / 1024).toFixed(2); // KB
     
     try {
         let apiUrl = '';
@@ -1984,7 +2031,8 @@ async function callSttApi(provider, apiKey, baseUrl, model, file) {
         }
 
         const formData = new FormData();
-        formData.append('file', file);
+        formData.append('file', actualFile);
+        // Use the selected model from dropdown
         formData.append('model', model);
 
         const response = await fetch(apiUrl, {
@@ -2563,7 +2611,7 @@ function bindEventListeners() {
     // Inputs that trigger a settings save
     const inputsToSave = [
         customModelInput, promptInput, enableStreamingCheckbox, customQualityInput,
-        imageWidthInput, imageHeightInput, voiceInput, videoDurationInput,
+        imageWidthInput, imageHeightInput, voiceSelect, ttsInstructionsInput, responseFormatSelect, videoDurationInput,
         videoAspectRatioSelect, systemPromptInput, maxTokensInput, reasoningEffortSelect, customParamsInput,
         // NEW: Checkbox toggles trigger save as well:
         enableSystemPromptCheckbox, enableTemperatureCheckbox, enableTopPCheckbox, enableTopKCheckbox,
@@ -2806,12 +2854,13 @@ async function handleSendClick() {
             const audioType = audioTypeSelect.value;
             if (audioType === 'tts') {
                 if (!prompt) return displayError('Please enter text for TTS.');
-                const voice = voiceInput.value.trim();
-                if (!voice) return displayError('Please enter a voice.');
-                callTtsApi(provider, apiKey, baseUrl, model, prompt, voice);
+                const voice = voiceSelect.value || 'alloy';
+                const instructions = ttsInstructionsInput.value.trim();
+                const responseFormat = responseFormatSelect.value || 'mp3';
+                callTtsApi(provider, apiKey, baseUrl, model, prompt, voice, instructions, responseFormat);
             } else { // STT
                 const file = recordedChunks.length > 0 ? new File(recordedChunks, 'recording.webm', { type: 'audio/webm' }) : audioFileInput.files[0];
-                if (!file) return displayError('Please upload or record an audio file for STT.');
+                // File is optional now - will use demo.mp3 if not provided
                 callSttApi(provider, apiKey, baseUrl, model, file);
             }
             break;
