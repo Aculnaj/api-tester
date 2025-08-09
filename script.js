@@ -72,7 +72,6 @@ const topPValue = document.getElementById('top-p-value');
 const enableTopPCheckbox = document.getElementById('enable-top-p-checkbox');
 const maxTokensInput = document.getElementById('max-tokens-input');
 const enableMaxTokensCheckbox = document.getElementById('enable-max-tokens-checkbox');
-const uploadTextBtn = document.getElementById('upload-text-btn');
 const topKInput = document.getElementById('top-k-input');
 const topKValue = document.getElementById('top-k-value');
 const enableTopKCheckbox = document.getElementById('enable-top-k-checkbox');
@@ -1039,7 +1038,6 @@ function toggleGenerationOptions() {
 
     // Always show prompt input, but hide for STT
     promptInput.style.display = 'block';
-    uploadTextBtn.style.display = 'inline-block';
 
     // Hide audio input container by default
     const audioInputContainer = document.getElementById('audio-input-container');
@@ -1084,14 +1082,12 @@ function toggleGenerationOptions() {
                 promptLabel.style.display = 'inline-block'; // Show label for TTS
                 promptLabel.textContent = 'Text to Speak:';
                 promptInput.style.display = 'block';
-                uploadTextBtn.style.display = 'inline-block';
             } else { // STT
                 if (enableSttStreamingContainer) enableSttStreamingContainer.style.display = 'block';
                 voiceOptionsContainer.style.display = 'none';
                 if (sttInputContainer) sttInputContainer.style.display = 'block';
                 promptLabel.style.display = 'none'; // Hide label for STT
                 promptInput.style.display = 'none'; // Prompt input is not used for STT
-                uploadTextBtn.style.display = 'none'; // Upload Text button is not used for STT
             }
             break;
         case 'video':
@@ -1102,8 +1098,6 @@ function toggleGenerationOptions() {
             if (aspectRatioToggle) {
                  aspectRatioGroup.style.display = aspectRatioToggle.checked ? 'block' : 'none';
             }
-             // Ensure Upload File button is hidden for video
-             uploadTextBtn.style.display = 'none';
             break;
     }
 }
@@ -3106,7 +3100,6 @@ function bindEventListeners() {
         handleParamToggle('custom-params-group', enableCustomParamsCheckbox);
     }
 
-    uploadTextBtn.addEventListener('click', handleUploadText);
     temperatureInput.addEventListener('input', () => {
         temperatureValue.textContent = parseFloat(temperatureInput.value).toFixed(1);
         saveGeneralSettings();
@@ -3479,26 +3472,6 @@ async function handleQualitySelectChange() {
 async function handleAspectRatioToggle() {
     await saveGeneralSettings();
     toggleAspectRatio();
-}
-
-function handleUploadText() {
-    const fileInput = document.createElement('input');
-    fileInput.type = 'file';
-    fileInput.accept = '*/*'; // Accept all file types
-    fileInput.onchange = e => {
-        const file = e.target.files[0];
-        if (file) {
-            const reader = new FileReader();
-            reader.onload = event => {
-                promptInput.value = event.target.result;
-                saveGeneralSettings(); // Save the new prompt
-            };
-            // Read as text, assuming it's a text-based file
-            // Need to consider how to handle binary files if required later.
-            reader.readAsText(file);
-        }
-    };
-    fileInput.click();
 }
 
 // Main application initialization function.
