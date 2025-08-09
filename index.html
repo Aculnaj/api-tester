@@ -291,35 +291,82 @@
 
                     <!-- Image Options -->
                     <div id="image-options-container" style="display: none;">
-                        <div class="enable-quality-container">
-                            <label class="enable-quality-title" for="enable-quality-checkbox">
-                                <span>Enable Quality</span>
-                                <span class="switch">
-                                    <input type="checkbox" id="enable-quality-checkbox">
-                                    <span class="slider"></span>
-                                </span>
-                            </label>
+                        <label for="image-model-type-select">Model Type:</label>
+                        <select id="image-model-type-select">
+                            <option value="" selected>Select a model type first</option>
+                            <option value="dalle2">Dall-E-2 (OpenAI)</option>
+                            <option value="dalle3">Dall-E-3 (OpenAI)</option>
+                            <option value="gptimage1">GPT-IMAGE-1 (OpenAI)</option>
+                            <option value="flux">FLUX.1 (BlackForestLabs)</option>
+                            <option value="imagen">IMAGEN (Google)</option>
+                        </select>
+                        
+                        <div id="image-quality-container" style="display: none;">
+                            <div class="enable-quality-container">
+                                <label class="enable-quality-title" for="enable-quality-checkbox">
+                                    <span>Enable Quality</span>
+                                    <span class="switch">
+                                        <input type="checkbox" id="enable-quality-checkbox">
+                                        <span class="slider"></span>
+                                    </span>
+                                </label>
+                            </div>
+                            <div id="quality-options-container">
+                                <label for="quality-select">Image Quality:</label>
+                                <select id="quality-select">
+                                    <option value="low">Low</option>
+                                    <option value="medium" selected>Medium</option>
+                                    <option value="high">High</option>
+                                    <option value="auto">Auto</option>
+                                    <option value="standard">Standard</option>
+                                    <option value="hd">hd</option>
+                                    <option value="custom">Custom</option>
+                                </select>
+                                <input type="text" id="custom-quality-input" placeholder="Enter custom quality" style="display:none;">
+                            </div>
                         </div>
-                        <div id="quality-options-container">
-                            <label for="quality-select">Image Quality:</label>
-                            <select id="quality-select">
-                                <option value="low">Low</option>
-                                <option value="medium" selected>Medium</option>
-                                <option value="high">High</option>
-                                <option value="auto">Auto</option>
-                                <option value="standard">Standard</option>
-                                <option value="hd">hd</option>
-                                <option value="custom">Custom</option>
+                        
+                        <div id="image-resolution-container">
+                            <label for="image-resolution-select">Image Resolution:</label>
+                            <select id="image-resolution-select">
+                                <option value="1024x1024" selected>1024x1024</option>
                             </select>
-                            <input type="text" id="custom-quality-input" placeholder="Enter custom quality" style="display:none;">
+                            
+                            <div id="image-resolution-inputs" style="display: none;">
+                                <label for="flux-orientation-select">Image Orientation:</label>
+                                <select id="flux-orientation-select">
+                                    <option value="landscape" selected>Landscape (Horizontal)</option>
+                                    <option value="portrait">Portrait (Vertical)</option>
+                                </select>
+                                
+                                <label for="flux-aspect-ratio-select" style="margin-top: 10px;">Aspect Ratio:</label>
+                                <select id="flux-aspect-ratio-select">
+                                    <option value="1:1" selected>1:1</option>
+                                    <option value="4:3">4:3</option>
+                                    <option value="16:9">16:9</option>
+                                    <option value="21:9">21:9</option>
+                                </select>
+                                
+                                <div id="flux-steps-container" style="margin-top: 10px;">
+                                    <label for="flux-steps-input">Steps: <span id="flux-steps-value">0</span></label>
+                                    <input type="range" id="flux-steps-input" min="0" max="40" value="0">
+                                    <small>Set to 0 (default) to omit steps parameter from request</small>
+                                </div>
+                            </div>
                         </div>
-                        <label>Image Size (Width x Height):</label>
-                        <div class="size-inputs">
-                            <input type="number" id="image-width-input" placeholder="Width" value="1024" min="1">
-                            <span>x</span>
-                            <input type="number" id="image-height-input" placeholder="Height" value="1024" min="1">
+                        
+                        <div id="image-aspect-ratio-container" style="display: none;">
+                            <label for="image-aspect-ratio-select">Aspect Ratio:</label>
+                            <select id="image-aspect-ratio-select">
+                                <option value="1:1" selected>1:1</option>
+                                <option value="9:16">9:16</option>
+                                <option value="16:9">16:9</option>
+                                <option value="3:4">3:4</option>
+                                <option value="4:3">4:3</option>
+                            </select>
                         </div>
-                        <small>Note: Most models only support specific resolutions (e.g., 1024x1024, 512x512). Check provider documentation.</small>
+                        
+                        <small id="image-model-note">Please select a model type to configure image generation options.</small>
                     </div>
 
                     <!-- Audio Options -->

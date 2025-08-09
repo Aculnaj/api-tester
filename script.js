@@ -21,13 +21,21 @@ const generationTypeRadios = document.querySelectorAll('input[name="generation-t
 
 // Image Options
 const imageOptionsContainer = document.getElementById('image-options-container');
+const imageModelTypeSelect = document.getElementById('image-model-type-select');
+const imageQualityContainer = document.getElementById('image-quality-container');
 const qualityOptionsContainer = document.getElementById('quality-options-container');
 const qualitySelect = document.getElementById('quality-select');
 const enableQualityCheckbox = document.getElementById('enable-quality-checkbox');
 const enableQualityContainer = document.querySelector('.enable-quality-container');
 const customQualityInput = document.getElementById('custom-quality-input');
-const imageWidthInput = document.getElementById('image-width-input');
-const imageHeightInput = document.getElementById('image-height-input');
+const imageResolutionContainer = document.getElementById('image-resolution-container');
+const imageResolutionSelect = document.getElementById('image-resolution-select');
+const imageResolutionInputs = document.getElementById('image-resolution-inputs');
+const fluxOrientationSelect = document.getElementById('flux-orientation-select');
+const fluxAspectRatioSelect = document.getElementById('flux-aspect-ratio-select');
+const fluxStepsInput = document.getElementById('flux-steps-input');
+const imageAspectRatioContainer = document.getElementById('image-aspect-ratio-container');
+const imageAspectRatioSelect = document.getElementById('image-aspect-ratio-select');
 const downloadImageBtn = document.getElementById('download-image-btn');
 
 // Audio Options
@@ -156,11 +164,15 @@ const LAST_PROVIDER_KEY = 'lastProvider';
 const LAST_MODEL_KEY = 'lastModel';
 const LAST_PROMPT_KEY = 'lastPrompt';
 const LAST_GENERATION_TYPE_KEY = 'lastGenerationType';
+const LAST_IMAGE_MODEL_TYPE_KEY = 'lastImageModelType';
 const LAST_IMAGE_QUALITY_KEY = 'lastImageQuality';
 const LAST_ENABLE_QUALITY_KEY = 'lastEnableQuality';
 const LAST_CUSTOM_IMAGE_QUALITY_KEY = 'lastCustomImageQuality';
-const LAST_IMAGE_WIDTH_KEY = 'lastImageWidth';
-const LAST_IMAGE_HEIGHT_KEY = 'lastImageHeight';
+const LAST_IMAGE_RESOLUTION_KEY = 'lastImageResolution';
+const LAST_IMAGE_ASPECT_RATIO_KEY = 'lastImageAspectRatio';
+const LAST_FLUX_ORIENTATION_KEY = 'lastFluxOrientation';
+const LAST_FLUX_ASPECT_RATIO_KEY = 'lastFluxAspectRatio';
+const LAST_FLUX_STEPS_KEY = 'lastFluxSteps';
 const LAST_AUDIO_TYPE_KEY = 'lastAudioType';
 const LAST_VOICE_SELECT_KEY = 'lastVoiceSelect';
 const LAST_TTS_INSTRUCTIONS_KEY = 'lastTtsInstructions';
@@ -237,6 +249,12 @@ async function loadGeneralSettings() {
         enableQualityCheckbox.checked = typeof lastEnableQuality === 'boolean' ? lastEnableQuality : true; // Default to true
     }
 
+    // Load image model type
+    const lastImageModelType = await getStoredValue(LAST_IMAGE_MODEL_TYPE_KEY);
+    if (imageModelTypeSelect) {
+        imageModelTypeSelect.value = lastImageModelType || '';
+    }
+
     const lastQuality = await getStoredValue(LAST_IMAGE_QUALITY_KEY);
     if (qualitySelect) { // Check if exists
         qualitySelect.value = lastQuality || 'standard'; // Default quality
@@ -247,10 +265,41 @@ async function loadGeneralSettings() {
         customQualityInput.value = lastCustomQuality || '';
     }
 
+    // Load image resolution
+    const lastImageResolution = await getStoredValue(LAST_IMAGE_RESOLUTION_KEY);
+    if (imageResolutionSelect) {
+        imageResolutionSelect.value = lastImageResolution || '1024x1024';
+    }
 
-    if (imageWidthInput) imageWidthInput.value = await getStoredValue(LAST_IMAGE_WIDTH_KEY) || '1024';
-    if (imageHeightInput) imageHeightInput.value = await getStoredValue(LAST_IMAGE_HEIGHT_KEY) || '1024';
+    // Load image aspect ratio
+    const lastImageAspectRatio = await getStoredValue(LAST_IMAGE_ASPECT_RATIO_KEY);
+    if (imageAspectRatioSelect) {
+        imageAspectRatioSelect.value = lastImageAspectRatio || '1:1';
+    }
 
+    // Load FLUX settings
+    const lastFluxOrientation = await getStoredValue(LAST_FLUX_ORIENTATION_KEY);
+    if (fluxOrientationSelect) {
+        fluxOrientationSelect.value = lastFluxOrientation || 'landscape';
+    }
+    
+    const lastFluxAspectRatio = await getStoredValue(LAST_FLUX_ASPECT_RATIO_KEY);
+    if (fluxAspectRatioSelect) {
+        fluxAspectRatioSelect.value = lastFluxAspectRatio || '1:1';
+    }
+    
+    // Load FLUX steps
+    const lastFluxSteps = await getStoredValue(LAST_FLUX_STEPS_KEY);
+    if (fluxStepsInput) {
+        fluxStepsInput.value = lastFluxSteps || '0';
+    }
+    // Update the displayed value
+    const fluxStepsValue = document.getElementById('flux-steps-value');
+    if (fluxStepsValue && fluxStepsInput) {
+        fluxStepsValue.textContent = fluxStepsInput.value;
+    }
+
+    
     const lastAudioType = await getStoredValue(LAST_AUDIO_TYPE_KEY);
     if (audioTypeSelect) { // Check if exists
          audioTypeSelect.value = lastAudioType || 'tts';
@@ -353,10 +402,14 @@ async function saveGeneralSettings() {
     if (generationType) await setStoredValue(LAST_GENERATION_TYPE_KEY, generationType.value);
 
     if (enableQualityCheckbox) await setStoredValue(LAST_ENABLE_QUALITY_KEY, enableQualityCheckbox.checked);
+    if (imageModelTypeSelect) await setStoredValue(LAST_IMAGE_MODEL_TYPE_KEY, imageModelTypeSelect.value);
     if (qualitySelect) await setStoredValue(LAST_IMAGE_QUALITY_KEY, qualitySelect.value);
     if (customQualityInput) await setStoredValue(LAST_CUSTOM_IMAGE_QUALITY_KEY, customQualityInput.value);
-    if (imageWidthInput) await setStoredValue(LAST_IMAGE_WIDTH_KEY, imageWidthInput.value);
-    if (imageHeightInput) await setStoredValue(LAST_IMAGE_HEIGHT_KEY, imageHeightInput.value);
+    if (imageResolutionSelect) await setStoredValue(LAST_IMAGE_RESOLUTION_KEY, imageResolutionSelect.value);
+    if (imageAspectRatioSelect) await setStoredValue(LAST_IMAGE_ASPECT_RATIO_KEY, imageAspectRatioSelect.value);
+    if (fluxOrientationSelect) await setStoredValue(LAST_FLUX_ORIENTATION_KEY, fluxOrientationSelect.value);
+    if (fluxAspectRatioSelect) await setStoredValue(LAST_FLUX_ASPECT_RATIO_KEY, fluxAspectRatioSelect.value);
+    if (fluxStepsInput) await setStoredValue(LAST_FLUX_STEPS_KEY, fluxStepsInput.value);
     if (audioTypeSelect) await setStoredValue(LAST_AUDIO_TYPE_KEY, audioTypeSelect.value);
     if (voiceSelect) await setStoredValue(LAST_VOICE_SELECT_KEY, voiceSelect.value);
     if (ttsInstructionsInput) await setStoredValue(LAST_TTS_INSTRUCTIONS_KEY, ttsInstructionsInput.value);
@@ -795,7 +848,179 @@ function handleModelSelectionChange() {
     } else {
         customModelInput.style.display = 'none';
     }
+    
+    // Automatically detect and set image model type based on model name
+    const generationType = document.querySelector('input[name="generation-type"]:checked')?.value;
+    if (generationType === 'image' && imageModelTypeSelect) {
+        const selectedModel = modelSelect.value === 'custom' 
+            ? customModelInput.value.trim() 
+            : modelSelect.value;
+        
+        if (selectedModel) {
+            const lowerModel = selectedModel.toLowerCase();
+            if (lowerModel.includes('dall-e-2')) {
+                imageModelTypeSelect.value = 'dalle2';
+            } else if (lowerModel.includes('dall-e-3')) {
+                imageModelTypeSelect.value = 'dalle3';
+            } else if (lowerModel.includes('gpt-image-1')) {
+                imageModelTypeSelect.value = 'gptimage1';
+            } else if (lowerModel.includes('flux') || lowerModel.includes('black-forest-labs')) {
+                imageModelTypeSelect.value = 'flux';
+            } else if (lowerModel.includes('imagen')) {
+                imageModelTypeSelect.value = 'imagen';
+            }
+            
+            // Update UI based on the auto-selected model type
+            updateImageOptionsUI();
+        }
+    }
+    
     saveGeneralSettings(); // Save the new selection state
+}
+
+// Handles changes in the image model type selection
+function handleImageModelTypeChange() {
+    updateImageOptionsUI();
+    saveGeneralSettings(); // Save the new selection state
+}
+
+// Updates the image options UI based on the selected model type
+function updateImageOptionsUI() {
+    const modelType = imageModelTypeSelect ? imageModelTypeSelect.value : '';
+    
+    // Reset UI elements
+    if (imageQualityContainer) imageQualityContainer.style.display = 'none';
+    if (imageResolutionContainer) imageResolutionContainer.style.display = 'block';
+    if (imageResolutionSelect) imageResolutionSelect.style.display = 'block';
+    if (imageResolutionInputs) imageResolutionInputs.style.display = 'none';
+    if (imageAspectRatioContainer) imageAspectRatioContainer.style.display = 'none';
+    
+    // Clear resolution options
+    if (imageResolutionSelect) {
+        imageResolutionSelect.innerHTML = '';
+    }
+    
+    // Update UI based on model type
+    switch (modelType) {
+        case 'dalle2':
+            // Show quality options (but disable for DALL-E-2)
+            if (imageQualityContainer) imageQualityContainer.style.display = 'none';
+            
+            // Show standard resolution elements
+            if (imageResolutionContainer) imageResolutionContainer.style.display = 'block';
+            const dalle2Label = imageResolutionContainer.querySelector('label[for="image-resolution-select"]');
+            if (dalle2Label) dalle2Label.style.display = 'block';
+            if (imageResolutionSelect) imageResolutionSelect.style.display = 'block';
+            if (imageResolutionInputs) imageResolutionInputs.style.display = 'none';
+            
+            // Update resolution options for DALL-E-2
+            if (imageResolutionSelect) {
+                imageResolutionSelect.innerHTML = `
+                    <option value="256x256">256x256</option>
+                    <option value="512x512">512x512</option>
+                    <option value="1024x1024" selected>1024x1024</option>
+                `;
+            }
+            break;
+            
+        case 'dalle3':
+            // Show quality options for DALL-E-3
+            if (imageQualityContainer) imageQualityContainer.style.display = 'block';
+            if (qualitySelect) {
+                // Update quality options for DALL-E-3
+                qualitySelect.innerHTML = `
+                    <option value="standard" selected>Standard</option>
+                    <option value="hd">HD</option>
+                `;
+            }
+            
+            // Show standard resolution elements
+            if (imageResolutionContainer) imageResolutionContainer.style.display = 'block';
+            const dalle3Label = imageResolutionContainer.querySelector('label[for="image-resolution-select"]');
+            if (dalle3Label) dalle3Label.style.display = 'block';
+            if (imageResolutionSelect) imageResolutionSelect.style.display = 'block';
+            if (imageResolutionInputs) imageResolutionInputs.style.display = 'none';
+            
+            // Update resolution options for DALL-E-3
+            if (imageResolutionSelect) {
+                imageResolutionSelect.innerHTML = `
+                    <option value="1024x1024" selected>1024x1024</option>
+                    <option value="1792x1024">1792x1024</option>
+                    <option value="1024x1792">1024x1792</option>
+                `;
+            }
+            break;
+            
+        case 'gptimage1':
+            // Show quality options for GPT-IMAGE-1
+            if (imageQualityContainer) imageQualityContainer.style.display = 'block';
+            if (qualitySelect) {
+                // Update quality options for GPT-IMAGE-1
+                qualitySelect.innerHTML = `
+                    <option value="auto" selected>Auto</option>
+                    <option value="high">High</option>
+                    <option value="medium">Medium</option>
+                    <option value="low">Low</option>
+                `;
+            }
+            
+            // Update resolution options for GPT-IMAGE-1
+            if (imageResolutionSelect) {
+                imageResolutionSelect.innerHTML = `
+                    <option value="1024x1024" selected>1024x1024</option>
+                    <option value="1536x1024">1536x1024</option>
+                    <option value="1024x1536">1024x1536</option>
+                `;
+            }
+            break;
+            
+        case 'flux':
+            // Hide quality options for FLUX models
+            if (imageQualityContainer) imageQualityContainer.style.display = 'none';
+            
+            // Show container but hide standard resolution elements, show FLUX-specific inputs
+            if (imageResolutionContainer) imageResolutionContainer.style.display = 'block';
+            // Hide the standard resolution label and dropdown
+            const fluxLabel = imageResolutionContainer.querySelector('label[for="image-resolution-select"]');
+            if (fluxLabel) fluxLabel.style.display = 'none';
+            if (imageResolutionSelect) imageResolutionSelect.style.display = 'none';
+            // Show FLUX-specific inputs
+            if (imageResolutionInputs) imageResolutionInputs.style.display = 'block';
+            
+            // Initialize FLUX steps slider value display
+            if (fluxStepsInput) {
+                const fluxStepsValue = document.getElementById('flux-steps-value');
+                if (fluxStepsValue) {
+                    fluxStepsValue.textContent = fluxStepsInput.value;
+                }
+            }
+            break;
+            
+        case 'imagen':
+            // Hide quality and resolution options for IMAGEN models
+            if (imageQualityContainer) imageQualityContainer.style.display = 'none';
+            if (imageResolutionContainer) imageResolutionContainer.style.display = 'none';
+            
+            // Show aspect ratio options
+            if (imageAspectRatioContainer) imageAspectRatioContainer.style.display = 'block';
+            break;
+            
+        default:
+            // Hide all options if no model type is selected
+            if (imageQualityContainer) imageQualityContainer.style.display = 'none';
+            if (imageResolutionContainer) imageResolutionContainer.style.display = 'none';
+            if (imageAspectRatioContainer) imageAspectRatioContainer.style.display = 'none';
+    }
+    
+    // Update note text
+    const imageModelNote = document.getElementById('image-model-note');
+    if (imageModelNote) {
+        if (modelType) {
+            imageModelNote.textContent = `Configured for ${imageModelTypeSelect.options[imageModelTypeSelect.selectedIndex].text}`;
+        } else {
+            imageModelNote.textContent = 'Please select a model type to configure image generation options.';
+        }
+    }
 }
 
 // --- UI MANIPULATION (Refactored) ---
@@ -825,13 +1050,8 @@ function toggleGenerationOptions() {
         case 'image':
             imageOptionsContainer.style.display = 'block';
             document.getElementById('prompt-label').textContent = 'Prompt / Image Description:';
-            // Visibility of quality options container is now primarily controlled by its toggle
-            // but ensure it's hidden if the main image options are hidden.
-             const enableQualityToggle = document.getElementById('enable-quality-checkbox');
-            if (enableQualityToggle) {
-                 qualityOptionsContainer.style.display = enableQualityToggle.checked ? 'block' : 'none';
-                 customQualityInput.style.display = (enableQualityToggle.checked && qualitySelect.value === 'custom') ? 'block' : 'none';
-             }
+            // Update image options UI based on selected model type
+            updateImageOptionsUI();
             break;
         case 'audio':
             audioOptionsContainer.style.display = 'block';
@@ -1605,31 +1825,125 @@ async function callImageApi(provider, apiKey, baseUrl, model, prompt) {
         return displayError(`Image generation is currently only supported for OpenAI and potentially OpenAI Compatible providers in this example.`);
     }
 
-    // Get custom width and height, provide defaults if empty
-    const width = imageWidthInput.value.trim() || '1024';
-    const height = imageHeightInput.value.trim() || '1024';
-    const customSize = `${width}x${height}`;
+    // Get the selected model type
+    const modelType = imageModelTypeSelect ? imageModelTypeSelect.value : '';
+    
+    // Prepare the request body based on model type
     const body = {
         model: model,
         prompt: prompt,
         n: 1,
-        size: customSize,
         response_format: "url"
     };
-    // Include quality parameter only if enabled
-    if (provider === 'openai_compatible' && enableQualityCheckbox.checked && qualitySelect) {
-        if (qualitySelect.value === 'custom' && customQualityInput) {
-            if (customQualityInput.value.trim() === '') {
-                // Potentially display an error or use a default if custom quality is selected but empty
-                console.warn("Custom quality selected but input is empty. API might reject or use default.");
-                // Not setting body.quality here, or explicitly setting to a default if API requires it
-            } else {
-                body.quality = customQualityInput.value.trim();
+    
+    // Initialize width and height variables for stats display
+    let width = '1024';
+    let height = '1024';
+
+    
+    // Handle model-specific options
+    switch (modelType) {
+        case 'dalle2':
+            // DALL-E-2: No quality option, specific resolutions
+            const dalle2Resolution = imageResolutionSelect.value || '1024x1024';
+            body.size = dalle2Resolution;
+            [width, height] = dalle2Resolution.split('x');
+            break;
+            
+        case 'dalle3':
+            // DALL-E-3: Quality options (standard, hd), specific resolutions
+            const dalle3Resolution = imageResolutionSelect.value || '1024x1024';
+            body.size = dalle3Resolution;
+            
+            // Add quality parameter if enabled
+            if (enableQualityCheckbox.checked) {
+                const qualityValue = qualitySelect.value;
+                if (qualityValue && qualityValue !== 'custom') {
+                    body.quality = qualityValue;
+                } else if (qualityValue === 'custom' && customQualityInput.value.trim()) {
+                    body.quality = customQualityInput.value.trim();
+                }
             }
-        } else if (qualitySelect.value !== 'custom') {
-            body.quality = qualitySelect.value;
-        }
-        // If qualitySelect.value is 'custom' but customQualityInput is missing, body.quality remains unset.
+            break;
+            
+        case 'gptimage1':
+            // GPT-IMAGE-1: Quality options (auto, high, medium, low), specific resolutions
+            const gptImageResolution = imageResolutionSelect.value || '1024x1024';
+            body.size = gptImageResolution;
+            
+            // Add quality parameter if enabled
+            if (enableQualityCheckbox.checked) {
+                const qualityValue = qualitySelect.value;
+                if (qualityValue && qualityValue !== 'custom') {
+                    body.quality = qualityValue;
+                } else if (qualityValue === 'custom' && customQualityInput.value.trim()) {
+                    body.quality = customQualityInput.value.trim();
+                }
+            }
+            break;
+            
+        case 'flux':
+            // FLUX models: No quality option, aspect ratio with orientation, optional steps parameter
+            const fluxOrientation = fluxOrientationSelect.value || 'landscape';
+            const fluxAspectRatio = fluxAspectRatioSelect.value || '1:1';
+            
+            // For FLUX models, we don't calculate width/height as they're not sent in request
+            // Set empty values to avoid undefined variable errors
+            width = '';
+            height = '';
+
+            // Convert aspect ratio based on orientation
+            let finalAspectRatio = fluxAspectRatio;
+            if (fluxOrientation === 'portrait' && fluxAspectRatio !== '1:1') {
+                // Swap the ratio for portrait orientation
+                const [ratioWidth, ratioHeight] = fluxAspectRatio.split(':');
+                finalAspectRatio = `${ratioHeight}:${ratioWidth}`;
+            }
+            
+            body.aspect_ratio = finalAspectRatio;
+            body.n = 1; // FLUX models typically generate 1 image
+            
+            // Only include steps parameter if it's not the default value (0)
+            const fluxSteps = fluxStepsInput.value.trim();
+            if (fluxSteps && parseInt(fluxSteps) > 0) {
+                body.steps = parseInt(fluxSteps);
+            }
+            
+            // Remove size parameter for FLUX models
+            delete body.size;
+            delete body.width;
+            delete body.height;
+            break;
+            
+        case 'imagen':
+            // IMAGEN models: No quality or size options, aspect ratio only
+            const aspectRatio = imageAspectRatioSelect.value || '1:1';
+            body.aspect_ratio = aspectRatio;
+            // Remove size parameter for IMAGEN models
+            delete body.size;
+            break;
+            
+        default:
+            // Default behavior for backward compatibility
+            width = imageWidthInput.value.trim() || '1024';
+            height = imageHeightInput.value.trim() || '1024';
+            body.size = `${width}x${height}`;
+            
+            // Include quality parameter only if enabled
+            if (provider === 'openai_compatible' && enableQualityCheckbox.checked && qualitySelect) {
+                if (qualitySelect.value === 'custom' && customQualityInput) {
+                    if (customQualityInput.value.trim() === '') {
+                        // Potentially display an error or use a default if custom quality is selected but empty
+                        console.warn("Custom quality selected but input is empty. API might reject or use default.");
+                        // Not setting body.quality here, or explicitly setting to a default if API requires it
+                    } else {
+                        body.quality = customQualityInput.value.trim();
+                    }
+                } else if (qualitySelect.value !== 'custom') {
+                    body.quality = qualitySelect.value;
+                }
+                // If qualitySelect.value is 'custom' but customQualityInput is missing, body.quality remains unset.
+            }
     }
 
     // Store payload before sending
@@ -1682,9 +1996,16 @@ async function callImageApi(provider, apiKey, baseUrl, model, prompt) {
             }
 
             // Display stats
+            // Check if we're using aspect ratio instead of resolution
+            const isAspectRatioModel = (modelType === 'flux' || modelType === 'imagen');
+            const resolutionLabel = isAspectRatioModel ? 'Aspect Ratio' : 'Resolution';
+            const resolutionValue = isAspectRatioModel ? 
+                (modelType === 'flux' ? fluxAspectRatioSelect.value : imageAspectRatioSelect.value) :
+                (width && height ? `${width}x${height}` : 'Will be determined from image');
+            
             let statsHtml = `
                 <span><strong>Generation Time:</strong> ${durationInSeconds}s</span>
-                <span><strong>Resolution:</strong> ${width}x${height}</span>
+                <span><strong>${resolutionLabel}:</strong> ${resolutionValue}</span>
                 <span><strong>Model:</strong> ${model}</span>
             `;
             
@@ -1714,7 +2035,10 @@ async function callImageApi(provider, apiKey, baseUrl, model, prompt) {
                 // Find and update the resolution span
                 const resolutionSpan = statsArea.querySelector('span:nth-child(2)');
                 if (resolutionSpan) {
-                    resolutionSpan.innerHTML = `<strong>Resolution:</strong> ${actualWidth}x${actualHeight}`;
+                    // Check if we're using aspect ratio instead of resolution
+                    const isAspectRatioModel = (modelType === 'flux' || modelType === 'imagen');
+                    const resolutionLabel = isAspectRatioModel ? 'Actual Dimensions' : 'Resolution';
+                    resolutionSpan.innerHTML = `<strong>${resolutionLabel}:</strong> ${actualWidth}x${actualHeight}`;
                 }
             };
         } else {
@@ -1756,9 +2080,16 @@ async function callImageApi(provider, apiKey, baseUrl, model, prompt) {
                         outputArea.style.borderColor = '#ccc';
                         
                         // Display stats for retry
+                        // Check if we're using aspect ratio instead of resolution
+                        const isAspectRatioModel = (modelType === 'flux' || modelType === 'imagen');
+                        const resolutionLabel = isAspectRatioModel ? 'Aspect Ratio' : 'Resolution';
+                        const resolutionValue = isAspectRatioModel ? 
+                            (modelType === 'flux' ? fluxAspectRatioSelect.value : imageAspectRatioSelect.value) :
+                            (width && height ? `${width}x${height}` : 'Will be determined from image');
+                        
                         statsArea.innerHTML = `
                             <span><strong>Generation Time:</strong> ${retryDuration}s</span>
-                            <span><strong>Resolution:</strong> ${width}x${height}</span>
+                            <span><strong>${resolutionLabel}:</strong> ${resolutionValue}</span>
                             <span><strong>Model:</strong> ${model}</span>
                             <span><strong>Note:</strong> Quality param was removed due to API incompatibility</span>
                         `;
@@ -1770,7 +2101,10 @@ async function callImageApi(provider, apiKey, baseUrl, model, prompt) {
                             const actualHeight = outputImage.naturalHeight;
                             const resolutionSpan = statsArea.querySelector('span:nth-child(2)');
                             if (resolutionSpan) {
-                                resolutionSpan.innerHTML = `<strong>Resolution:</strong> ${actualWidth}x${actualHeight}`;
+                                // Check if we're using aspect ratio instead of resolution
+                                const isAspectRatioModel = (modelType === 'flux' || modelType === 'imagen');
+                                const resolutionLabel = isAspectRatioModel ? 'Actual Dimensions' : 'Resolution';
+                                resolutionSpan.innerHTML = `<strong>${resolutionLabel}:</strong> ${actualWidth}x${actualHeight}`;
                             }
                         };
                         
@@ -2493,6 +2827,31 @@ function bindEventListeners() {
     enableQualityCheckbox.addEventListener('change', handleEnableQualityChange);
     qualitySelect.addEventListener('change', handleQualitySelectChange);
     videoAspectRatioEnabled.addEventListener('change', handleAspectRatioToggle);
+    
+    // Image model type selection
+    if (imageModelTypeSelect) {
+        imageModelTypeSelect.addEventListener('change', handleImageModelTypeChange);
+    }
+    
+    // Image resolution selection
+    if (imageResolutionSelect) {
+        imageResolutionSelect.addEventListener('change', saveGeneralSettings);
+    }
+    
+    // Image aspect ratio selection
+    if (imageAspectRatioSelect) {
+        imageAspectRatioSelect.addEventListener('change', saveGeneralSettings);
+    }
+    
+    // FLUX orientation selection
+    if (fluxOrientationSelect) {
+        fluxOrientationSelect.addEventListener('change', saveGeneralSettings);
+    }
+    
+    // FLUX aspect ratio selection
+    if (fluxAspectRatioSelect) {
+        fluxAspectRatioSelect.addEventListener('change', saveGeneralSettings);
+    }
 
     // --- PARAMETER TOGGLE MANAGEMENT ---
     // Control visibility and reset to defaults when enabled
@@ -2611,7 +2970,9 @@ function bindEventListeners() {
     // Inputs that trigger a settings save
     const inputsToSave = [
         customModelInput, promptInput, enableStreamingCheckbox, customQualityInput,
-        imageWidthInput, imageHeightInput, voiceSelect, ttsInstructionsInput, responseFormatSelect, videoDurationInput,
+        imageModelTypeSelect, imageResolutionSelect, imageAspectRatioSelect, 
+        fluxOrientationSelect, fluxAspectRatioSelect, fluxStepsInput,
+        voiceSelect, ttsInstructionsInput, responseFormatSelect, videoDurationInput,
         videoAspectRatioSelect, systemPromptInput, maxTokensInput, reasoningEffortSelect, customParamsInput,
         // NEW: Checkbox toggles trigger save as well:
         enableSystemPromptCheckbox, enableTemperatureCheckbox, enableTopPCheckbox, enableTopKCheckbox,
@@ -2627,6 +2988,17 @@ function bindEventListeners() {
     apiKeyInput.addEventListener('input', () => saveProviderCredentials(providerSelect.value));
     if (baseUrlInput) {
         baseUrlInput.addEventListener('input', () => saveProviderCredentials(providerSelect.value));
+    }
+    
+    // FLUX steps slider functionality
+    if (fluxStepsInput) {
+        fluxStepsInput.addEventListener('input', () => {
+            const fluxStepsValue = document.getElementById('flux-steps-value');
+            if (fluxStepsValue) {
+                fluxStepsValue.textContent = fluxStepsInput.value;
+            }
+            saveGeneralSettings();
+        });
     }
 
     // Electron-specific listener
@@ -2848,6 +3220,11 @@ async function handleSendClick() {
             callTextApi(provider, apiKey, baseUrl, model, prompt);
             break;
         case 'image':
+            // Validate image model type selection
+            const modelType = imageModelTypeSelect ? imageModelTypeSelect.value : '';
+            if (!modelType) {
+                return displayError('Please select an image model type first.');
+            }
             callImageApi(provider, apiKey, baseUrl, model, prompt);
             break;
         case 'audio':
@@ -3020,6 +3397,17 @@ async function initializeApp() {
     await checkMicrophonePermission();
     updateMicrophoneUI();
     bindEventListeners();
+    
+    // Initialize image options UI state
+    updateImageOptionsUI();
+    
+    // Initialize FLUX steps slider value display
+    if (fluxStepsInput) {
+        const fluxStepsValue = document.getElementById('flux-steps-value');
+        if (fluxStepsValue) {
+            fluxStepsValue.textContent = fluxStepsInput.value;
+        }
+    }
 }
 
 // --- APP START ---
