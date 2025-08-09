@@ -1041,6 +1041,10 @@ function toggleGenerationOptions() {
     promptInput.style.display = 'block';
     uploadTextBtn.style.display = 'inline-block';
 
+    // Hide audio input container by default
+    const audioInputContainer = document.getElementById('audio-input-container');
+    if (audioInputContainer) audioInputContainer.style.display = 'none';
+
 
     // Configure UI based on the selected generation type
     switch (generationType) {
