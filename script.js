@@ -1421,6 +1421,8 @@ async function callTextApi(provider, apiKey, baseUrl, model, prompt) {
             let streamedFinishReason = null;
             let streamedAllDeltas = [];
             let streamedUsage = null; // To store usage data from stream
+            let accumulatedContent = ""; // For final content
+            let accumulatedReasoningContent = ""; // For reasoning content
 
             async function processStream() {
                 // --- Live Stats for Streaming ---
@@ -1544,9 +1546,15 @@ async function callTextApi(provider, apiKey, baseUrl, model, prompt) {
                                     streamedUsage = parsed.usage;
                                 }
                                 
+                                // Capture finish reason if available
+                                if (parsed.choices && parsed.choices[0] && parsed.choices[0].finish_reason) {
+                                    streamedFinishReason = parsed.choices[0].finish_reason;
+                                }
+                                
                                 // Reasoning content accumulation (does not trigger TTFT)
                                 if (parsed.choices && parsed.choices[0] && parsed.choices[0].delta && parsed.choices[0].delta.reasoning_content) {
                                     const rChunk = parsed.choices[0].delta.reasoning_content;
+                                    accumulatedReasoningContent += rChunk;
                                     reasoningTokenCount += estimateTokens(rChunk);
                                     sawReasoning = true;
                                 }
@@ -1555,6 +1563,7 @@ async function callTextApi(provider, apiKey, baseUrl, model, prompt) {
                                 if (parsed.choices && parsed.choices[0] && parsed.choices[0].delta && parsed.choices[0].delta.content) {
                                     const textChunk = parsed.choices[0].delta.content;
                                     contentBuffer += textChunk;
+                                    accumulatedContent += textChunk;
                                     outputText.innerHTML += textChunk.replace(/\n/g, '<br>');
                                     streamedTokenCount = estimateTokens(contentBuffer);
                                     updateStatsNow = true;
@@ -1643,9 +1652,36 @@ async function callTextApi(provider, apiKey, baseUrl, model, prompt) {
                 }
             }
             await processStream();
-            // For streamed responses, lastApiResponse will show a summary,
-            // as the full JSON is processed chunk by chunk and not stored as a single object.
-            lastApiResponse = `{\n  "info": "Response was streamed.",\n  "model": "${model}",\n  "duration_seconds": ${durationInSeconds.toFixed(2)},\n  "accumulated_content_length": ${contentBuffer.length}\n}`;
+            
+            // Reconstruct streaming response into standard chat completion format
+            const reconstructedResponse = {
+                id: streamedTopMeta?.id || "streaming_response_" + Date.now(),
+                created: streamedTopMeta?.created || Math.floor(Date.now() / 1000),
+                model: streamedTopMeta?.model || model,
+                object: "chat.completion",
+                choices: [
+                    {
+                        finish_reason: streamedFinishReason || "stop",
+                        index: 0,
+                        message: {
+                            content: accumulatedContent,
+                            role: "assistant"
+                        }
+                    }
+                ],
+                usage: streamedUsage || {
+                    prompt_tokens: promptTokensEstimate,
+                    completion_tokens: estimateTokens(accumulatedContent),
+                    total_tokens: promptTokensEstimate + estimateTokens(accumulatedContent)
+                }
+            };
+            
+            // Add reasoning content if it exists
+            if (accumulatedReasoningContent) {
+                reconstructedResponse.choices[0].message.reasoning_content = accumulatedReasoningContent;
+            }
+            
+            lastApiResponse = JSON.stringify(reconstructedResponse, null, 2);
 
         } else {
             // Existing non-streaming logic
@@ -2177,7 +2213,6 @@ async function callTtsApi(provider, apiKey, baseUrl, model, text, voice, instruc
         outputAudio.addEventListener('loadedmetadata', () => {
             // Update stats with audio duration
             const audioDuration = outputAudio.duration.toFixed(2);
-            const statsSpans = statsArea.querySelectorAll('span');
             
             // Add audio duration if available
             if (audioDuration && audioDuration > 0) {
@@ -2217,6 +2252,19 @@ async function callTtsApi(provider, apiKey, baseUrl, model, text, voice, instruc
 
 // Handles streaming STT response
 async function handleSttStreamingResponse(response, model, fileSize, file, startTime) {
+    // Check for HTTP errors first
+    if (!response.ok) {
+        let errorData;
+        try {
+            const errorText = await response.text();
+            errorData = JSON.parse(errorText);
+        } catch (e) {
+            const errorText = await response.text();
+            errorData = { error: { message: `HTTP ${response.status}: ${errorText || response.statusText}` } };
+        }
+        throw new Error(errorData.error?.message || `HTTP Error ${response.status}`);
+    }
+
     const reader = response.body.getReader();
     const decoder = new TextDecoder("utf-8");
     
@@ -2229,6 +2277,8 @@ async function handleSttStreamingResponse(response, model, fileSize, file, start
     let fullTranscript = "";
     let finalDuration = null;
     let hasStreamingData = false;
+    let sttUsageData = null;
+    let rawResponseData = null;
     
     try {
         // Show stats area with initial stats
@@ -2365,6 +2415,7 @@ async function handleSttStreamingResponse(response, model, fileSize, file, start
                             
                             // Update final stats with usage data if available
                             if (parsed.usage) {
+                                sttUsageData = parsed.usage;
                                 const currentTime = performance.now();
                                 const currentDuration = ((currentTime - startTime) / 1000).toFixed(2);
                                 
@@ -2391,6 +2442,7 @@ async function handleSttStreamingResponse(response, model, fileSize, file, start
                         } else if (parsed.text) {
                             // Alternative format: direct text field (some providers)
                             fullTranscript = parsed.text;
+                            rawResponseData = parsed; // Capture the full response data
                             outputText.innerHTML = `<strong>Transcribed by ${model}:</strong><br>${fullTranscript.replace(/\n/g, '<br>')}`;
                             
                             // Update character count in stats
@@ -2400,6 +2452,11 @@ async function handleSttStreamingResponse(response, model, fileSize, file, start
                                     line.innerHTML = `<strong>Characters Generated:</strong> ${fullTranscript.length}`;
                                     break;
                                 }
+                            }
+                            
+                            // Capture usage data if available
+                            if (parsed.usage) {
+                                sttUsageData = parsed.usage;
                             }
                         } else {
                             // Log unknown format for debugging
@@ -2411,7 +2468,25 @@ async function handleSttStreamingResponse(response, model, fileSize, file, start
                 }
             }
         }
-        return { transcript: fullTranscript, durationSeconds: finalDuration };
+        
+        // Build final response data for proper response display
+        let finalResponseData = null;
+        if (rawResponseData) {
+            // Use the full captured response data
+            finalResponseData = rawResponseData;
+        } else {
+            // Reconstruct response data for streaming format
+            finalResponseData = {
+                text: fullTranscript,
+                usage: sttUsageData
+            };
+        }
+        
+        return { 
+            transcript: fullTranscript, 
+            durationSeconds: finalDuration,
+            responseData: finalResponseData
+        };
     } catch (error) {
         throw error; // Re-throw to be handled by the calling function
     } finally {
@@ -2512,13 +2587,17 @@ async function callSttApi(provider, apiKey, baseUrl, model, file) {
         if (enableSttStreamingCheckbox && enableSttStreamingCheckbox.checked && response.body) {
             // Handle streaming response
             const sttResult = await handleSttStreamingResponse(response, model, fileSize, actualFile, startTime);
-            lastApiResponse = JSON.stringify({ 
-                info: 'Response was streamed.', 
-                model, 
-                duration_seconds: sttResult?.durationSeconds ?? null, 
-                characters: sttResult?.transcript?.length ?? 0,
-                transcript_preview: sttResult?.transcript?.substring(0, 100) + (sttResult?.transcript?.length > 100 ? '...' : '') ?? 'No transcript'
-            }, null, 2);
+            
+            // Use the actual response data instead of streaming info
+            if (sttResult?.responseData) {
+                lastApiResponse = JSON.stringify(sttResult.responseData, null, 2);
+            } else {
+                // Fallback if no response data captured
+                lastApiResponse = JSON.stringify({
+                    text: sttResult?.transcript || "",
+                    usage: null
+                }, null, 2);
+            }
         } else {
             // Handle non-streaming response (existing code)
             const endTime = performance.now();
@@ -2641,7 +2720,6 @@ function extractVideoUrl(responseData) {
     function calculateUrlPriority(url, path) {
         let priority = 0;
         const pathLower = path.toLowerCase();
-        const urlLower = url.toLowerCase();
         
         // High priority: video-specific fields
         if (pathLower.includes('video_url') || pathLower.includes('videourl')) {
