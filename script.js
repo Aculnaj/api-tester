@@ -1,100 +1,86 @@
 // --- DOM Element References ---
-const providerSelect = document.getElementById('provider-select');
-const apiKeyInput = document.getElementById('api-key-input');
-const baseUrlContainer = document.getElementById('base-url-container');
-const baseUrlInput = document.getElementById('base-url-input');
-const modelSelect = document.getElementById('model-select');
-const customModelInput = document.getElementById('custom-model-input');
-const refreshModelsBtn = document.getElementById('refresh-models-btn');
-const promptInput = document.getElementById('prompt-input');
-const sendButton = document.getElementById('send-button');
-const stopButton = document.getElementById('stop-button');
-const outputArea = document.getElementById('output-area');
-const outputText = document.getElementById('output-text');
-const outputImage = document.getElementById('output-image');
-const statsArea = document.getElementById('stats-area');
-const enableStreamingCheckbox = document.getElementById('enable-streaming-checkbox');
-const loadingIndicator = document.getElementById('loading-indicator');
-
-// Generation Type Radios
-const generationTypeRadios = document.querySelectorAll('input[name="generation-type"]');
-
-// Image Options
-const imageOptionsContainer = document.getElementById('image-options-container');
-const imageModelTypeSelect = document.getElementById('image-model-type-select');
-const imageQualityContainer = document.getElementById('image-quality-container');
-const qualityOptionsContainer = document.getElementById('quality-options-container');
-const qualitySelect = document.getElementById('quality-select');
-const enableQualityCheckbox = document.getElementById('enable-quality-checkbox');
-const enableQualityContainer = document.querySelector('.enable-quality-container');
-const customQualityInput = document.getElementById('custom-quality-input');
-const imageResolutionContainer = document.getElementById('image-resolution-container');
-const imageResolutionSelect = document.getElementById('image-resolution-select');
-const imageResolutionInputs = document.getElementById('image-resolution-inputs');
-const fluxOrientationSelect = document.getElementById('flux-orientation-select');
-const fluxAspectRatioSelect = document.getElementById('flux-aspect-ratio-select');
-const fluxStepsInput = document.getElementById('flux-steps-input');
-const imageAspectRatioContainer = document.getElementById('image-aspect-ratio-container');
-const imageAspectRatioSelect = document.getElementById('image-aspect-ratio-select');
-const downloadImageBtn = document.getElementById('download-image-btn');
-
-// Audio Options
-const audioOptionsContainer = document.getElementById('audio-options-container');
-const audioTypeSelect = document.getElementById('audio-type-select');
-const sttInputContainer = document.getElementById('stt-input-container');
-const audioFileInput = document.getElementById('audio-file-input');
-const voiceOptionsContainer = document.getElementById('voice-options-container');
-const voiceSelect = document.getElementById('voice-select');
-const ttsInstructionsInput = document.getElementById('tts-instructions-input');
-const responseFormatSelect = document.getElementById('response-format-select');
-const enableSttStreamingCheckbox = document.getElementById('enable-stt-streaming-checkbox');
-const outputAudio = document.getElementById('output-audio');
-const downloadAudio = document.getElementById('download-audio');
-
-// Video Options
-const videoOptionsContainer = document.getElementById('video-options-container');
-const videoAspectRatioEnabled = document.getElementById('video-aspect-ratio-enabled');
-const videoAspectRatioSelect = document.getElementById('video-aspect-ratio');
-const aspectRatioGroup = document.getElementById('aspect-ratio-group');
-const videoDurationInput = document.getElementById('video-duration');
-const outputVideo = document.getElementById('output-video');
-const downloadVideoBtn = document.getElementById('download-video-btn');
-
-// Text Generation Options
-const textGenerationOptions = document.getElementById('text-generation-options');
-const systemPromptInput = document.getElementById('system-prompt-input');
-const enableSystemPromptCheckbox = document.getElementById('enable-system-prompt-checkbox');
-const temperatureInput = document.getElementById('temperature-input');
-const temperatureValue = document.getElementById('temperature-value');
-const enableTemperatureCheckbox = document.getElementById('enable-temperature-checkbox');
-const topPInput = document.getElementById('top-p-input');
-const topPValue = document.getElementById('top-p-value');
-const enableTopPCheckbox = document.getElementById('enable-top-p-checkbox');
-const maxTokensInput = document.getElementById('max-tokens-input');
-const enableMaxTokensCheckbox = document.getElementById('enable-max-tokens-checkbox');
-const topKInput = document.getElementById('top-k-input');
-const topKValue = document.getElementById('top-k-value');
-const enableTopKCheckbox = document.getElementById('enable-top-k-checkbox');
-const reasoningEffortSelect = document.getElementById('reasoning-effort-select');
-const enableReasoningEffortCheckbox = document.getElementById('enable-reasoning-effort-checkbox');
-const customParamsInput = document.getElementById('custom-params-input');
-const enableCustomParamsCheckbox = document.getElementById('enable-custom-params-checkbox');
-
-// Payload/Response Display
-const payloadContainer = document.getElementById('payload-container');
-const togglePayloadBtn = document.getElementById('toggle-payload-btn');
-const payloadDisplayArea = document.getElementById('payload-display-area');
-const toggleResponseBtn = document.getElementById('toggle-response-btn');
-const responseDisplayArea = document.getElementById('response-display-area');
-
-// Model Container
-const modelContainer = document.getElementById('model-container');
-
-// Provider Configurations
-const configNameInput = document.getElementById('config-name-input');
-const saveConfigBtn = document.getElementById('save-config-btn');
-const savedConfigsList = document.getElementById('saved-configs-list');
-const clearAllDataBtn = document.getElementById('clear-all-data-btn');
+const dom = {
+    providerSelect: document.getElementById('provider-select'),
+    apiKeyInput: document.getElementById('api-key-input'),
+    baseUrlContainer: document.getElementById('base-url-container'),
+    baseUrlInput: document.getElementById('base-url-input'),
+    modelSelect: document.getElementById('model-select'),
+    customModelInput: document.getElementById('custom-model-input'),
+    refreshModelsBtn: document.getElementById('refresh-models-btn'),
+    promptInput: document.getElementById('prompt-input'),
+    sendButton: document.getElementById('send-button'),
+    stopButton: document.getElementById('stop-button'),
+    outputArea: document.getElementById('output-area'),
+    outputText: document.getElementById('output-text'),
+    outputImage: document.getElementById('output-image'),
+    statsArea: document.getElementById('stats-area'),
+    enableStreamingCheckbox: document.getElementById('enable-streaming-checkbox'),
+    loadingIndicator: document.getElementById('loading-indicator'),
+    generationTypeRadios: document.querySelectorAll('input[name="generation-type"]'),
+    imageOptionsContainer: document.getElementById('image-options-container'),
+    imageModelTypeSelect: document.getElementById('image-model-type-select'),
+    imageQualityContainer: document.getElementById('image-quality-container'),
+    qualityOptionsContainer: document.getElementById('quality-options-container'),
+    qualitySelect: document.getElementById('quality-select'),
+    enableQualityCheckbox: document.getElementById('enable-quality-checkbox'),
+    enableQualityContainer: document.querySelector('.enable-quality-container'),
+    customQualityInput: document.getElementById('custom-quality-input'),
+    imageResolutionContainer: document.getElementById('image-resolution-container'),
+    imageResolutionSelect: document.getElementById('image-resolution-select'),
+    imageResolutionInputs: document.getElementById('image-resolution-inputs'),
+    fluxOrientationSelect: document.getElementById('flux-orientation-select'),
+    fluxAspectRatioSelect: document.getElementById('flux-aspect-ratio-select'),
+    fluxStepsInput: document.getElementById('flux-steps-input'),
+    imageAspectRatioContainer: document.getElementById('image-aspect-ratio-container'),
+    imageAspectRatioSelect: document.getElementById('image-aspect-ratio-select'),
+    downloadImageBtn: document.getElementById('download-image-btn'),
+    audioOptionsContainer: document.getElementById('audio-options-container'),
+    audioTypeSelect: document.getElementById('audio-type-select'),
+    sttInputContainer: document.getElementById('stt-input-container'),
+    audioFileInput: document.getElementById('audio-file-input'),
+    voiceOptionsContainer: document.getElementById('voice-options-container'),
+    voiceSelect: document.getElementById('voice-select'),
+    ttsInstructionsInput: document.getElementById('tts-instructions-input'),
+    responseFormatSelect: document.getElementById('response-format-select'),
+    enableSttStreamingCheckbox: document.getElementById('enable-stt-streaming-checkbox'),
+    outputAudio: document.getElementById('output-audio'),
+    downloadAudio: document.getElementById('download-audio'),
+    videoOptionsContainer: document.getElementById('video-options-container'),
+    videoAspectRatioEnabled: document.getElementById('video-aspect-ratio-enabled'),
+    videoAspectRatioSelect: document.getElementById('video-aspect-ratio'),
+    aspectRatioGroup: document.getElementById('aspect-ratio-group'),
+    videoDurationInput: document.getElementById('video-duration'),
+    outputVideo: document.getElementById('output-video'),
+    downloadVideoBtn: document.getElementById('download-video-btn'),
+    textGenerationOptions: document.getElementById('text-generation-options'),
+    systemPromptInput: document.getElementById('system-prompt-input'),
+    enableSystemPromptCheckbox: document.getElementById('enable-system-prompt-checkbox'),
+    temperatureInput: document.getElementById('temperature-input'),
+    temperatureValue: document.getElementById('temperature-value'),
+    enableTemperatureCheckbox: document.getElementById('enable-temperature-checkbox'),
+    topPInput: document.getElementById('top-p-input'),
+    topPValue: document.getElementById('top-p-value'),
+    enableTopPCheckbox: document.getElementById('enable-top-p-checkbox'),
+    maxTokensInput: document.getElementById('max-tokens-input'),
+    enableMaxTokensCheckbox: document.getElementById('enable-max-tokens-checkbox'),
+    topKInput: document.getElementById('top-k-input'),
+    topKValue: document.getElementById('top-k-value'),
+    enableTopKCheckbox: document.getElementById('enable-top-k-checkbox'),
+    reasoningEffortSelect: document.getElementById('reasoning-effort-select'),
+    enableReasoningEffortCheckbox: document.getElementById('enable-reasoning-effort-checkbox'),
+    customParamsInput: document.getElementById('custom-params-input'),
+    enableCustomParamsCheckbox: document.getElementById('enable-custom-params-checkbox'),
+    payloadContainer: document.getElementById('payload-container'),
+    togglePayloadBtn: document.getElementById('toggle-payload-btn'),
+    payloadDisplayArea: document.getElementById('payload-display-area'),
+    toggleResponseBtn: document.getElementById('toggle-response-btn'),
+    responseDisplayArea: document.getElementById('response-display-area'),
+    modelContainer: document.getElementById('model-container'),
+    configNameInput: document.getElementById('config-name-input'),
+    saveConfigBtn: document.getElementById('save-config-btn'),
+    savedConfigsList: document.getElementById('saved-configs-list'),
+    clearAllDataBtn: document.getElementById('clear-all-data-btn'),
+};
 
 
 // --- STATE VARIABLES ---
@@ -187,7 +173,7 @@ const LAST_ENABLE_STT_STREAMING_KEY = 'lastEnableSttStreaming';
 
 const LAST_SYSTEM_PROMPT_KEY = 'lastSystemPrompt';
 const LAST_TEMPERATURE_KEY = 'lastTemperature';
-const LAST_TOP_P_KEY = 'lastTopP';
+const LAST_TOP_P_KEY = 'topP';
 const LAST_TOP_K_KEY = 'lastTopK';
 const LAST_MAX_TOKENS_KEY = 'lastMaxTokens';
 const LAST_REASONING_EFFORT_KEY = 'lastReasoningEffort';
@@ -201,14 +187,14 @@ async function loadProviderCredentials(provider) {
     if (!provider) return;
     const credentials = await getStoredValue(`${API_CREDENTIALS_KEY_PREFIX}.${provider}`);
     if (credentials) {
-        apiKeyInput.value = credentials.apiKey || '';
-        if (baseUrlInput) { // Check if baseUrlInput exists
-            baseUrlInput.value = credentials.baseUrl || '';
+        dom.apiKeyInput.value = credentials.apiKey || '';
+        if (dom.baseUrlInput) { // Check if dom.baseUrlInput exists
+            dom.baseUrlInput.value = credentials.baseUrl || '';
         }
     } else {
-        apiKeyInput.value = '';
-        if (baseUrlInput) {
-            baseUrlInput.value = '';
+        dom.apiKeyInput.value = '';
+        if (dom.baseUrlInput) {
+            dom.baseUrlInput.value = '';
         }
     }
     toggleBaseUrlInput(); // Ensure visibility is correct after loading
@@ -217,8 +203,8 @@ async function loadProviderCredentials(provider) {
 // Saves API credentials for the given provider to storage.
 async function saveProviderCredentials(provider) {
     if (!provider) return;
-    const apiKey = apiKeyInput.value;
-    const baseUrl = baseUrlInput ? baseUrlInput.value : ''; // Check if baseUrlInput exists
+    const apiKey = dom.apiKeyInput.value;
+    const baseUrl = dom.baseUrlInput ? dom.baseUrlInput.value : ''; // Check if dom.baseUrlInput exists
     await setStoredValue(`${API_CREDENTIALS_KEY_PREFIX}.${provider}`, { apiKey, baseUrl });
 }
 
@@ -228,10 +214,10 @@ async function saveProviderCredentials(provider) {
  */
 async function loadGeneralSettings() {
     const lastProvider = await getStoredValue(LAST_PROVIDER_KEY);
-    if (lastProvider) providerSelect.value = lastProvider;
+    if (lastProvider) dom.providerSelect.value = lastProvider;
 
-    // modelInput.value = await getStoredValue(LAST_MODEL_KEY) || 'gpt-4o'; // Default model (Now handled by populateModelDropdown)
-    promptInput.value = await getStoredValue(LAST_PROMPT_KEY) || '';
+    // dom.modelInput.value = await getStoredValue(LAST_MODEL_KEY) || 'gpt-4o'; // Default model (Now handled by populateModelDropdown)
+    dom.promptInput.value = await getStoredValue(LAST_PROMPT_KEY) || '';
 
     const lastGenerationType = await getStoredValue(LAST_GENERATION_TYPE_KEY);
     if (lastGenerationType) {
@@ -240,143 +226,144 @@ async function loadGeneralSettings() {
     }
 
     const lastEnableQuality = await getStoredValue(LAST_ENABLE_QUALITY_KEY);
-    if (enableQualityCheckbox) { // Check if exists
-        enableQualityCheckbox.checked = typeof lastEnableQuality === 'boolean' ? lastEnableQuality : true; // Default to true
+    if (dom.enableQualityCheckbox) { // Check if exists
+        dom.enableQualityCheckbox.checked = typeof lastEnableQuality === 'boolean' ? lastEnableQuality : true; // Default to true
     }
 
     // Load image model type
     const lastImageModelType = await getStoredValue(LAST_IMAGE_MODEL_TYPE_KEY);
-    if (imageModelTypeSelect) {
-        imageModelTypeSelect.value = lastImageModelType || '';
+    if (dom.imageModelTypeSelect) {
+        dom.imageModelTypeSelect.value = lastImageModelType || '';
     }
 
     const lastQuality = await getStoredValue(LAST_IMAGE_QUALITY_KEY);
-    if (qualitySelect) { // Check if exists
-        qualitySelect.value = lastQuality || 'standard'; // Default quality
+    if (dom.qualitySelect) { // Check if exists
+        dom.qualitySelect.value = lastQuality || 'standard'; // Default quality
     }
 
     const lastCustomQuality = await getStoredValue(LAST_CUSTOM_IMAGE_QUALITY_KEY);
-    if (customQualityInput) { // Check if exists
-        customQualityInput.value = lastCustomQuality || '';
+    if (dom.customQualityInput) { // Check if exists
+        dom.customQualityInput.value = lastCustomQuality || '';
     }
 
     // Load image resolution
     const lastImageResolution = await getStoredValue(LAST_IMAGE_RESOLUTION_KEY);
-    if (imageResolutionSelect) {
-        imageResolutionSelect.value = lastImageResolution || '1024x1024';
+    if (dom.imageResolutionSelect) {
+        dom.imageResolutionSelect.value = lastImageResolution || '1024x1024';
     }
 
     // Load image aspect ratio
     const lastImageAspectRatio = await getStoredValue(LAST_IMAGE_ASPECT_RATIO_KEY);
-    if (imageAspectRatioSelect) {
-        imageAspectRatioSelect.value = lastImageAspectRatio || '1:1';
+    if (dom.imageAspectRatioSelect) {
+        dom.imageAspectRatioSelect.value = lastImageAspectRatio || '1:1';
     }
 
     // Load FLUX settings
     const lastFluxOrientation = await getStoredValue(LAST_FLUX_ORIENTATION_KEY);
-    if (fluxOrientationSelect) {
-        fluxOrientationSelect.value = lastFluxOrientation || 'landscape';
+    if (dom.fluxOrientationSelect) {
+        dom.fluxOrientationSelect.value = lastFluxOrientation || 'landscape';
     }
     
     const lastFluxAspectRatio = await getStoredValue(LAST_FLUX_ASPECT_RATIO_KEY);
-    if (fluxAspectRatioSelect) {
-        fluxAspectRatioSelect.value = lastFluxAspectRatio || '1:1';
+    if (dom.fluxAspectRatioSelect) {
+        dom.fluxAspectRatioSelect.value = lastFluxAspectRatio || '1:1';
     }
     
     // Load FLUX steps
     const lastFluxSteps = await getStoredValue(LAST_FLUX_STEPS_KEY);
-    if (fluxStepsInput) {
-        fluxStepsInput.value = lastFluxSteps || '0';
+    if (dom.fluxStepsInput) {
+        dom.fluxStepsInput.value = lastFluxSteps || '0';
     }
     // Update the displayed value
     const fluxStepsValue = document.getElementById('flux-steps-value');
-    if (fluxStepsValue && fluxStepsInput) {
-        fluxStepsValue.textContent = fluxStepsInput.value;
+    if (fluxStepsValue && dom.fluxStepsInput) {
+        fluxStepsValue.textContent = dom.fluxStepsInput.value;
     }
 
     
     const lastAudioType = await getStoredValue(LAST_AUDIO_TYPE_KEY);
-    if (audioTypeSelect) { // Check if exists
-         audioTypeSelect.value = lastAudioType || 'tts';
+    if (dom.audioTypeSelect) { // Check if exists
+         dom.audioTypeSelect.value = lastAudioType || 'tts';
     }
 
-    if (voiceSelect) voiceSelect.value = await getStoredValue(LAST_VOICE_SELECT_KEY) || 'alloy';
-    if (ttsInstructionsInput) ttsInstructionsInput.value = await getStoredValue(LAST_TTS_INSTRUCTIONS_KEY) || '';
-    if (responseFormatSelect) responseFormatSelect.value = await getStoredValue(LAST_RESPONSE_FORMAT_KEY) || 'mp3';
+    if (dom.voiceSelect) dom.voiceSelect.value = await getStoredValue(LAST_VOICE_SELECT_KEY) || 'alloy';
+    if (dom.ttsInstructionsInput) dom.ttsInstructionsInput.value = await getStoredValue(LAST_TTS_INSTRUCTIONS_KEY) || '';
+    if (dom.responseFormatSelect) dom.responseFormatSelect.value = await getStoredValue(LAST_RESPONSE_FORMAT_KEY) || 'mp3';
 
     // Load video settings
-    if (videoDurationInput) videoDurationInput.value = await getStoredValue(LAST_VIDEO_DURATION_KEY) || '5';
+    if (dom.videoDurationInput) dom.videoDurationInput.value = await getStoredValue(LAST_VIDEO_DURATION_KEY) || '5';
 
     const lastVideoAspectRatioEnabled = await getStoredValue(LAST_VIDEO_ASPECT_RATIO_ENABLED_KEY);
-    if (videoAspectRatioEnabled) {
-        videoAspectRatioEnabled.checked = typeof lastVideoAspectRatioEnabled === 'boolean' ? lastVideoAspectRatioEnabled : false;
+    if (dom.videoAspectRatioEnabled) {
+        dom.videoAspectRatioEnabled.checked = typeof lastVideoAspectRatioEnabled === 'boolean' ? lastVideoAspectRatioEnabled : false;
     }
 
     const lastVideoAspectRatio = await getStoredValue(LAST_VIDEO_ASPECT_RATIO_KEY);
-    if (videoAspectRatioSelect) {
-        videoAspectRatioSelect.value = lastVideoAspectRatio || '16:9';
+    if (dom.videoAspectRatioSelect) {
+        dom.videoAspectRatioSelect.value = lastVideoAspectRatio || '16:9';
     }
 
     const lastStreamingEnabled = await getStoredValue(LAST_STREAMING_ENABLED_KEY);
-    if (enableStreamingCheckbox) {
+    if (dom.enableStreamingCheckbox) {
         // Default to true if not found in storage (current behavior is streaming on)
-        enableStreamingCheckbox.checked = typeof lastStreamingEnabled === 'boolean' ? lastStreamingEnabled : true;
+        dom.enableStreamingCheckbox.checked = typeof lastStreamingEnabled === 'boolean' ? lastStreamingEnabled : true;
     }
 
     // --- NEW: Load enable toggles for each param ---
-    if (enableSystemPromptCheckbox) {
+    if (dom.enableSystemPromptCheckbox) {
         const en = await getStoredValue(LAST_ENABLE_SYSTEM_PROMPT_KEY);
-        enableSystemPromptCheckbox.checked = typeof en === "boolean" ? en : true;
+        dom.enableSystemPromptCheckbox.checked = typeof en === "boolean" ? en : true;
     }
-    if (enableTemperatureCheckbox) {
+    if (dom.enableTemperatureCheckbox) {
         const en = await getStoredValue(LAST_ENABLE_TEMPERATURE_KEY);
-        enableTemperatureCheckbox.checked = typeof en === "boolean" ? en : false;
+        dom.enableTemperatureCheckbox.checked = typeof en === "boolean" ? en : false;
     }
-    if (enableTopPCheckbox) {
+    if (dom.enableTopPCheckbox) {
         const en = await getStoredValue(LAST_ENABLE_TOP_P_KEY);
-        enableTopPCheckbox.checked = typeof en === "boolean" ? en : false;
+        dom.enableTopPCheckbox.checked = typeof en === "boolean" ? en : false;
     }
-    if (enableTopKCheckbox) {
+    if (dom.enableTopKCheckbox) {
         const en = await getStoredValue(LAST_ENABLE_TOP_K_KEY);
-        enableTopKCheckbox.checked = typeof en === "boolean" ? en : false;
+        dom.enableTopKCheckbox.checked = typeof en === "boolean" ? en : false;
     }
-    if (enableMaxTokensCheckbox) {
+    if (dom.enableMaxTokensCheckbox) {
         const en = await getStoredValue(LAST_ENABLE_MAX_TOKENS_KEY);
-        enableMaxTokensCheckbox.checked = typeof en === "boolean" ? en : false;
+        dom.enableMaxTokensCheckbox.checked = typeof en === "boolean" ? en : false;
     }
-    if (enableReasoningEffortCheckbox) {
+    if (dom.enableReasoningEffortCheckbox) {
         const en = await getStoredValue(LAST_ENABLE_REASONING_EFFORT_KEY);
-        enableReasoningEffortCheckbox.checked = typeof en === "boolean" ? en : false;
+        dom.enableReasoningEffortCheckbox.checked = typeof en === "boolean" ? en : false;
     }
-    if (enableCustomParamsCheckbox) {
+    if (dom.enableCustomParamsCheckbox) {
         const en = await getStoredValue(LAST_ENABLE_CUSTOM_PARAMS_KEY);
-        enableCustomParamsCheckbox.checked = typeof en === "boolean" ? en : false;
+        dom.enableCustomParamsCheckbox.checked = typeof en === "boolean" ? en : false;
     }
-    if (enableSttStreamingCheckbox) {
+    if (dom.enableSttStreamingCheckbox) {
         const en = await getStoredValue(LAST_ENABLE_STT_STREAMING_KEY);
-        enableSttStreamingCheckbox.checked = typeof en === "boolean" ? en : false;
+        dom.enableSttStreamingCheckbox.checked = typeof en === "boolean" ? en : false;
     }
 
     // Load text generation settings
-    systemPromptInput.value = await getStoredValue(LAST_SYSTEM_PROMPT_KEY) || '';
+    dom.systemPromptInput.value = await getStoredValue(LAST_SYSTEM_PROMPT_KEY) || '';
     const lastTemp = await getStoredValue(LAST_TEMPERATURE_KEY);
-    temperatureInput.value = lastTemp !== undefined ? lastTemp : 1;
-    temperatureValue.textContent = parseFloat(temperatureInput.value).toFixed(1);
+    dom.temperatureInput.value = lastTemp !== undefined ? lastTemp : 1;
+    dom.temperatureValue.textContent = parseFloat(dom.temperatureInput.value).toFixed(1);
     const lastTopP = await getStoredValue(LAST_TOP_P_KEY);
-    topPInput.value = lastTopP !== undefined ? lastTopP : 1;
-    topPValue.textContent = parseFloat(topPInput.value).toFixed(2);
+    dom.topPInput.value = lastTopP !== undefined ? lastTopP : 1;
+    dom.topPValue.textContent = parseFloat(dom.topPInput.value).toFixed(2);
     const lastTopK = await getStoredValue(LAST_TOP_K_KEY);
-    topKInput.value = lastTopK !== undefined ? lastTopK : 50;
-    topKValue.textContent = topKInput.value;
-    maxTokensInput.value = await getStoredValue(LAST_MAX_TOKENS_KEY) || '1024';
-    reasoningEffortSelect.value = await getStoredValue(LAST_REASONING_EFFORT_KEY) || 'medium';
-    customParamsInput.value = await getStoredValue(LAST_CUSTOM_PARAMS_KEY) || '';
+    dom.topKInput.value = lastTopK !== undefined ? lastTopK : 50;
+    dom.topKValue.textContent = dom.topKInput.value;
+    dom.maxTokensInput.value = await getStoredValue(LAST_MAX_TOKENS_KEY) || '1024';
+    dom.reasoningEffortSelect.value = await getStoredValue(LAST_REASONING_EFFORT_KEY) || 'medium';
+    dom.customParamsInput.value = await getStoredValue(LAST_CUSTOM_PARAMS_KEY) || '';
 
     // Remove disabled state logic - only use visibility control
     // Elements should never be disabled, only hidden when toggle is off
 
     toggleGenerationOptions(); // Update UI based on loaded settings
     toggleBaseUrlInput(); // Ensure base URL visibility
+    updateAllToggleVisibility();
 }
 
 /**
@@ -384,60 +371,60 @@ async function loadGeneralSettings() {
  * Extended: Speichert auch die Enable/Disable-Schalter für Parameter.
  */
 async function saveGeneralSettings() {
-    await setStoredValue(LAST_PROVIDER_KEY, providerSelect.value);
-    if (modelSelect) {
+    await setStoredValue(LAST_PROVIDER_KEY, dom.providerSelect.value);
+    if (dom.modelSelect) {
         // Save the actual model name to be used in the API call
-        const modelToSave = modelSelect.value === 'custom' ? customModelInput.value.trim() : modelSelect.value;
+        const modelToSave = dom.modelSelect.value === 'custom' ? dom.customModelInput.value.trim() : dom.modelSelect.value;
         await setStoredValue(LAST_MODEL_KEY, modelToSave);
 
         // Save the state of the dropdown and custom input for UI restoration
-        await setStoredValue(LAST_SELECTED_MODEL_OPTION_KEY, modelSelect.value);
-        if (modelSelect.value === 'custom') {
-            await setStoredValue(LAST_CUSTOM_MODEL_NAME_KEY, customModelInput.value.trim());
+        await setStoredValue(LAST_SELECTED_MODEL_OPTION_KEY, dom.modelSelect.value);
+        if (dom.modelSelect.value === 'custom') {
+            await setStoredValue(LAST_CUSTOM_MODEL_NAME_KEY, dom.customModelInput.value.trim());
         }
     }
-    await setStoredValue(LAST_PROMPT_KEY, promptInput.value);
+    await setStoredValue(LAST_PROMPT_KEY, dom.promptInput.value);
     const generationType = document.querySelector('input[name="generation-type"]:checked');
     if (generationType) await setStoredValue(LAST_GENERATION_TYPE_KEY, generationType.value);
 
-    if (enableQualityCheckbox) await setStoredValue(LAST_ENABLE_QUALITY_KEY, enableQualityCheckbox.checked);
-    if (imageModelTypeSelect) await setStoredValue(LAST_IMAGE_MODEL_TYPE_KEY, imageModelTypeSelect.value);
-    if (qualitySelect) await setStoredValue(LAST_IMAGE_QUALITY_KEY, qualitySelect.value);
-    if (customQualityInput) await setStoredValue(LAST_CUSTOM_IMAGE_QUALITY_KEY, customQualityInput.value);
-    if (imageResolutionSelect) await setStoredValue(LAST_IMAGE_RESOLUTION_KEY, imageResolutionSelect.value);
-    if (imageAspectRatioSelect) await setStoredValue(LAST_IMAGE_ASPECT_RATIO_KEY, imageAspectRatioSelect.value);
-    if (fluxOrientationSelect) await setStoredValue(LAST_FLUX_ORIENTATION_KEY, fluxOrientationSelect.value);
-    if (fluxAspectRatioSelect) await setStoredValue(LAST_FLUX_ASPECT_RATIO_KEY, fluxAspectRatioSelect.value);
-    if (fluxStepsInput) await setStoredValue(LAST_FLUX_STEPS_KEY, fluxStepsInput.value);
-    if (audioTypeSelect) await setStoredValue(LAST_AUDIO_TYPE_KEY, audioTypeSelect.value);
-    if (voiceSelect) await setStoredValue(LAST_VOICE_SELECT_KEY, voiceSelect.value);
-    if (ttsInstructionsInput) await setStoredValue(LAST_TTS_INSTRUCTIONS_KEY, ttsInstructionsInput.value);
-    if (responseFormatSelect) await setStoredValue(LAST_RESPONSE_FORMAT_KEY, responseFormatSelect.value);
-    if (enableStreamingCheckbox) await setStoredValue(LAST_STREAMING_ENABLED_KEY, enableStreamingCheckbox.checked);
+    if (dom.enableQualityCheckbox) await setStoredValue(LAST_ENABLE_QUALITY_KEY, dom.enableQualityCheckbox.checked);
+    if (dom.imageModelTypeSelect) await setStoredValue(LAST_IMAGE_MODEL_TYPE_KEY, dom.imageModelTypeSelect.value);
+    if (dom.qualitySelect) await setStoredValue(LAST_IMAGE_QUALITY_KEY, dom.qualitySelect.value);
+    if (dom.customQualityInput) await setStoredValue(LAST_CUSTOM_IMAGE_QUALITY_KEY, dom.customQualityInput.value);
+    if (dom.imageResolutionSelect) await setStoredValue(LAST_IMAGE_RESOLUTION_KEY, dom.imageResolutionSelect.value);
+    if (dom.imageAspectRatioSelect) await setStoredValue(LAST_IMAGE_ASPECT_RATIO_KEY, dom.imageAspectRatioSelect.value);
+    if (dom.fluxOrientationSelect) await setStoredValue(LAST_FLUX_ORIENTATION_KEY, dom.fluxOrientationSelect.value);
+    if (dom.fluxAspectRatioSelect) await setStoredValue(LAST_FLUX_ASPECT_RATIO_KEY, dom.fluxAspectRatioSelect.value);
+    if (dom.fluxStepsInput) await setStoredValue(LAST_FLUX_STEPS_KEY, dom.fluxStepsInput.value);
+    if (dom.audioTypeSelect) await setStoredValue(LAST_AUDIO_TYPE_KEY, dom.audioTypeSelect.value);
+    if (dom.voiceSelect) await setStoredValue(LAST_VOICE_SELECT_KEY, dom.voiceSelect.value);
+    if (dom.ttsInstructionsInput) await setStoredValue(LAST_TTS_INSTRUCTIONS_KEY, dom.ttsInstructionsInput.value);
+    if (dom.responseFormatSelect) await setStoredValue(LAST_RESPONSE_FORMAT_KEY, dom.responseFormatSelect.value);
+    if (dom.enableStreamingCheckbox) await setStoredValue(LAST_STREAMING_ENABLED_KEY, dom.enableStreamingCheckbox.checked);
 
     // Save new param enable toggles
-    if (enableSystemPromptCheckbox) await setStoredValue(LAST_ENABLE_SYSTEM_PROMPT_KEY, enableSystemPromptCheckbox.checked);
-    if (enableTemperatureCheckbox) await setStoredValue(LAST_ENABLE_TEMPERATURE_KEY, enableTemperatureCheckbox.checked);
-    if (enableTopPCheckbox) await setStoredValue(LAST_ENABLE_TOP_P_KEY, enableTopPCheckbox.checked);
-    if (enableTopKCheckbox) await setStoredValue(LAST_ENABLE_TOP_K_KEY, enableTopKCheckbox.checked);
-    if (enableMaxTokensCheckbox) await setStoredValue(LAST_ENABLE_MAX_TOKENS_KEY, enableMaxTokensCheckbox.checked);
-    if (enableReasoningEffortCheckbox) await setStoredValue(LAST_ENABLE_REASONING_EFFORT_KEY, enableReasoningEffortCheckbox.checked);
-    if (enableCustomParamsCheckbox) await setStoredValue(LAST_ENABLE_CUSTOM_PARAMS_KEY, enableCustomParamsCheckbox.checked);
-    if (enableSttStreamingCheckbox) await setStoredValue(LAST_ENABLE_STT_STREAMING_KEY, enableSttStreamingCheckbox.checked);
+    if (dom.enableSystemPromptCheckbox) await setStoredValue(LAST_ENABLE_SYSTEM_PROMPT_KEY, dom.enableSystemPromptCheckbox.checked);
+    if (dom.enableTemperatureCheckbox) await setStoredValue(LAST_ENABLE_TEMPERATURE_KEY, dom.enableTemperatureCheckbox.checked);
+    if (dom.enableTopPCheckbox) await setStoredValue(LAST_ENABLE_TOP_P_KEY, dom.enableTopPCheckbox.checked);
+    if (dom.enableTopKCheckbox) await setStoredValue(LAST_ENABLE_TOP_K_KEY, dom.enableTopKCheckbox.checked);
+    if (dom.enableMaxTokensCheckbox) await setStoredValue(LAST_ENABLE_MAX_TOKENS_KEY, dom.enableMaxTokensCheckbox.checked);
+    if (dom.enableReasoningEffortCheckbox) await setStoredValue(LAST_ENABLE_REASONING_EFFORT_KEY, dom.enableReasoningEffortCheckbox.checked);
+    if (dom.enableCustomParamsCheckbox) await setStoredValue(LAST_ENABLE_CUSTOM_PARAMS_KEY, dom.enableCustomParamsCheckbox.checked);
+    if (dom.enableSttStreamingCheckbox) await setStoredValue(LAST_ENABLE_STT_STREAMING_KEY, dom.enableSttStreamingCheckbox.checked);
 
     // Save video settings
-    if (videoDurationInput) await setStoredValue(LAST_VIDEO_DURATION_KEY, videoDurationInput.value);
-    if (videoAspectRatioEnabled) await setStoredValue(LAST_VIDEO_ASPECT_RATIO_ENABLED_KEY, videoAspectRatioEnabled.checked);
-    if (videoAspectRatioSelect) await setStoredValue(LAST_VIDEO_ASPECT_RATIO_KEY, videoAspectRatioSelect.value);
+    if (dom.videoDurationInput) await setStoredValue(LAST_VIDEO_DURATION_KEY, dom.videoDurationInput.value);
+    if (dom.videoAspectRatioEnabled) await setStoredValue(LAST_VIDEO_ASPECT_RATIO_ENABLED_KEY, dom.videoAspectRatioEnabled.checked);
+    if (dom.videoAspectRatioSelect) await setStoredValue(LAST_VIDEO_ASPECT_RATIO_KEY, dom.videoAspectRatioSelect.value);
 
     // Save text generation settings
-    await setStoredValue(LAST_SYSTEM_PROMPT_KEY, systemPromptInput.value);
-    await setStoredValue(LAST_TEMPERATURE_KEY, temperatureInput.value);
-    await setStoredValue(LAST_TOP_P_KEY, topPInput.value);
-    await setStoredValue(LAST_TOP_K_KEY, topKInput.value);
-    await setStoredValue(LAST_MAX_TOKENS_KEY, maxTokensInput.value);
-    await setStoredValue(LAST_REASONING_EFFORT_KEY, reasoningEffortSelect.value);
-    await setStoredValue(LAST_CUSTOM_PARAMS_KEY, customParamsInput.value);
+    await setStoredValue(LAST_SYSTEM_PROMPT_KEY, dom.systemPromptInput.value);
+    await setStoredValue(LAST_TEMPERATURE_KEY, dom.temperatureInput.value);
+    await setStoredValue(LAST_TOP_P_KEY, dom.topPInput.value);
+    await setStoredValue(LAST_TOP_K_KEY, dom.topKInput.value);
+    await setStoredValue(LAST_MAX_TOKENS_KEY, dom.maxTokensInput.value);
+    await setStoredValue(LAST_REASONING_EFFORT_KEY, dom.reasoningEffortSelect.value);
+    await setStoredValue(LAST_CUSTOM_PARAMS_KEY, dom.customParamsInput.value);
 }
 
 // --- THEME MANAGEMENT ---
@@ -522,7 +509,7 @@ async function initializeTheme() {
 // Renders the list of saved provider configurations into the UI.
 async function renderSavedConfigs() {
     const configs = await getStoredValue(SAVED_PROVIDER_CONFIGS_KEY) || {};
-    savedConfigsList.innerHTML = ''; // Clear the list first
+    dom.savedConfigsList.innerHTML = ''; // Clear the list first
 
     const configContainer = document.getElementById('saved-configs-list-container');
 
@@ -550,22 +537,22 @@ async function renderSavedConfigs() {
                     <button class="config-btn delete-btn" data-config-name="${sanitizedName}">Delete</button>
                 </div>
             `;
-            savedConfigsList.appendChild(configItem);
+            dom.savedConfigsList.appendChild(configItem);
         }
     }
 }
 
 // Saves the current provider settings as a named configuration.
 async function saveConfiguration() {
-    const name = configNameInput.value.trim();
+    const name = dom.configNameInput.value.trim();
     if (!name) {
         displayError("Please enter a name for the configuration.");
         return;
     }
 
-    const currentProvider = providerSelect.value;
-    const currentApiKey = apiKeyInput.value.trim();
-    const currentBaseUrl = baseUrlInput.value.trim();
+    const currentProvider = dom.providerSelect.value;
+    const currentApiKey = dom.apiKeyInput.value.trim();
+    const currentBaseUrl = dom.baseUrlInput.value.trim();
 
     if (!currentApiKey) {
         displayError("API Key cannot be empty when saving a configuration.");
@@ -583,7 +570,7 @@ async function saveConfiguration() {
     await setStoredValue(SAVED_PROVIDER_CONFIGS_KEY, configs);
     
     // Clear the input and re-render the list
-    configNameInput.value = '';
+    dom.configNameInput.value = '';
     await renderSavedConfigs();
 }
 
@@ -598,12 +585,12 @@ async function restoreConfiguration(name) {
     }
 
     // Populate the form fields
-    providerSelect.value = configToRestore.provider;
-    apiKeyInput.value = configToRestore.apiKey;
-    baseUrlInput.value = configToRestore.baseUrl || '';
+    dom.providerSelect.value = configToRestore.provider;
+    dom.apiKeyInput.value = configToRestore.apiKey;
+    dom.baseUrlInput.value = configToRestore.baseUrl || '';
 
     // Also populate the name input for easy re-saving
-    configNameInput.value = name;
+    dom.configNameInput.value = name;
 
     // --- Manually trigger the necessary updates ---
 
@@ -629,8 +616,8 @@ async function deleteConfiguration(name) {
         await setStoredValue(SAVED_PROVIDER_CONFIGS_KEY, configs);
         
         // If the deleted config's name is in the input, clear it
-        if (configNameInput.value === name) {
-            configNameInput.value = '';
+        if (dom.configNameInput.value === name) {
+            dom.configNameInput.value = '';
         }
 
         await renderSavedConfigs();
@@ -689,17 +676,17 @@ function validateParameterCompatibility(provider) {
     let warnings = [];
     
     // Top K parameter - only supported by OpenAI Compatible, Deepseek, OpenRouter
-    if (enableTopKCheckbox?.checked && !['openai_compatible', 'deepseek', 'openrouter'].includes(provider)) {
+    if (dom.enableTopKCheckbox?.checked && !['openai_compatible', 'deepseek', 'openrouter'].includes(provider)) {
         warnings.push('Top K parameter is not supported by ' + provider + '. It will be ignored.');
     }
     
     // Reasoning effort - primarily for Antrophic and some OpenAI models
-    if (enableReasoningEffortCheckbox?.checked && !['antrophic', 'openai'].includes(provider)) {
+    if (dom.enableReasoningEffortCheckbox?.checked && !['antrophic', 'openai'].includes(provider)) {
         warnings.push('Reasoning effort parameter may not be supported by ' + provider + '.');
     }
     
     // Custom parameters - mainly for OpenAI Compatible and OpenRouter
-    if (enableCustomParamsCheckbox?.checked && !['openai_compatible', 'openrouter'].includes(provider)) {
+    if (dom.enableCustomParamsCheckbox?.checked && !['openai_compatible', 'openrouter'].includes(provider)) {
         warnings.push('Custom parameters may not be fully supported by ' + provider + '.');
     }
     
@@ -711,23 +698,23 @@ function validateParameterCompatibility(provider) {
 
 // Function to show or hide the Base URL input based on the selected provider
 function toggleBaseUrlInput() {
-    const selectedProvider = providerSelect.value;
-    baseUrlContainer.style.display = selectedProvider === 'openai_compatible' ? 'block' : 'none';
+    const selectedProvider = dom.providerSelect.value;
+    dom.baseUrlContainer.style.display = selectedProvider === 'openai_compatible' ? 'block' : 'none';
     if (selectedProvider !== 'openai_compatible') {
-        baseUrlInput.value = ''; // Clear the input if hidden
+        dom.baseUrlInput.value = ''; // Clear the input if hidden
     }
 }
 
 // Function to toggle aspect ratio visibility for video generation
 function toggleAspectRatio() {
-    const aspectRatioEnabled = videoAspectRatioEnabled.checked;
+    const aspectRatioEnabled = dom.videoAspectRatioEnabled.checked;
     
     if (aspectRatioEnabled) {
-        aspectRatioGroup.style.display = 'block';
-        aspectRatioGroup.classList.remove('disabled');
+        dom.aspectRatioGroup.style.display = 'block';
+        dom.aspectRatioGroup.classList.remove('disabled');
     } else {
-        aspectRatioGroup.style.display = 'none';
-        aspectRatioGroup.classList.add('disabled');
+        dom.aspectRatioGroup.style.display = 'none';
+        dom.aspectRatioGroup.classList.add('disabled');
     }
 }
 
@@ -735,9 +722,9 @@ function toggleAspectRatio() {
 
 // Fetches the list of available models from the provider's API.
 async function fetchModels() {
-    const provider = providerSelect.value;
-    const apiKey = apiKeyInput.value.trim();
-    const baseUrl = baseUrlInput.value.trim();
+    const provider = dom.providerSelect.value;
+    const apiKey = dom.apiKeyInput.value.trim();
+    const baseUrl = dom.baseUrlInput.value.trim();
 
     // Don't fetch for providers that don't support it or if key is missing
     if (!apiKey || ['deepseek'].includes(provider)) {
@@ -798,13 +785,13 @@ async function populateModelDropdown(models) {
     const lastSelectedOption = await getStoredValue(LAST_SELECTED_MODEL_OPTION_KEY);
     const lastCustomName = await getStoredValue(LAST_CUSTOM_MODEL_NAME_KEY);
 
-    modelSelect.innerHTML = ''; // Clear existing options
+    dom.modelSelect.innerHTML = ''; // Clear existing options
 
     // Add the "Custom" option first
     const customOption = document.createElement('option');
     customOption.value = 'custom';
     customOption.textContent = 'Custom...';
-    modelSelect.appendChild(customOption);
+    dom.modelSelect.appendChild(customOption);
 
     // Sort models by ID (name)
     if (Array.isArray(models)) {
@@ -814,26 +801,26 @@ async function populateModelDropdown(models) {
             const option = document.createElement('option');
             option.value = model.id;
             option.textContent = model.id;
-            modelSelect.appendChild(option);
+            dom.modelSelect.appendChild(option);
         });
     }
 
     // Try to restore the last selection from the dropdown's state
-    if (lastSelectedOption && Array.from(modelSelect.options).some(opt => opt.value === lastSelectedOption)) {
-        modelSelect.value = lastSelectedOption;
+    if (lastSelectedOption && Array.from(dom.modelSelect.options).some(opt => opt.value === lastSelectedOption)) {
+        dom.modelSelect.value = lastSelectedOption;
     } else {
         // Fallback to a default if no selection was stored or it's no longer valid
         const defaultModel = 'gpt-4o'; // A sensible default
-        if(Array.from(modelSelect.options).some(opt => opt.value === defaultModel)) {
-            modelSelect.value = defaultModel;
-        } else if (modelSelect.options.length > 1) {
-            modelSelect.selectedIndex = 1; // Select the first model in the list
+        if(Array.from(dom.modelSelect.options).some(opt => opt.value === defaultModel)) {
+            dom.modelSelect.value = defaultModel;
+        } else if (dom.modelSelect.options.length > 1) {
+            dom.modelSelect.selectedIndex = 1; // Select the first model in the list
         }
     }
     
     // If the last selected option was 'custom', restore the custom input text
-    if (modelSelect.value === 'custom' && lastCustomName) {
-        customModelInput.value = lastCustomName;
+    if (dom.modelSelect.value === 'custom' && lastCustomName) {
+        dom.customModelInput.value = lastCustomName;
     }
     
     // Trigger the change handler to set UI visibility correctly
@@ -843,31 +830,31 @@ async function populateModelDropdown(models) {
 
 // Handles changes in the model selection dropdown.
 function handleModelSelectionChange() {
-    if (modelSelect.value === 'custom') {
-        customModelInput.style.display = 'block';
+    if (dom.modelSelect.value === 'custom') {
+        dom.customModelInput.style.display = 'block';
     } else {
-        customModelInput.style.display = 'none';
+        dom.customModelInput.style.display = 'none';
     }
     
     // Automatically detect and set image model type based on model name
     const generationType = document.querySelector('input[name="generation-type"]:checked')?.value;
-    if (generationType === 'image' && imageModelTypeSelect) {
-        const selectedModel = modelSelect.value === 'custom' 
-            ? customModelInput.value.trim() 
-            : modelSelect.value;
+    if (generationType === 'image' && dom.imageModelTypeSelect) {
+        const selectedModel = dom.modelSelect.value === 'custom' 
+            ? dom.customModelInput.value.trim() 
+            : dom.modelSelect.value;
         
         if (selectedModel) {
             const lowerModel = selectedModel.toLowerCase();
             if (lowerModel.includes('dall-e-2')) {
-                imageModelTypeSelect.value = 'dalle2';
+                dom.imageModelTypeSelect.value = 'dalle2';
             } else if (lowerModel.includes('dall-e-3')) {
-                imageModelTypeSelect.value = 'dalle3';
+                dom.imageModelTypeSelect.value = 'dalle3';
             } else if (lowerModel.includes('gpt-image-1')) {
-                imageModelTypeSelect.value = 'gptimage1';
+                dom.imageModelTypeSelect.value = 'gptimage1';
             } else if (lowerModel.includes('flux') || lowerModel.includes('black-forest-labs')) {
-                imageModelTypeSelect.value = 'flux';
+                dom.imageModelTypeSelect.value = 'flux';
             } else if (lowerModel.includes('imagen')) {
-                imageModelTypeSelect.value = 'imagen';
+                dom.imageModelTypeSelect.value = 'imagen';
             }
             
             // Update UI based on the auto-selected model type
@@ -886,36 +873,36 @@ function handleImageModelTypeChange() {
 
 // Updates the image options UI based on the selected model type
 function updateImageOptionsUI() {
-    const modelType = imageModelTypeSelect ? imageModelTypeSelect.value : '';
+    const modelType = dom.imageModelTypeSelect ? dom.imageModelTypeSelect.value : '';
     
     // Reset UI elements
-    if (imageQualityContainer) imageQualityContainer.style.display = 'none';
-    if (imageResolutionContainer) imageResolutionContainer.style.display = 'block';
-    if (imageResolutionSelect) imageResolutionSelect.style.display = 'block';
-    if (imageResolutionInputs) imageResolutionInputs.style.display = 'none';
-    if (imageAspectRatioContainer) imageAspectRatioContainer.style.display = 'none';
+    if (dom.imageQualityContainer) dom.imageQualityContainer.style.display = 'none';
+    if (dom.imageResolutionContainer) dom.imageResolutionContainer.style.display = 'block';
+    if (dom.imageResolutionSelect) dom.imageResolutionSelect.style.display = 'block';
+    if (dom.imageResolutionInputs) dom.imageResolutionInputs.style.display = 'none';
+    if (dom.imageAspectRatioContainer) dom.imageAspectRatioContainer.style.display = 'none';
     
     // Clear resolution options
-    if (imageResolutionSelect) {
-        imageResolutionSelect.innerHTML = '';
+    if (dom.imageResolutionSelect) {
+        dom.imageResolutionSelect.innerHTML = '';
     }
     
     // Update UI based on model type
     switch (modelType) {
         case 'dalle2':
             // Show quality options (but disable for DALL-E-2)
-            if (imageQualityContainer) imageQualityContainer.style.display = 'none';
+            if (dom.imageQualityContainer) dom.imageQualityContainer.style.display = 'none';
             
             // Show standard resolution elements
-            if (imageResolutionContainer) imageResolutionContainer.style.display = 'block';
-            const dalle2Label = imageResolutionContainer.querySelector('label[for="image-resolution-select"]');
+            if (dom.imageResolutionContainer) dom.imageResolutionContainer.style.display = 'block';
+            const dalle2Label = dom.imageResolutionContainer.querySelector('label[for="image-resolution-select"]');
             if (dalle2Label) dalle2Label.style.display = 'block';
-            if (imageResolutionSelect) imageResolutionSelect.style.display = 'block';
-            if (imageResolutionInputs) imageResolutionInputs.style.display = 'none';
+            if (dom.imageResolutionSelect) dom.imageResolutionSelect.style.display = 'block';
+            if (dom.imageResolutionInputs) dom.imageResolutionInputs.style.display = 'none';
             
             // Update resolution options for DALL-E-2
-            if (imageResolutionSelect) {
-                imageResolutionSelect.innerHTML = `
+            if (dom.imageResolutionSelect) {
+                dom.imageResolutionSelect.innerHTML = `
                     <option value="256x256">256x256</option>
                     <option value="512x512">512x512</option>
                     <option value="1024x1024" selected>1024x1024</option>
@@ -925,25 +912,25 @@ function updateImageOptionsUI() {
             
         case 'dalle3':
             // Show quality options for DALL-E-3
-            if (imageQualityContainer) imageQualityContainer.style.display = 'block';
-            if (qualitySelect) {
+            if (dom.imageQualityContainer) dom.imageQualityContainer.style.display = 'block';
+            if (dom.qualitySelect) {
                 // Update quality options for DALL-E-3
-                qualitySelect.innerHTML = `
+                dom.qualitySelect.innerHTML = `
                     <option value="standard" selected>Standard</option>
                     <option value="hd">HD</option>
                 `;
             }
             
             // Show standard resolution elements
-            if (imageResolutionContainer) imageResolutionContainer.style.display = 'block';
-            const dalle3Label = imageResolutionContainer.querySelector('label[for="image-resolution-select"]');
+            if (dom.imageResolutionContainer) dom.imageResolutionContainer.style.display = 'block';
+            const dalle3Label = dom.imageResolutionContainer.querySelector('label[for="image-resolution-select"]');
             if (dalle3Label) dalle3Label.style.display = 'block';
-            if (imageResolutionSelect) imageResolutionSelect.style.display = 'block';
-            if (imageResolutionInputs) imageResolutionInputs.style.display = 'none';
+            if (dom.imageResolutionSelect) dom.imageResolutionSelect.style.display = 'block';
+            if (dom.imageResolutionInputs) dom.imageResolutionInputs.style.display = 'none';
             
             // Update resolution options for DALL-E-3
-            if (imageResolutionSelect) {
-                imageResolutionSelect.innerHTML = `
+            if (dom.imageResolutionSelect) {
+                dom.imageResolutionSelect.innerHTML = `
                     <option value="1024x1024" selected>1024x1024</option>
                     <option value="1792x1024">1792x1024</option>
                     <option value="1024x1792">1024x1792</option>
@@ -953,10 +940,10 @@ function updateImageOptionsUI() {
             
         case 'gptimage1':
             // Show quality options for GPT-IMAGE-1
-            if (imageQualityContainer) imageQualityContainer.style.display = 'block';
-            if (qualitySelect) {
+            if (dom.imageQualityContainer) dom.imageQualityContainer.style.display = 'block';
+            if (dom.qualitySelect) {
                 // Update quality options for GPT-IMAGE-1
-                qualitySelect.innerHTML = `
+                dom.qualitySelect.innerHTML = `
                     <option value="auto" selected>Auto</option>
                     <option value="high">High</option>
                     <option value="medium">Medium</option>
@@ -965,8 +952,8 @@ function updateImageOptionsUI() {
             }
             
             // Update resolution options for GPT-IMAGE-1
-            if (imageResolutionSelect) {
-                imageResolutionSelect.innerHTML = `
+            if (dom.imageResolutionSelect) {
+                dom.imageResolutionSelect.innerHTML = `
                     <option value="1024x1024" selected>1024x1024</option>
                     <option value="1536x1024">1536x1024</option>
                     <option value="1024x1536">1024x1536</option>
@@ -976,47 +963,47 @@ function updateImageOptionsUI() {
             
         case 'flux':
             // Hide quality options for FLUX models
-            if (imageQualityContainer) imageQualityContainer.style.display = 'none';
+            if (dom.imageQualityContainer) dom.imageQualityContainer.style.display = 'none';
             
             // Show container but hide standard resolution elements, show FLUX-specific inputs
-            if (imageResolutionContainer) imageResolutionContainer.style.display = 'block';
+            if (dom.imageResolutionContainer) dom.imageResolutionContainer.style.display = 'block';
             // Hide the standard resolution label and dropdown
-            const fluxLabel = imageResolutionContainer.querySelector('label[for="image-resolution-select"]');
+            const fluxLabel = dom.imageResolutionContainer.querySelector('label[for="image-resolution-select"]');
             if (fluxLabel) fluxLabel.style.display = 'none';
-            if (imageResolutionSelect) imageResolutionSelect.style.display = 'none';
+            if (dom.imageResolutionSelect) dom.imageResolutionSelect.style.display = 'none';
             // Show FLUX-specific inputs
-            if (imageResolutionInputs) imageResolutionInputs.style.display = 'block';
+            if (dom.imageResolutionInputs) dom.imageResolutionInputs.style.display = 'block';
             
             // Initialize FLUX steps slider value display
-            if (fluxStepsInput) {
+            if (dom.fluxStepsInput) {
                 const fluxStepsValue = document.getElementById('flux-steps-value');
                 if (fluxStepsValue) {
-                    fluxStepsValue.textContent = fluxStepsInput.value;
+                    fluxStepsValue.textContent = dom.fluxStepsInput.value;
                 }
             }
             break;
             
         case 'imagen':
             // Hide quality and resolution options for IMAGEN models
-            if (imageQualityContainer) imageQualityContainer.style.display = 'none';
-            if (imageResolutionContainer) imageResolutionContainer.style.display = 'none';
+            if (dom.imageQualityContainer) dom.imageQualityContainer.style.display = 'none';
+            if (dom.imageResolutionContainer) dom.imageResolutionContainer.style.display = 'none';
             
             // Show aspect ratio options
-            if (imageAspectRatioContainer) imageAspectRatioContainer.style.display = 'block';
+            if (dom.imageAspectRatioContainer) dom.imageAspectRatioContainer.style.display = 'block';
             break;
             
         default:
             // Hide all options if no model type is selected
-            if (imageQualityContainer) imageQualityContainer.style.display = 'none';
-            if (imageResolutionContainer) imageResolutionContainer.style.display = 'none';
-            if (imageAspectRatioContainer) imageAspectRatioContainer.style.display = 'none';
+            if (dom.imageQualityContainer) dom.imageQualityContainer.style.display = 'none';
+            if (dom.imageResolutionContainer) dom.imageResolutionContainer.style.display = 'none';
+            if (dom.imageAspectRatioContainer) dom.imageAspectRatioContainer.style.display = 'none';
     }
     
     // Update note text
     const imageModelNote = document.getElementById('image-model-note');
     if (imageModelNote) {
         if (modelType) {
-            imageModelNote.textContent = `Configured for ${imageModelTypeSelect.options[imageModelTypeSelect.selectedIndex].text}`;
+            imageModelNote.textContent = `Configured for ${dom.imageModelTypeSelect.options[dom.imageModelTypeSelect.selectedIndex].text}`;
         } else {
             imageModelNote.textContent = 'Please select a model type to configure image generation options.';
         }
@@ -1025,19 +1012,85 @@ function updateImageOptionsUI() {
 
 // --- UI MANIPULATION (Refactored) ---
 
+function updateAllToggleVisibility() {
+    const parameterToggles = {
+        'enable-system-prompt-checkbox': {
+            group: document.getElementById('system-prompt-group')
+        },
+        'enable-temperature-checkbox': {
+            group: document.getElementById('temperature-group'),
+            input: dom.temperatureInput,
+            valueDisplay: dom.temperatureValue,
+            defaultValue: '1',
+            toFixed: 1
+        },
+        'enable-top-p-checkbox': {
+            group: document.getElementById('top-p-group'),
+            input: dom.topPInput,
+            valueDisplay: dom.topPValue,
+            defaultValue: '1',
+            toFixed: 2
+        },
+        'enable-top-k-checkbox': {
+            group: document.getElementById('top-k-group'),
+            input: dom.topKInput,
+            valueDisplay: dom.topKValue,
+            defaultValue: '50'
+        },
+        'enable-max-tokens-checkbox': {
+            group: document.getElementById('max-tokens-group'),
+            input: dom.maxTokensInput,
+            defaultValue: '1024'
+        },
+        'enable-reasoning-effort-checkbox': {
+            group: document.getElementById('reasoning-effort-group')
+        },
+        'enable-custom-params-checkbox': {
+            group: document.getElementById('custom-params-group')
+        },
+        'enable-quality-checkbox': {
+            group: document.getElementById('quality-options-container'),
+        },
+    };
+
+    Object.keys(parameterToggles).forEach(checkboxId => {
+        const checkbox = document.getElementById(checkboxId);
+        const config = parameterToggles[checkboxId];
+        const group = config.group;
+
+        if (checkbox && group) {
+            if (checkbox.checked) {
+                group.style.display = '';
+            } else {
+                group.style.display = 'none';
+                if (config.input) {
+                    config.input.value = config.defaultValue;
+                    if (config.valueDisplay) {
+                        if (config.toFixed) {
+                            config.valueDisplay.textContent = parseFloat(config.defaultValue).toFixed(config.toFixed);
+                        } else {
+                            config.valueDisplay.textContent = config.defaultValue;
+                        }
+                    }
+                }
+            }
+        }
+    });
+}
+
 // Main function to control UI visibility based on generation type
 function toggleGenerationOptions() {
     const generationType = document.querySelector('input[name="generation-type"]:checked')?.value;
     if (!generationType) return;
 
     // Hide all advanced option groups first
-    textGenerationOptions.style.display = 'none';
-    imageOptionsContainer.style.display = 'none';
-    audioOptionsContainer.style.display = 'none';
-    videoOptionsContainer.style.display = 'none';
+    dom.textGenerationOptions.style.display = 'none';
+    dom.imageOptionsContainer.style.display = 'none';
+    dom.audioOptionsContainer.style.display = 'none';
+    dom.videoOptionsContainer.style.display = 'none';
 
     // Always show prompt input, but hide for STT
-    promptInput.style.display = 'block';
+    dom.promptInput.style.display = 'block';
 
     // Hide audio input container by default
     const audioInputContainer = document.getElementById('audio-input-container');
@@ -1047,7 +1100,7 @@ function toggleGenerationOptions() {
     // Configure UI based on the selected generation type
     switch (generationType) {
         case 'text':
-            textGenerationOptions.style.display = 'block';
+            dom.textGenerationOptions.style.display = 'block';
             const promptLabelElText = document.getElementById('prompt-label');
             if (promptLabelElText) {
                 promptLabelElText.style.display = 'inline-block';
@@ -1055,7 +1108,7 @@ function toggleGenerationOptions() {
             }
             break;
         case 'image':
-            imageOptionsContainer.style.display = 'block';
+            dom.imageOptionsContainer.style.display = 'block';
             const promptLabelElImage = document.getElementById('prompt-label');
             if (promptLabelElImage) {
                 promptLabelElImage.style.display = 'inline-block';
@@ -1066,7 +1119,7 @@ function toggleGenerationOptions() {
             break;
         case 'audio':
             
-            audioOptionsContainer.style.display = 'block';
+            dom.audioOptionsContainer.style.display = 'block';
             const audioInputContainer = document.getElementById('audio-input-container');
             if (audioInputContainer) audioInputContainer.style.display = 'block';
             const audioTypeSelectEl = document.getElementById('audio-type-select');
@@ -1077,26 +1130,26 @@ function toggleGenerationOptions() {
             // Always show audio sub-options based on audio type selection
             if (audioType === 'tts') {
                 if (enableSttStreamingContainer) enableSttStreamingContainer.style.display = 'none';
-                voiceOptionsContainer.style.display = 'block';
-                if (sttInputContainer) sttInputContainer.style.display = 'none';
+                dom.voiceOptionsContainer.style.display = 'block';
+                if (dom.sttInputContainer) dom.sttInputContainer.style.display = 'none';
                 promptLabel.style.display = 'inline-block'; // Show label for TTS
                 promptLabel.textContent = 'Text to Speak:';
-                promptInput.style.display = 'block';
+                dom.promptInput.style.display = 'block';
             } else { // STT
                 if (enableSttStreamingContainer) enableSttStreamingContainer.style.display = 'block';
-                voiceOptionsContainer.style.display = 'none';
-                if (sttInputContainer) sttInputContainer.style.display = 'block';
+                dom.voiceOptionsContainer.style.display = 'none';
+                if (dom.sttInputContainer) dom.sttInputContainer.style.display = 'block';
                 promptLabel.style.display = 'none'; // Hide label for STT
-                promptInput.style.display = 'none'; // Prompt input is not used for STT
+                dom.promptInput.style.display = 'none'; // Prompt input is not used for STT
             }
             break;
         case 'video':
-            videoOptionsContainer.style.display = 'block';
+            dom.videoOptionsContainer.style.display = 'block';
             document.getElementById('prompt-label').textContent = 'Video Description:';
             // Aspect ratio group visibility is now primarily controlled by its toggle
             const aspectRatioToggle = document.getElementById('video-aspect-ratio-enabled');
             if (aspectRatioToggle) {
-                 aspectRatioGroup.style.display = aspectRatioToggle.checked ? 'block' : 'none';
+                 dom.aspectRatioGroup.style.display = aspectRatioToggle.checked ? 'block' : 'none';
             }
             break;
     }
@@ -1113,7 +1166,7 @@ function displayError(message) {
     console.error('Error:', message);
 
     // Render error message and add a centered "Copy" button
-    outputText.innerHTML = `
+    dom.outputText.innerHTML = `
         <span style="color: red;">Error: ${message}</span><br>
         <button id="copy-error-btn" class="copy-btn">
             Copy
@@ -1135,61 +1188,61 @@ function displayError(message) {
     }
 
     // Display the error panel
-    outputImage.style.display = 'none';
-    outputImage.src = '';
-    outputArea.style.display = 'block';
-    outputArea.style.borderColor = 'red';
+    dom.outputImage.style.display = 'none';
+    dom.outputImage.src = '';
+    dom.outputArea.style.display = 'block';
+    dom.outputArea.style.borderColor = 'red';
 }
 
 // Clears the output area, stats, and resets payload/response displays.
 function clearOutput() {
-    outputText.innerHTML = '';
-    outputImage.style.display = 'none';
-    outputImage.src = '';
-    downloadImageBtn.style.display = 'none'; // Hide image download button
-    downloadImageBtn.href = '';
-    outputAudio.style.display = 'none';
-    outputAudio.src = '';
-    downloadAudio.style.display = 'none';
-    downloadAudio.href = '';
-    outputVideo.style.display = 'none';
-    outputVideo.src = '';
-    downloadVideoBtn.style.display = 'none';
-    downloadVideoBtn.href = '';
-    outputArea.style.display = 'none';
-    outputArea.style.borderColor = '#ccc';
-    statsArea.style.display = 'none'; // Hide stats area too
-    statsArea.innerHTML = '';
-    payloadContainer.style.display = 'none'; // Hide payload container
-    payloadDisplayArea.style.display = 'none'; // Hide payload display
-    responseDisplayArea.style.display = 'none'; // Hide response display
-    togglePayloadBtn.textContent = 'Show Request'; // Reset button text
-    togglePayloadBtn.classList.remove('active');
-    toggleResponseBtn.textContent = 'Show Response'; // Reset button text
-    toggleResponseBtn.classList.remove('active');
+    dom.outputText.innerHTML = '';
+    dom.outputImage.style.display = 'none';
+    dom.outputImage.src = '';
+    dom.downloadImageBtn.style.display = 'none'; // Hide image download button
+    dom.downloadImageBtn.href = '';
+    dom.outputAudio.style.display = 'none';
+    dom.outputAudio.src = '';
+    dom.downloadAudio.style.display = 'none';
+    dom.downloadAudio.href = '';
+    dom.outputVideo.style.display = 'none';
+    dom.outputVideo.src = '';
+    dom.downloadVideoBtn.style.display = 'none';
+    dom.downloadVideoBtn.href = '';
+    dom.outputArea.style.display = 'none';
+    dom.outputArea.style.borderColor = '#ccc';
+    dom.statsArea.style.display = 'none'; // Hide stats area too
+    dom.statsArea.innerHTML = '';
+    dom.payloadContainer.style.display = 'none'; // Hide payload container
+    dom.payloadDisplayArea.style.display = 'none'; // Hide payload display
+    dom.responseDisplayArea.style.display = 'none'; // Hide response display
+    dom.togglePayloadBtn.textContent = 'Show Request'; // Reset button text
+    dom.togglePayloadBtn.classList.remove('active');
+    dom.toggleResponseBtn.textContent = 'Show Response'; // Reset button text
+    dom.toggleResponseBtn.classList.remove('active');
     lastRequestPayload = null; // Reset stored payload
     lastApiResponse = null;    // Reset stored response
-    if (loadingIndicator) hideLoader(); // Ensure loader is hidden
+    if (dom.loadingIndicator) hideLoader(); // Ensure loader is hidden
 }
 
 // --- LOADER FUNCTIONS ---
 // Functions to show and hide the loading indicator.
 function showLoader() {
-    if (loadingIndicator) loadingIndicator.style.display = 'flex';
+    if (dom.loadingIndicator) dom.loadingIndicator.style.display = 'flex';
 }
 
 function hideLoader() {
-    if (loadingIndicator) loadingIndicator.style.display = 'none';
+    if (dom.loadingIndicator) dom.loadingIndicator.style.display = 'none';
 }
 
 function showStopButton() {
-    if (sendButton) sendButton.style.display = 'none';
-    if (stopButton) stopButton.style.display = 'inline-block';
+    if (dom.sendButton) dom.sendButton.style.display = 'none';
+    if (dom.stopButton) dom.stopButton.style.display = 'inline-block';
 }
 
 function hideStopButton() {
-    if (stopButton) stopButton.style.display = 'none';
-    if (sendButton) sendButton.style.display = 'inline-block';
+    if (dom.stopButton) dom.stopButton.style.display = 'none';
+    if (dom.sendButton) dom.sendButton.style.display = 'inline-block';
 }
 
 // --- API RESPONSE HELPER ---
@@ -1229,6 +1282,47 @@ async function handleApiResponse(response) {
 }
 
 
+// --- API HELPERS ---
+function getApiUrl(provider, generationType, baseUrl) {
+    const cleanBaseUrl = baseUrl ? (baseUrl.endsWith('/') ? baseUrl.slice(0, -1) : baseUrl) : '';
+
+    const endpoints = {
+        openai: {
+            text: 'https://api.openai.com/v1/chat/completions',
+            image: 'https://api.openai.com/v1/images/generations',
+            audio: 'https://api.openai.com/v1/audio/speech',
+            stt: 'https://api.openai.com/v1/audio/transcriptions',
+        },
+        openai_compatible: {
+            text: `${cleanBaseUrl}/chat/completions`,
+            image: `${cleanBaseUrl}/images/generations`,
+            audio: `${cleanBaseUrl}/audio/speech`,
+            stt: `${cleanBaseUrl}/audio/transcriptions`,
+            video: `${cleanBaseUrl}/video/generations`,
+        },
+        deepseek: {
+            text: 'https://api.deepseek.com/chat/completions',
+        },
+        antrophic: {
+            text: 'https://api.anthropic.com/v1/messages',
+        },
+        openrouter: {
+            text: 'https://openrouter.ai/api/v1/chat/completions',
+        },
+    };
+
+    if (provider === 'openai_compatible' && !cleanBaseUrl) {
+        return null;
+    }
+    
+    if (generationType === 'audio') {
+        const audioType = dom.audioTypeSelect.value;
+        return endpoints[provider]?.[audioType === 'tts' ? 'audio' : 'stt'];
+    }
+
+    return endpoints[provider]?.[generationType];
+}
+
 // --- API CALLS ---
 // Functions responsible for making API calls to different providers and generation types.
 
@@ -1240,12 +1334,18 @@ async function callTextApi(provider, apiKey, baseUrl, model, prompt) {
     showLoader(); // Show loader at the start
     showStopButton(); // Show stop button
     clearOutput();
-    outputText.innerHTML = 'Sending text request...';
-    outputArea.style.display = 'block';
+    dom.outputText.innerHTML = 'Sending text request...';
+    dom.outputArea.style.display = 'block';
 
-    let apiUrl = '';
+    const apiUrl = getApiUrl(provider, 'text', baseUrl);
+    if (!apiUrl) {
+        hideLoader();
+        hideStopButton();
+        return displayError('Could not determine API URL. For OpenAI Compatible provider, Base URL is required.');
+    }
+
     let headers = {};
-    const streamEnabled = enableStreamingCheckbox ? enableStreamingCheckbox.checked : true;
+    const streamEnabled = dom.enableStreamingCheckbox ? dom.enableStreamingCheckbox.checked : true;
 
     // Create AbortController for cancellation
     const controller = new AbortController();
@@ -1255,8 +1355,8 @@ async function callTextApi(provider, apiKey, baseUrl, model, prompt) {
     // Construct messages array
     const messages = [];
     // System Prompt nur senden, wenn Toggle aktiv
-    if (enableSystemPromptCheckbox?.checked && systemPromptInput.value.trim()) {
-        messages.push({ role: 'system', content: systemPromptInput.value.trim() });
+    if (dom.enableSystemPromptCheckbox?.checked && dom.systemPromptInput.value.trim()) {
+        messages.push({ role: 'system', content: dom.systemPromptInput.value.trim() });
     }
     messages.push({ role: 'user', content: prompt });
 
@@ -1269,25 +1369,25 @@ async function callTextApi(provider, apiKey, baseUrl, model, prompt) {
     };
 
     // Add optional parameters ONLY IF ENABLED
-    if (enableTemperatureCheckbox?.checked && temperatureInput.value) body.temperature = parseFloat(temperatureInput.value);
-    if (enableTopPCheckbox?.checked && topPInput.value) body.top_p = parseFloat(topPInput.value);
+    if (dom.enableTemperatureCheckbox?.checked && dom.temperatureInput.value) body.temperature = parseFloat(dom.temperatureInput.value);
+    if (dom.enableTopPCheckbox?.checked && dom.topPInput.value) body.top_p = parseFloat(dom.topPInput.value);
     
     // Top K parameter (only for compatible providers)
-    if (enableTopKCheckbox?.checked && topKInput.value && ['openai_compatible', 'deepseek', 'openrouter'].includes(provider)) {
-        body.top_k = parseInt(topKInput.value, 10);
+    if (dom.enableTopKCheckbox?.checked && dom.topKInput.value && ['openai_compatible', 'deepseek', 'openrouter'].includes(provider)) {
+        body.top_k = parseInt(dom.topKInput.value, 10);
     }
     
-    if (enableMaxTokensCheckbox?.checked && maxTokensInput.value) body.max_tokens = parseInt(maxTokensInput.value, 10);
+    if (dom.enableMaxTokensCheckbox?.checked && dom.maxTokensInput.value) body.max_tokens = parseInt(dom.maxTokensInput.value, 10);
     
     // Reasoning effort parameter
-    if (enableReasoningEffortCheckbox?.checked && reasoningEffortSelect && reasoningEffortSelect.value.trim()) {
-        body.reasoning_effort = reasoningEffortSelect.value.trim();
+    if (dom.enableReasoningEffortCheckbox?.checked && dom.reasoningEffortSelect && dom.reasoningEffortSelect.value.trim()) {
+        body.reasoning_effort = dom.reasoningEffortSelect.value.trim();
     }
 
     // Custom parameters support
-    if (enableCustomParamsCheckbox?.checked && customParamsInput && customParamsInput.value.trim()) {
+    if (dom.enableCustomParamsCheckbox?.checked && dom.customParamsInput && dom.customParamsInput.value.trim()) {
         try {
-            const customParams = JSON.parse(customParamsInput.value.trim());
+            const customParams = JSON.parse(dom.customParamsInput.value.trim());
             if (typeof customParams === 'object' && customParams !== null && !Array.isArray(customParams)) {
                 // Merge custom parameters with the body (custom params take precedence)
                 Object.assign(body, customParams);
@@ -1302,54 +1402,43 @@ async function callTextApi(provider, apiKey, baseUrl, model, prompt) {
     // Configure based on provider
     switch (provider) {
         case 'openai':
-            apiUrl = 'https://api.openai.com/v1/chat/completions';
-            headers = { 'Content-Type': 'application/json', 'Authorization': `Bearer ${apiKey}` };
-            break;
         case 'deepseek':
-            apiUrl = 'https://api.deepseek.com/chat/completions';
-            headers = { 'Content-Type': 'application/json', 'Authorization': `Bearer ${apiKey}` };
-            body.stream = false; // Override for Deepseek
-            break;
         case 'openai_compatible':
-            if (!baseUrl) {
-                hideLoader();
-                hideStopButton();
-                return displayError('Base URL is required for OpenAI Compatible provider.');
-            }
-            const cleanBaseUrl = baseUrl.endsWith('/') ? baseUrl.slice(0, -1) : baseUrl;
-            apiUrl = `${cleanBaseUrl}/chat/completions`;
+        case 'openrouter':
             headers = { 'Content-Type': 'application/json', 'Authorization': `Bearer ${apiKey}` };
+            if (provider === 'deepseek' || provider === 'openrouter') {
+                body.stream = false; // Override for Deepseek and OpenRouter
+            }
             break;
         case 'antrophic':
-            apiUrl = 'https://api.anthropic.com/v1/messages';
             headers = { 'Content-Type': 'application/json', 'x-api-key': apiKey, 'anthropic-version': '2023-06-01' };
             // Antrophic has a different body structure - rebuild it properly
             body = {
                 model: model,
                 messages: [{ role: 'user', content: prompt }],
-                max_tokens: (enableMaxTokensCheckbox?.checked && maxTokensInput.value) ? parseInt(maxTokensInput.value, 10) : 4096
+                max_tokens: (dom.enableMaxTokensCheckbox?.checked && dom.maxTokensInput.value) ? parseInt(dom.maxTokensInput.value, 10) : 4096
             };
             
             // Add system prompt if enabled
-            if (enableSystemPromptCheckbox?.checked && systemPromptInput.value.trim()) {
-                body.system = systemPromptInput.value.trim();
+            if (dom.enableSystemPromptCheckbox?.checked && dom.systemPromptInput.value.trim()) {
+                body.system = dom.systemPromptInput.value.trim();
             }
             
             // Add optional parameters only if enabled
-            if (enableTemperatureCheckbox?.checked && temperatureInput.value) {
-                body.temperature = parseFloat(temperatureInput.value);
+            if (dom.enableTemperatureCheckbox?.checked && dom.temperatureInput.value) {
+                body.temperature = parseFloat(dom.temperatureInput.value);
             }
-            if (enableTopPCheckbox?.checked && topPInput.value) {
-                body.top_p = parseFloat(topPInput.value);
+            if (dom.enableTopPCheckbox?.checked && dom.topPInput.value) {
+                body.top_p = parseFloat(dom.topPInput.value);
             }
-            if (enableReasoningEffortCheckbox?.checked && reasoningEffortSelect && reasoningEffortSelect.value.trim()) {
-                body.reasoning_effort = reasoningEffortSelect.value.trim();
+            if (dom.enableReasoningEffortCheckbox?.checked && dom.reasoningEffortSelect && dom.reasoningEffortSelect.value.trim()) {
+                body.reasoning_effort = dom.reasoningEffortSelect.value.trim();
             }
             
             // Add custom parameters for Antrophic if enabled
-            if (enableCustomParamsCheckbox?.checked && customParamsInput && customParamsInput.value.trim()) {
+            if (dom.enableCustomParamsCheckbox?.checked && dom.customParamsInput && dom.customParamsInput.value.trim()) {
                 try {
-                    const customParams = JSON.parse(customParamsInput.value.trim());
+                    const customParams = JSON.parse(dom.customParamsInput.value.trim());
                     if (typeof customParams === 'object' && customParams !== null && !Array.isArray(customParams)) {
                         Object.assign(body, customParams);
                     }
@@ -1359,12 +1448,6 @@ async function callTextApi(provider, apiKey, baseUrl, model, prompt) {
                 }
             }
             break;
-        case 'openrouter':
-            apiUrl = 'https://openrouter.ai/api/v1/chat/completions';
-            headers = { 'Content-Type': 'application/json', 'Authorization': `Bearer ${apiKey}` };
-            // OpenRouter uses a standard body, but we can disable stream for safety
-            body.stream = false;
-            break;
         default:
             hideLoader();
             hideStopButton();
@@ -1373,7 +1456,7 @@ async function callTextApi(provider, apiKey, baseUrl, model, prompt) {
 
     // Store payload before sending
     lastRequestPayload = JSON.stringify(body, null, 2);
-    payloadContainer.style.display = 'block';
+    dom.payloadContainer.style.display = 'block';
 
     // Make the API call
     const startTime = performance.now(); // Record start time
@@ -1399,8 +1482,8 @@ async function callTextApi(provider, apiKey, baseUrl, model, prompt) {
             // Handle streaming response
             const reader = response.body.getReader();
             const decoder = new TextDecoder("utf-8");
-            outputText.innerHTML = `<strong>${model}:</strong><br>`; // Initialize output area
-            outputArea.style.borderColor = '#ccc'; // Reset border color
+            dom.outputText.innerHTML = `<strong>${model}:</strong><br>`; // Initialize output area
+            dom.outputArea.style.borderColor = '#ccc'; // Reset border color
             let contentBuffer = "";
             let accumulatedResponse = "";
 
@@ -1411,7 +1494,7 @@ async function callTextApi(provider, apiKey, baseUrl, model, prompt) {
                 return text.trim().length > 0 ? text.trim().split(/\s+/).length : 0;
             }
              // Prompt tokens estimated from user + system prompt (if enabled)
-             const systemPromptText = (enableSystemPromptCheckbox?.checked && systemPromptInput?.value?.trim()) ? systemPromptInput.value.trim() : "";
+             const systemPromptText = (dom.enableSystemPromptCheckbox?.checked && dom.systemPromptInput?.value?.trim()) ? dom.systemPromptInput.value.trim() : "";
              const promptTokensEstimate = estimateTokens(prompt) + estimateTokens(systemPromptText);
 
             // New: Buffer for all provider responses during streaming (to reconstruct original)
@@ -1473,7 +1556,7 @@ async function callTextApi(provider, apiKey, baseUrl, model, prompt) {
                         
                              const ttftDisplay = ttftSecNum !== null ? `${ttftSecNum.toFixed(2)}s` : "…";
                         
-                             statsArea.innerHTML = `
+                             dom.statsArea.innerHTML = `
                                  <div><strong>Time:</strong> ${elapsedSecNum.toFixed(2)}s</div>
                                  <div><strong>Time to First Token:</strong> ${ttftDisplay}</div>
                                  <div><strong>Prompt Tokens:</strong> ${promptTokensFinal}</div>
@@ -1481,7 +1564,7 @@ async function callTextApi(provider, apiKey, baseUrl, model, prompt) {
                                  <div><strong>Completion Tokens:</strong> ${realCompletionTokens} (${completionTps} tps)</div>
                                  <div><strong>Total Tokens:</strong> ${totalTokensFinal} (${totalTps} tps)</div>
                              `;
-                             statsArea.style.display = 'block';
+                             dom.statsArea.style.display = 'block';
                          } else {
                              // Fallback to previous estimation logic when usage isn't available
                              let promptTokensEst = promptTokensEstimate;
@@ -1492,7 +1575,7 @@ async function callTextApi(provider, apiKey, baseUrl, model, prompt) {
                                  ? (completionTokensEst / timeSinceFirstToken).toFixed(2) : "…";
                              const timeToFirstToken = firstTokenTime ? ((firstTokenTime - startTime) / 1000).toFixed(2) : "…";
                         
-                             statsArea.innerHTML = `
+                             dom.statsArea.innerHTML = `
                                  <span><strong>Time:</strong> ${elapsed.toFixed(2)}s</span>
                                  <span><strong>Time to First Token:</strong> ${timeToFirstToken}s</span>
                                  <span><strong>Tokens/Sec:</strong> ${tokensPerSecondFinal}</span>
@@ -1501,7 +1584,7 @@ async function callTextApi(provider, apiKey, baseUrl, model, prompt) {
                                  <span><strong>Total Tokens:</strong> ${totalTokensEst}</span>
                                  <br><small>Live stats update – values estimated from streamed content.</small>
                              `;
-                             statsArea.style.display = 'block';
+                             dom.statsArea.style.display = 'block';
                          }
 
                         // Ensure any final buffered content is displayed (though typically not needed with SSE)
@@ -1512,7 +1595,7 @@ async function callTextApi(provider, apiKey, baseUrl, model, prompt) {
                                     const parsed = JSON.parse(jsonStr);
                                     if (parsed.choices && parsed.choices[0] && parsed.choices[0].delta && parsed.choices[0].delta.content) {
                                         const textChunk = parsed.choices[0].delta.content;
-                                        outputText.innerHTML += textChunk.replace(/\n/g, '<br>');
+                                        dom.outputText.innerHTML += textChunk.replace(/\n/g, '<br>');
                                     }
                                 } catch (e) {
                                     console.warn("Error parsing final streamed JSON chunk:", e, "Chunk:", jsonStr);
@@ -1564,7 +1647,7 @@ async function callTextApi(provider, apiKey, baseUrl, model, prompt) {
                                     const textChunk = parsed.choices[0].delta.content;
                                     contentBuffer += textChunk;
                                     accumulatedContent += textChunk;
-                                    outputText.innerHTML += textChunk.replace(/\n/g, '<br>');
+                                    dom.outputText.innerHTML += textChunk.replace(/\n/g, '<br>');
                                     streamedTokenCount = estimateTokens(contentBuffer);
                                     updateStatsNow = true;
                                 }
@@ -1604,7 +1687,7 @@ async function callTextApi(provider, apiKey, baseUrl, model, prompt) {
                             ? `<div><strong>Reasoning Tokens:</strong> ${reasoningTokensLive} (${reasoningTpsLive} tps)</div>`
                             : "";
 
-                        statsArea.innerHTML = `
+                        dom.statsArea.innerHTML = `
                             <div><strong>Time:</strong> ${elapsedSec.toFixed(2)}s</div>
                             <div><strong>Time to First Token:</strong> ${timeToFirstTokenDisplay}</div>
                             <div><strong>Prompt Tokens:</strong> ${promptTokensEstimate}</div>
@@ -1612,7 +1695,7 @@ async function callTextApi(provider, apiKey, baseUrl, model, prompt) {
                             <div><strong>Completion Tokens:</strong> ${completionTokensLive} (${completionTpsLive} tps)</div>
                             <div><strong>Total Tokens:</strong> ${totalTokensLive} (${totalTpsLive} tps)</div>
                         `;
-                        statsArea.style.display = 'block';
+                        dom.statsArea.style.display = 'block';
                     }
                     
                     // If [DONE] was seen, render final stats using server usage (if present) and exit
@@ -1638,7 +1721,7 @@ async function callTextApi(provider, apiKey, baseUrl, model, prompt) {
                         const completionTps = (sinceFirstSecNum > 0 && realCompletionTokens > 0) ? (realCompletionTokens / sinceFirstSecNum).toFixed(2) : "…";
                         const totalTps = (elapsedSecNum > 0 && completionTokensFinal > 0) ? (completionTokensFinal / elapsedSecNum).toFixed(2) : "…";
                         const ttftDisplay = ttftSecNum !== null ? `${ttftSecNum.toFixed(2)}s` : "…";
-                        statsArea.innerHTML = `
+                        dom.statsArea.innerHTML = `
                             <div><strong>Time:</strong> ${elapsedSecNum.toFixed(2)}s</div>
                             <div><strong>Time to First Token:</strong> ${ttftDisplay}</div>
                             <div><strong>Prompt Tokens:</strong> ${promptTokensFinal}</div>
@@ -1646,7 +1729,7 @@ async function callTextApi(provider, apiKey, baseUrl, model, prompt) {
                             <div><strong>Completion Tokens:</strong> ${realCompletionTokens} (${completionTps} tps)</div>
                             <div><strong>Total Tokens:</strong> ${totalTokensFinal} (${totalTps} tps)</div>
                         `;
-                        statsArea.style.display = 'block';
+                        dom.statsArea.style.display = 'block';
                         break; // Exit while(true)
                     }
                 }
@@ -1700,8 +1783,8 @@ async function callTextApi(provider, apiKey, baseUrl, model, prompt) {
             }
 
             // Display the AI response
-            outputText.innerHTML = `<strong>${model}:</strong><br>${aiContent.replace(/\n/g, '<br>')}`;
-            outputArea.style.borderColor = '#ccc';
+            dom.outputText.innerHTML = `<strong>${model}:</strong><br>${aiContent.replace(/\n/g, '<br>')}`;
+            dom.outputArea.style.borderColor = '#ccc';
 
             // Calculate and display stats if usage data is available
             if (data.usage) {
@@ -1715,29 +1798,29 @@ async function callTextApi(provider, apiKey, baseUrl, model, prompt) {
                     tokensPerSecond = (completionTokens / durationInSeconds).toFixed(2);
                 }
 
-                statsArea.innerHTML = `
+                dom.statsArea.innerHTML = `
                     <span><strong>Time:</strong> ${durationInSeconds.toFixed(2)}s</span>
                     <span><strong>Tokens/Sec:</strong> ${tokensPerSecond}</span>
                     <span><strong>Prompt Tokens:</strong> ${promptTokens}</span>
                     <span><strong>Completion Tokens:</strong> ${completionTokens}</span>
                     <span><strong>Total Tokens:</strong> ${totalTokens}</span>
                 `;
-                statsArea.style.display = 'block';
+                dom.statsArea.style.display = 'block';
             } else {
-                 statsArea.innerHTML = `<span><strong>Time:</strong> ${durationInSeconds.toFixed(2)}s</span><br><span>Usage data not available in response.</span>`;
-                 statsArea.style.display = 'block';
+                 dom.statsArea.innerHTML = `<span><strong>Time:</strong> ${durationInSeconds.toFixed(2)}s</span><br><span>Usage data not available in response.</span>`;
+                 dom.statsArea.style.display = 'block';
             }
         }
 } catch (error) {
     // Handle cancellation
     if (error.name === 'AbortError') {
-        outputText.innerHTML = 'Request cancelled by user.';
-        outputArea.style.borderColor = 'orange';
-        statsArea.style.display = 'none';
+        dom.outputText.innerHTML = 'Request cancelled by user.';
+        dom.outputArea.style.borderColor = 'orange';
+        dom.statsArea.style.display = 'none';
     } else {
         // lastApiResponse might contain error details already
         displayError(error.message); // displayError will hide loader
-        statsArea.style.display = 'none'; // Hide stats on error
+        dom.statsArea.style.display = 'none'; // Hide stats on error
     }
 } finally {
     hideLoader(); // Ensure loader is hidden
@@ -1752,40 +1835,29 @@ async function callImageApi(provider, apiKey, baseUrl, model, prompt) {
     showLoader(); // Show loader at the start
     showStopButton(); // Show stop button
     clearOutput();
-    outputText.innerHTML = 'Sending image request...'; // Use text area for status
-    outputArea.style.display = 'block';
-    statsArea.style.display = 'none'; // Will show stats later if successful
+    dom.outputText.innerHTML = 'Sending image request...'; // Use text area for status
+    dom.outputArea.style.display = 'block';
+    dom.statsArea.style.display = 'none'; // Will show stats later if successful
+
+    const apiUrl = getApiUrl(provider, 'image', baseUrl);
+    if (!apiUrl) {
+        hideLoader();
+        hideStopButton();
+        return displayError('Could not determine API URL for image generation.');
+    }
 
     // Create AbortController for cancellation
     const controller = new AbortController();
     const { signal } = controller;
     currentRequestController = controller; // Store reference for cancellation
 
-    let apiUrl = '';
     let headers = {
         'Content-Type': 'application/json',
         'Authorization': `Bearer ${apiKey}`
     };
 
-    // Determine API URL based on provider
-    if (provider === 'openai') {
-        apiUrl = 'https://api.openai.com/v1/images/generations';
-    } else if (provider === 'openai_compatible') {
-        if (!baseUrl) {
-            hideLoader();
-            hideStopButton();
-            return displayError('Base URL is required for OpenAI Compatible image generation.');
-        }
-        const cleanBaseUrl = baseUrl.endsWith('/') ? baseUrl.slice(0, -1) : baseUrl;
-        apiUrl = `${cleanBaseUrl}/images/generations`;
-    } else {
-        hideLoader();
-        hideStopButton();
-        return displayError(`Image generation is currently only supported for OpenAI and potentially OpenAI Compatible providers in this example.`);
-    }
-
     // Get the selected model type
-    const modelType = imageModelTypeSelect ? imageModelTypeSelect.value : '';
+    const modelType = dom.imageModelTypeSelect ? dom.imageModelTypeSelect.value : '';
     
     // Prepare the request body based on model type
     const body = {
@@ -1804,47 +1876,47 @@ async function callImageApi(provider, apiKey, baseUrl, model, prompt) {
     switch (modelType) {
         case 'dalle2':
             // DALL-E-2: No quality option, specific resolutions
-            const dalle2Resolution = imageResolutionSelect.value || '1024x1024';
+            const dalle2Resolution = dom.imageResolutionSelect.value || '1024x1024';
             body.size = dalle2Resolution;
             [width, height] = dalle2Resolution.split('x');
             break;
             
         case 'dalle3':
             // DALL-E-3: Quality options (standard, hd), specific resolutions
-            const dalle3Resolution = imageResolutionSelect.value || '1024x1024';
+            const dalle3Resolution = dom.imageResolutionSelect.value || '1024x1024';
             body.size = dalle3Resolution;
             
             // Add quality parameter if enabled
-            if (enableQualityCheckbox.checked) {
-                const qualityValue = qualitySelect.value;
+            if (dom.enableQualityCheckbox.checked) {
+                const qualityValue = dom.qualitySelect.value;
                 if (qualityValue && qualityValue !== 'custom') {
                     body.quality = qualityValue;
-                } else if (qualityValue === 'custom' && customQualityInput.value.trim()) {
-                    body.quality = customQualityInput.value.trim();
+                } else if (qualityValue === 'custom' && dom.customQualityInput.value.trim()) {
+                    body.quality = dom.customQualityInput.value.trim();
                 }
             }
             break;
             
         case 'gptimage1':
             // GPT-IMAGE-1: Quality options (auto, high, medium, low), specific resolutions
-            const gptImageResolution = imageResolutionSelect.value || '1024x1024';
+            const gptImageResolution = dom.imageResolutionSelect.value || '1024x1024';
             body.size = gptImageResolution;
             
             // Add quality parameter if enabled
-            if (enableQualityCheckbox.checked) {
-                const qualityValue = qualitySelect.value;
+            if (dom.enableQualityCheckbox.checked) {
+                const qualityValue = dom.qualitySelect.value;
                 if (qualityValue && qualityValue !== 'custom') {
                     body.quality = qualityValue;
-                } else if (qualityValue === 'custom' && customQualityInput.value.trim()) {
-                    body.quality = customQualityInput.value.trim();
+                } else if (qualityValue === 'custom' && dom.customQualityInput.value.trim()) {
+                    body.quality = dom.customQualityInput.value.trim();
                 }
             }
             break;
             
         case 'flux':
             // FLUX models: No quality option, aspect ratio with orientation, optional steps parameter
-            const fluxOrientation = fluxOrientationSelect.value || 'landscape';
-            const fluxAspectRatio = fluxAspectRatioSelect.value || '1:1';
+            const fluxOrientation = dom.fluxOrientationSelect.value || 'landscape';
+            const fluxAspectRatio = dom.fluxAspectRatioSelect.value || '1:1';
             
             // For FLUX models, we don't calculate width/height as they're not sent in request
             // Set empty values to avoid undefined variable errors
@@ -1863,7 +1935,7 @@ async function callImageApi(provider, apiKey, baseUrl, model, prompt) {
             body.n = 1; // FLUX models typically generate 1 image
             
             // Only include steps parameter if it's not the default value (0)
-            const fluxSteps = fluxStepsInput.value.trim();
+            const fluxSteps = dom.fluxStepsInput.value.trim();
             if (fluxSteps && parseInt(fluxSteps) > 0) {
                 body.steps = parseInt(fluxSteps);
             }
@@ -1876,7 +1948,7 @@ async function callImageApi(provider, apiKey, baseUrl, model, prompt) {
             
         case 'imagen':
             // IMAGEN models: No quality or size options, aspect ratio only
-            const aspectRatio = imageAspectRatioSelect.value || '1:1';
+            const aspectRatio = dom.imageAspectRatioSelect.value || '1:1';
             body.aspect_ratio = aspectRatio;
             // Remove size parameter for IMAGEN models
             delete body.size;
@@ -1889,25 +1961,25 @@ async function callImageApi(provider, apiKey, baseUrl, model, prompt) {
             body.size = `${width}x${height}`;
             
             // Include quality parameter only if enabled
-            if (provider === 'openai_compatible' && enableQualityCheckbox.checked && qualitySelect) {
-                if (qualitySelect.value === 'custom' && customQualityInput) {
-                    if (customQualityInput.value.trim() === '') {
+            if (provider === 'openai_compatible' && dom.enableQualityCheckbox.checked && dom.qualitySelect) {
+                if (dom.qualitySelect.value === 'custom' && dom.customQualityInput) {
+                    if (dom.customQualityInput.value.trim() === '') {
                         // Potentially display an error or use a default if custom quality is selected but empty
                         console.warn("Custom quality selected but input is empty. API might reject or use default.");
                         // Not setting body.quality here, or explicitly setting to a default if API requires it
                     } else {
-                        body.quality = customQualityInput.value.trim();
+                        body.quality = dom.customQualityInput.value.trim();
                     }
-                } else if (qualitySelect.value !== 'custom') {
-                    body.quality = qualitySelect.value;
+                } else if (dom.qualitySelect.value !== 'custom') {
+                    body.quality = dom.qualitySelect.value;
                 }
-                // If qualitySelect.value is 'custom' but customQualityInput is missing, body.quality remains unset.
+                // If dom.qualitySelect.value is 'custom' but dom.customQualityInput is missing, body.quality remains unset.
             }
     }
 
     // Store payload before sending
     lastRequestPayload = JSON.stringify(body, null, 2);
-    payloadContainer.style.display = 'block';
+    dom.payloadContainer.style.display = 'block';
 
     // Record start time for timing stats
     const startTime = performance.now();
@@ -1933,23 +2005,23 @@ async function callImageApi(provider, apiKey, baseUrl, model, prompt) {
             
             if (item.url) {
                 imageUrl = item.url;
-                outputText.innerHTML = `Image generated successfully by ${model}.`;
-                outputImage.src = imageUrl;
-                outputImage.style.display = 'block';
-                outputArea.style.borderColor = '#ccc';
-                downloadImageBtn.href = imageUrl;
-                downloadImageBtn.download = `image-${model}-${Date.now()}.png`; // Suggest a filename
-                downloadImageBtn.style.display = 'inline-block';
+                dom.outputText.innerHTML = `Image generated successfully by ${model}.`;
+                dom.outputImage.src = imageUrl;
+                dom.outputImage.style.display = 'block';
+                dom.outputArea.style.borderColor = '#ccc';
+                dom.downloadImageBtn.href = imageUrl;
+                dom.downloadImageBtn.download = `image-${model}-${Date.now()}.png`; // Suggest a filename
+                dom.downloadImageBtn.style.display = 'inline-block';
             } else if (item.b64_json) {
                 const imageData = `data:image/png;base64,${item.b64_json}`;
                 imageUrl = imageData;
-                outputText.innerHTML = `Image generated successfully by ${model}.`;
-                outputImage.src = imageData;
-                outputImage.style.display = 'block';
-                outputArea.style.borderColor = '#ccc';
-                downloadImageBtn.href = imageData;
-                downloadImageBtn.download = `image-${model}-${Date.now()}.png`; // Suggest a filename
-                downloadImageBtn.style.display = 'inline-block';
+                dom.outputText.innerHTML = `Image generated successfully by ${model}.`;
+                dom.outputImage.src = imageData;
+                dom.outputImage.style.display = 'block';
+                dom.outputArea.style.borderColor = '#ccc';
+                dom.downloadImageBtn.href = imageData;
+                dom.downloadImageBtn.download = `image-${model}-${Date.now()}.png`; // Suggest a filename
+                dom.downloadImageBtn.style.display = 'inline-block';
             } else {
                 throw new Error('Could not find image data in API response.');
             }
@@ -1959,7 +2031,7 @@ async function callImageApi(provider, apiKey, baseUrl, model, prompt) {
             const isAspectRatioModel = (modelType === 'flux' || modelType === 'imagen');
             const resolutionLabel = isAspectRatioModel ? 'Aspect Ratio' : 'Resolution';
             const resolutionValue = isAspectRatioModel ? 
-                (modelType === 'flux' ? fluxAspectRatioSelect.value : imageAspectRatioSelect.value) :
+                (modelType === 'flux' ? dom.fluxAspectRatioSelect.value : dom.imageAspectRatioSelect.value) :
                 (width && height ? `${width}x${height}` : 'Will be determined from image');
             
             let statsHtml = `
@@ -1969,8 +2041,8 @@ async function callImageApi(provider, apiKey, baseUrl, model, prompt) {
             `;
             
             // Add quality if enabled
-            if (enableQualityCheckbox.checked && qualitySelect) {
-                statsHtml += `<span><strong>Quality:</strong> ${qualitySelect.value}</span>`;
+            if (dom.enableQualityCheckbox.checked && dom.qualitySelect) {
+                statsHtml += `<span><strong>Quality:</strong> ${dom.qualitySelect.value}</span>`;
             }
 
             // Add provider-specific data
@@ -1983,16 +2055,16 @@ async function callImageApi(provider, apiKey, baseUrl, model, prompt) {
                 statsHtml += `<span><strong>Prompt Tokens:</strong> ${data.usage.prompt_tokens}</span>`;
             }
             
-            statsArea.innerHTML = statsHtml;
-            statsArea.style.display = 'block';
+            dom.statsArea.innerHTML = statsHtml;
+            dom.statsArea.style.display = 'block';
             
             // Once image loads, we can get the actual dimensions
-            outputImage.onload = () => {
-                const actualWidth = outputImage.naturalWidth;
-                const actualHeight = outputImage.naturalHeight;
+            dom.outputImage.onload = () => {
+                const actualWidth = dom.outputImage.naturalWidth;
+                const actualHeight = dom.outputImage.naturalHeight;
                 
                 // Find and update the resolution span
-                const resolutionSpan = statsArea.querySelector('span:nth-child(2)');
+                const resolutionSpan = dom.statsArea.querySelector('span:nth-child(2)');
                 if (resolutionSpan) {
                     // Check if we're using aspect ratio instead of resolution
                     const isAspectRatioModel = (modelType === 'flux' || modelType === 'imagen');
@@ -2007,575 +2079,160 @@ async function callImageApi(provider, apiKey, baseUrl, model, prompt) {
     } catch (error) {
         // Handle cancellation
         if (error.name === 'AbortError') {
-            outputText.innerHTML = 'Request cancelled by user.';
-            outputArea.style.borderColor = 'orange';
-            statsArea.style.display = 'none';
+            dom.outputText.innerHTML = 'Request cancelled by user.';
+            dom.outputArea.style.borderColor = 'orange';
+            dom.statsArea.style.display = 'none';
         } else {
             if (error.message.includes('Invalid quality')) {
-                console.warn('Invalid quality parameter unsupported, retrying without quality...');
-                // Retry without quality param
-                const fallbackBody = { ...body };
-                delete fallbackBody.quality;
-                try {
-                    const retryStartTime = performance.now();
-                    const retryResponse = await fetch(apiUrl, {
-                        method: 'POST',
-                        headers: headers,
-                        body: JSON.stringify(fallbackBody),
-                        signal: signal
-                    });
-                    
-                    const retryEndTime = performance.now();
-                    const retryDuration = ((retryEndTime - retryStartTime) / 1000).toFixed(2);
-
-                    const retryData = await handleApiResponse(retryResponse); // Use helper for retry
-                    
-                    // Extract image URL
-                    if (retryData.data && retryData.data.length > 0 && retryData.data[0].url) {
-                        const imageUrl2 = retryData.data[0].url;
-                        outputText.innerHTML = `Image generated successfully by ${model}.`;
-                        outputImage.src = imageUrl2;
-                        outputImage.style.display = 'block';
-                        outputArea.style.borderColor = '#ccc';
-                        
-                        // Display stats for retry
-                        // Check if we're using aspect ratio instead of resolution
-                        const isAspectRatioModel = (modelType === 'flux' || modelType === 'imagen');
-                        const resolutionLabel = isAspectRatioModel ? 'Aspect Ratio' : 'Resolution';
-                        const resolutionValue = isAspectRatioModel ? 
-                            (modelType === 'flux' ? fluxAspectRatioSelect.value : imageAspectRatioSelect.value) :
-                            (width && height ? `${width}x${height}` : 'Will be determined from image');
-                        
-                        statsArea.innerHTML = `
-                            <span><strong>Generation Time:</strong> ${retryDuration}s</span>
-                            <span><strong>${resolutionLabel}:</strong> ${resolutionValue}</span>
-                            <span><strong>Model:</strong> ${model}</span>
-                            <span><strong>Note:</strong> Quality param was removed due to API incompatibility</span>
-                        `;
-                        statsArea.style.display = 'block';
-                        
-                        // Update resolution on image load
-                        outputImage.onload = () => {
-                            const actualWidth = outputImage.naturalWidth;
-                            const actualHeight = outputImage.naturalHeight;
-                            const resolutionSpan = statsArea.querySelector('span:nth-child(2)');
-                            if (resolutionSpan) {
-                                // Check if we're using aspect ratio instead of resolution
-                                const isAspectRatioModel = (modelType === 'flux' || modelType === 'imagen');
-                                const resolutionLabel = isAspectRatioModel ? 'Actual Dimensions' : 'Resolution';
-                                resolutionSpan.innerHTML = `<strong>${resolutionLabel}:</strong> ${actualWidth}x${actualHeight}`;
-                            }
-                        };
-                        
-                        downloadImageBtn.href = imageUrl2;
-                        downloadImageBtn.download = `image-${model}-${Date.now()}-retry.png`;
-                        downloadImageBtn.style.display = 'inline-block';
-                        
-                        return;
-                    } else {
-                        throw new Error('Could not find image URL in API response after retry.');
-                    }
-                } catch (retryError) {
-                    // Handle cancellation during retry
-                    if (retryError.name === 'AbortError') {
-                        outputText.innerHTML = 'Request cancelled by user.';
-                        outputArea.style.borderColor = 'orange';
-                        statsArea.style.display = 'none';
-                    } else {
-                        displayError(retryError.message);
-                    }
-                    return;
-                }
+                displayError(`Invalid quality setting for the selected model. Details: ${error.message}`);
             } else {
-                displayError(error.message); // displayError will hide loader
+                displayError(error.message);
             }
+            dom.statsArea.style.display = 'none';
         }
     } finally {
-        hideLoader(); // Ensure loader is hidden
-        hideStopButton(); // Hide stop button
-        currentRequestController = null; // Clear controller reference
+        hideLoader();
+        hideStopButton();
+        currentRequestController = null;
+    }
+}
+
+// Handles audio generation API calls.
+async function callAudioApi(provider, apiKey, baseUrl, model, prompt) {
+    showLoader();
+    showStopButton();
+    clearOutput();
+    dom.outputText.innerHTML = 'Sending audio request...';
+    dom.outputArea.style.display = 'block';
+
+    const controller = new AbortController();
+    const { signal } = controller;
+    currentRequestController = controller;
+
+    const audioType = dom.audioTypeSelect.value;
+
+    if (audioType === 'tts') {
+        await callTextToSpeechApi(provider, apiKey, baseUrl, model, prompt, signal);
+    } else if (audioType === 'stt') {
+        await callSpeechToTextApi(provider, apiKey, baseUrl, model, signal);
+    } else {
+        hideLoader();
+        hideStopButton();
+        displayError('Invalid audio type selected.');
     }
 }
 
 // Handles Text-to-Speech (TTS) API calls.
-async function callTtsApi(provider, apiKey, baseUrl, model, text, voice, instructions, responseFormat) {
-    showLoader(); // Show loader at the start
-    showStopButton(); // Show stop button
-    clearOutput();
-    outputText.innerHTML = 'Generating TTS...';
-    outputAudio.style.display = 'none';
-    downloadAudio.style.display = 'none';
-    outputArea.style.display = 'block';
-
-    // Create AbortController for cancellation
-    const controller = new AbortController();
-    const { signal } = controller;
-    currentRequestController = controller; // Store reference for cancellation
-
-    let apiUrl = '';
-    let headers = {};
-    let body = {};
-
-    switch(provider) {
-        case 'openai':
-            apiUrl = 'https://api.openai.com/v1/audio/speech';
-            headers = { 'Content-Type': 'application/json', 'Authorization': `Bearer ${apiKey}` };
-            // Use the selected model from dropdown instead of hardcoded model
-            body = { 
-                model: model, // Use dropdown selected model
-                input: text, 
-                voice: voice || 'alloy' // Default to alloy if no voice specified
-            };
-            
-            // Add optional parameters
-            if (instructions && instructions.trim() && !['tts-1', 'tts-1-hd'].includes(model)) {
-                body.instructions = instructions.trim();
-            }
-            
-            if (responseFormat && responseFormat !== 'mp3') {
-                body.response_format = responseFormat;
-            }
-            break;
-        case 'openai_compatible':
-            if (!baseUrl) {
-                hideLoader();
-                hideStopButton();
-                return displayError('Base URL is required for OpenAI Compatible TTS.');
-            }
-            const cleanBase = baseUrl.endsWith('/') ? baseUrl.slice(0, -1) : baseUrl;
-            apiUrl = `${cleanBase}/audio/speech`;
-            headers = { 'Content-Type': 'application/json', 'Authorization': `Bearer ${apiKey}` };
-            body = { 
-                model: model, // Use dropdown selected model
-                input: text, 
-                voice: voice || 'alloy'
-            };
-            
-            // Add optional parameters for compatible providers
-            if (instructions && instructions.trim()) {
-                body.instructions = instructions.trim();
-            }
-            
-            if (responseFormat && responseFormat !== 'mp3') {
-                body.response_format = responseFormat;
-            }
-            break;
-        default:
-            hideLoader();
-            hideStopButton();
-            return displayError('TTS is only supported for OpenAI and OpenAI Compatible providers.');
+async function callTextToSpeechApi(provider, apiKey, baseUrl, model, prompt, signal) {
+    const apiUrl = getApiUrl(provider, 'audio', baseUrl);
+    if (!apiUrl) {
+        hideLoader();
+        hideStopButton();
+        return displayError('Could not determine API URL for TTS.');
     }
 
-    // Store payload before sending
-    lastRequestPayload = JSON.stringify(body, null, 2);
-    payloadContainer.style.display = 'block';
+    let headers = { 'Authorization': `Bearer ${apiKey}` };
 
-    // Record start time for timing stats
-    const startTime = performance.now();
+    const body = {
+        model: model,
+        input: prompt,
+        voice: dom.voiceSelect.value,
+        response_format: dom.responseFormatSelect.value,
+    };
     
+    // Add instructions if provided and model is not tts-1 or tts-1-hd
+    if (dom.ttsInstructionsInput.value.trim() && !model.startsWith('tts-1')) {
+        body.instructions = dom.ttsInstructionsInput.value.trim();
+    }
+
+    lastRequestPayload = JSON.stringify(body, null, 2);
+    dom.payloadContainer.style.display = 'block';
+
+    const startTime = performance.now();
     try {
         const response = await fetch(apiUrl, {
             method: 'POST',
-            headers: headers,
+            headers: { ...headers, 'Content-Type': 'application/json' },
             body: JSON.stringify(body),
             signal: signal
         });
+
+        if (!response.ok) {
+            // Try to parse JSON error first
+            try {
+                const errorData = await response.json();
+                throw new Error(errorData.error?.message || `HTTP Error ${response.status}`);
+            } catch (e) {
+                // If JSON parsing fails, use the text response
+                const errorText = await response.text();
+                throw new Error(errorText || `HTTP Error ${response.status}`);
+            }
+        }
+
+        const audioBlob = await response.blob();
+        const audioUrl = URL.createObjectURL(audioBlob);
         
+        dom.outputAudio.src = audioUrl;
+        dom.outputAudio.style.display = 'block';
+        
+        dom.downloadAudio.href = audioUrl;
+        dom.downloadAudio.download = `audio-${model}-${Date.now()}.${body.response_format}`;
+        dom.downloadAudio.style.display = 'inline-block';
+        
+        dom.outputText.innerHTML = 'Audio generated successfully.';
+        dom.outputArea.style.borderColor = '#ccc';
+
         const endTime = performance.now();
         const durationInSeconds = ((endTime - startTime) / 1000).toFixed(2);
-        
-        // For TTS, the successful response is the audio blob, not JSON
-        // We store info about the response headers or status for debugging
-        if (!response.ok) {
-            const msg = await response.text();
-            lastApiResponse = `TTS API Error (${response.status}):\n${msg}`;
-            throw new Error(msg);
-        } else {
-            // Successful audio response
-            lastApiResponse = `Status: ${response.status} ${response.statusText}\nContent-Type: ${response.headers.get('Content-Type') || 'N/A'}\nContent-Length: ${response.headers.get('Content-Length') || 'N/A'}`;
-        }
-        
-        const blob = await response.blob();
-        const url = URL.createObjectURL(blob);
-        outputAudio.src = url;
-        outputAudio.preload = 'metadata';
-        
-        // Display initial stats
-        statsArea.innerHTML = `
-            <span><strong>Generation Time:</strong> ${durationInSeconds}s</span>
-            <span><strong>File Size:</strong> ${(blob.size / 1024).toFixed(2)} KB</span>
-            <span><strong>Model:</strong> ${model}</span>
-            <span><strong>Voice:</strong> ${voice}</span>
-            <span><strong>Characters:</strong> ${text.length}</span>
-        `;
-        statsArea.style.display = 'block';
-        
-        outputAudio.addEventListener('loadedmetadata', () => {
-            // Update stats with audio duration
-            const audioDuration = outputAudio.duration.toFixed(2);
-            
-            // Add audio duration if available
-            if (audioDuration && audioDuration > 0) {
-                statsArea.innerHTML += `<span><strong>Audio Length:</strong> ${audioDuration}s</span>`;
-                
-                // Calculate characters per second
-                const charsPerSecond = (text.length / audioDuration).toFixed(2);
-                statsArea.innerHTML += `<span><strong>Chars/Second:</strong> ${charsPerSecond}</span>`;
-            }
-            
-            outputAudio.style.display = 'block';
-            downloadAudio.href = url;
-            downloadAudio.download = `${model}-${voice}-tts.${responseFormat || 'mp3'}`; // Use selected format
-            downloadAudio.style.display = 'inline';
-            outputText.innerHTML = `<strong>Voice:</strong> ${voice}`;
-            outputText.style.display = 'block';
-        }, { once: true });
-        
-        outputAudio.load();
-    } catch (err) {
-        // Handle cancellation
-        if (err.name === 'AbortError') {
-            outputText.innerHTML = 'Request cancelled by user.';
-            outputArea.style.borderColor = 'orange';
-            statsArea.style.display = 'none';
-        } else {
-            // lastApiResponse might be set from the !response.ok block
-            displayError(err.message); // displayError will hide loader
-            statsArea.style.display = 'none'; // Hide stats on error
-        }
-    } finally {
-        hideLoader(); // Ensure loader is hidden
-        hideStopButton(); // Hide stop button
-        currentRequestController = null; // Clear controller reference
-    }
-}
+        dom.statsArea.innerHTML = `<span><strong>Generation Time:</strong> ${durationInSeconds}s</span>`;
+        dom.statsArea.style.display = 'block';
 
-// Handles streaming STT response
-async function handleSttStreamingResponse(response, model, fileSize, file, startTime) {
-    // Check for HTTP errors first
-    if (!response.ok) {
-        let errorData;
-        try {
-            const errorText = await response.text();
-            errorData = JSON.parse(errorText);
-        } catch (e) {
-            const errorText = await response.text();
-            errorData = { error: { message: `HTTP ${response.status}: ${errorText || response.statusText}` } };
-        }
-        throw new Error(errorData.error?.message || `HTTP Error ${response.status}`);
-    }
-
-    const reader = response.body.getReader();
-    const decoder = new TextDecoder("utf-8");
-    
-    // Initialize output area for streaming
-    outputText.innerHTML = `<strong>Transcribing with ${model} (Streaming):</strong><br><br>`;
-    outputArea.style.display = 'block';
-    outputArea.style.borderColor = '#ccc';
-    
-    let accumulatedResponse = "";
-    let fullTranscript = "";
-    let finalDuration = null;
-    let hasStreamingData = false;
-    let sttUsageData = null;
-    let rawResponseData = null;
-    
-    try {
-        // Show stats area with initial stats
-        const currentTime = performance.now();
-        const durationInSeconds = ((currentTime - startTime) / 1000).toFixed(2);
-        
-        statsArea.innerHTML = `
-            <span><strong>Transcription Time:</strong> ${durationInSeconds}s</span>
-            <span><strong>File Size:</strong> ${fileSize} KB</span>
-            <span><strong>Model:</strong> ${model}</span>
-            <span><strong>Characters Generated:</strong> 0</span>
-        `;
-        statsArea.style.display = 'block';
-        
-        while (true) {
-            // Check if the request was aborted
-            if (currentRequestController && currentRequestController.signal.aborted) {
-                reader.cancel();
-                throw new DOMException('Request cancelled by user', 'AbortError');
-            }
-            
-            const { done, value } = await reader.read();
-            
-            if (done) {
-                // Final update
-                const endTime = performance.now();
-                finalDuration = ((endTime - startTime) / 1000).toFixed(2);
-                
-                // If no streaming data was received, try to parse as single JSON response
-                if (!hasStreamingData && accumulatedResponse.trim()) {
-                    try {
-                        const singleResponse = JSON.parse(accumulatedResponse.trim());
-                        if (singleResponse.text) {
-                            fullTranscript = singleResponse.text;
-                            outputText.innerHTML = `<strong>Transcribed by ${model}:</strong><br>${fullTranscript.replace(/\n/g, '<br>')}`;
-                            
-                            // Update stats with usage data if available
-                            let statsHtml = `
-                                <span><strong>Transcription Time:</strong> ${finalDuration}s</span>
-                                <span><strong>File Size:</strong> ${fileSize} KB</span>
-                                <span><strong>Model:</strong> ${model}</span>
-                                <span><strong>Characters Generated:</strong> ${fullTranscript.length}</span>
-                            `;
-                            
-                            if (singleResponse.usage) {
-                                if (singleResponse.usage.input_tokens) {
-                                    statsHtml += `<span><strong>Input Tokens:</strong> ${singleResponse.usage.input_tokens}</span>`;
-                                }
-                                if (singleResponse.usage.output_tokens) {
-                                    statsHtml += `<span><strong>Output Tokens:</strong> ${singleResponse.usage.output_tokens}</span>`;
-                                }
-                                if (singleResponse.usage.total_tokens) {
-                                    statsHtml += `<span><strong>Total Tokens:</strong> ${singleResponse.usage.total_tokens}</span>`;
-                                }
-                            }
-                            
-                            statsArea.innerHTML = statsHtml;
-                        }
-                    } catch (e) {
-                        console.warn("Could not parse as single JSON response:", e);
-                    }
-                } else {
-                    // Regular streaming completion
-                    statsArea.innerHTML = `
-                        <span><strong>Transcription Time:</strong> ${finalDuration}s</span>
-                        <span><strong>File Size:</strong> ${fileSize} KB</span>
-                        <span><strong>Model:</strong> ${model}</span>
-                        <span><strong>Characters Generated:</strong> ${fullTranscript.length}</span>
-                    `;
-                }
-                
-                // Add file duration if we can get it
-                if (file.type.includes('audio')) {
-                    const audio = new Audio();
-                    audio.src = URL.createObjectURL(file);
-                    audio.onloadedmetadata = () => {
-                        const audioDuration = audio.duration.toFixed(2);
-                        if (audioDuration && audioDuration > 0) {
-                            statsArea.innerHTML += `<span><strong>Audio Length:</strong> ${audioDuration}s</span>`;
-                            
-                            // Add processing speed relative to audio length
-                            const processingRatio = (audioDuration / finalDuration).toFixed(2);
-                            statsArea.innerHTML += `<span><strong>Processing Speed:</strong> ${processingRatio}x realtime</span>`;
-                        }
-                    };
-                    audio.load();
-                }
-                
-                break;
-            }
-            
-            accumulatedResponse += decoder.decode(value, { stream: true });
-            let lines = accumulatedResponse.split('\n');
-            accumulatedResponse = lines.pop() || "";
-            
-            for (const line of lines) {
-                if (line.startsWith("data: ")) {
-                    hasStreamingData = true;
-                    const jsonStr = line.substring(6).trim();
-                    if (jsonStr === "[DONE]") {
-                        continue;
-                    }
-                    try {
-                        const parsed = JSON.parse(jsonStr);
-                        
-                        // Handle OpenAI STT streaming format
-                        if (parsed.type === "transcript.text.delta" && parsed.delta) {
-                            // Add the delta to the transcript
-                            fullTranscript += parsed.delta;
-                            // Update the display with the new text
-                            outputText.innerHTML = `<strong>Transcribing with ${model} (Streaming):</strong><br><br>${fullTranscript}`;
-                            
-                            // Update character count in stats
-                            const statsLines = Array.from(statsArea.querySelectorAll('span'));
-                            for (const line of statsLines) {
-                                if (line.textContent.includes('Characters Generated:')) {
-                                    line.innerHTML = `<strong>Characters Generated:</strong> ${fullTranscript.length}`;
-                                    break;
-                                }
-                            }
-                        } else if (parsed.type === "transcript.text.done" && parsed.text) {
-                            // Final transcript - use the complete text from done event
-                            fullTranscript = parsed.text;
-                            outputText.innerHTML = `<strong>Transcribed by ${model}:</strong><br>${fullTranscript.replace(/\n/g, '<br>')}`;
-                            
-                            // Update character count in stats with final count
-                            const statsLines = Array.from(statsArea.querySelectorAll('span'));
-                            for (const line of statsLines) {
-                                if (line.textContent.includes('Characters Generated:')) {
-                                    line.innerHTML = `<strong>Characters Generated:</strong> ${fullTranscript.length}`;
-                                    break;
-                                }
-                            }
-                            
-                            // Update final stats with usage data if available
-                            if (parsed.usage) {
-                                sttUsageData = parsed.usage;
-                                const currentTime = performance.now();
-                                const currentDuration = ((currentTime - startTime) / 1000).toFixed(2);
-                                
-                                // Rebuild stats with usage data
-                                let statsHtml = `
-                                    <span><strong>Transcription Time:</strong> ${currentDuration}s</span>
-                                    <span><strong>File Size:</strong> ${fileSize} KB</span>
-                                    <span><strong>Model:</strong> ${model}</span>
-                                    <span><strong>Characters Generated:</strong> ${fullTranscript.length}</span>
-                                `;
-                                
-                                if (parsed.usage.input_tokens) {
-                                    statsHtml += `<span><strong>Input Tokens:</strong> ${parsed.usage.input_tokens}</span>`;
-                                }
-                                if (parsed.usage.output_tokens) {
-                                    statsHtml += `<span><strong>Output Tokens:</strong> ${parsed.usage.output_tokens}</span>`;
-                                }
-                                if (parsed.usage.total_tokens) {
-                                    statsHtml += `<span><strong>Total Tokens:</strong> ${parsed.usage.total_tokens}</span>`;
-                                }
-                                
-                                statsArea.innerHTML = statsHtml;
-                            }
-                        } else if (parsed.text) {
-                            // Alternative format: direct text field (some providers)
-                            fullTranscript = parsed.text;
-                            rawResponseData = parsed; // Capture the full response data
-                            outputText.innerHTML = `<strong>Transcribed by ${model}:</strong><br>${fullTranscript.replace(/\n/g, '<br>')}`;
-                            
-                            // Update character count in stats
-                            const statsLines = Array.from(statsArea.querySelectorAll('span'));
-                            for (const line of statsLines) {
-                                if (line.textContent.includes('Characters Generated:')) {
-                                    line.innerHTML = `<strong>Characters Generated:</strong> ${fullTranscript.length}`;
-                                    break;
-                                }
-                            }
-                            
-                            // Capture usage data if available
-                            if (parsed.usage) {
-                                sttUsageData = parsed.usage;
-                            }
-                        } else {
-                            // Log unknown format for debugging
-                            console.log('Unknown STT streaming format:', parsed);
-                        }
-                    } catch (e) {
-                        console.warn("Error parsing streamed JSON chunk:", e, "Chunk:", jsonStr);
-                    }
-                }
-            }
-        }
-        
-        // Build final response data for proper response display
-        let finalResponseData = null;
-        if (rawResponseData) {
-            // Use the full captured response data
-            finalResponseData = rawResponseData;
-        } else {
-            // Reconstruct response data for streaming format
-            finalResponseData = {
-                text: fullTranscript,
-                usage: sttUsageData
-            };
-        }
-        
-        return { 
-            transcript: fullTranscript, 
-            durationSeconds: finalDuration,
-            responseData: finalResponseData
-        };
     } catch (error) {
-        throw error; // Re-throw to be handled by the calling function
+        if (error.name === 'AbortError') {
+            dom.outputText.innerHTML = 'Request cancelled by user.';
+            dom.outputArea.style.borderColor = 'orange';
+        } else {
+            displayError(error.message);
+        }
     } finally {
-        reader.releaseLock();
+        hideLoader();
+        hideStopButton();
+        currentRequestController = null;
     }
 }
 
 // Handles Speech-to-Text (STT) API calls.
-async function callSttApi(provider, apiKey, baseUrl, model, file) {
-    showLoader(); // Show loader at the start
-    showStopButton(); // Show stop button
-    clearOutput();
-    outputText.innerHTML = 'Transcribing audio...';
-    outputArea.style.display = 'block';
-    outputImage.style.display = 'none';
-    outputAudio.style.display = 'none';
-    downloadAudio.style.display = 'none';
-
-    // Create AbortController for cancellation
-    const controller = new AbortController();
-    const { signal } = controller;
-    currentRequestController = controller; // Store reference for cancellation
-
-    // Use demo.mp3 if no file is provided
-    let actualFile = file;
-    if (!file) {
-        try {
-            // Create demo file from project root
-            const response = await fetch('./demo.mp3');
-            if (response.ok) {
-                const blob = await response.blob();
-                actualFile = new File([blob], 'demo.mp3', { type: 'audio/mpeg' });
-                outputText.innerHTML = 'Transcribing demo audio file...';
-            } else {
-                throw new Error('Demo file not found');
-            }
-        } catch (error) {
-            hideLoader();
-            hideStopButton();
-            return displayError('No audio file provided and demo.mp3 not found in project root.');
-        }
+async function callSpeechToTextApi(provider, apiKey, baseUrl, model, signal) {
+    const audioFile = dom.audioFileInput.files[0];
+    if (!audioFile) {
+        hideLoader();
+        hideStopButton();
+        return displayError('Please select an audio file for transcription.');
     }
 
-    // Can't easily stringify FormData, so we store what we can
-    const payloadInfo = { 
-        provider: provider,
-        model: model,
-        fileName: actualFile.name,
-        fileSizeKB: (actualFile.size / 1024).toFixed(2),
-        fileType: actualFile.type,
-        isDemo: !file
-    };
-    lastRequestPayload = JSON.stringify(payloadInfo, null, 2);
-    payloadContainer.style.display = 'block';
+    const apiUrl = getApiUrl(provider, 'stt', baseUrl);
+    if (!apiUrl) {
+        hideLoader();
+        hideStopButton();
+        return displayError('Could not determine API URL for STT.');
+    }
 
-    // Record start time for timing stats
-    const startTime = performance.now();
-    const fileSize = (actualFile.size / 1024).toFixed(2); // KB
+    let headers = { 'Authorization': `Bearer ${apiKey}` };
+
+    const formData = new FormData();
+    formData.append('file', audioFile);
+    formData.append('model', model);
     
+    // Add streaming option if enabled
+    if (dom.enableSttStreamingCheckbox.checked) {
+        formData.append('stream', 'true');
+    }
+
+    lastRequestPayload = `FormData with file: ${audioFile.name}, model: ${model}`;
+    dom.payloadContainer.style.display = 'block';
+
+    const startTime = performance.now();
     try {
-        let apiUrl = '';
-        let headers = { 'Authorization': `Bearer ${apiKey}` };
-        // Determine endpoint based on provider
-        if (provider === 'openai') {
-            apiUrl = 'https://api.openai.com/v1/audio/transcriptions';
-        } else if (provider === 'openai_compatible') {
-            if (!baseUrl) {
-                hideLoader();
-                hideStopButton();
-                return displayError('Base URL is required for OpenAI Compatible STT.');
-            }
-            const cleanBase = baseUrl.endsWith('/') ? baseUrl.slice(0, -1) : baseUrl;
-            apiUrl = `${cleanBase}/audio/transcriptions`;
-        } else {
-            hideLoader();
-            hideStopButton();
-            return displayError('STT is not supported for selected provider.');
-        }
-
-        const formData = new FormData();
-        formData.append('file', actualFile);
-        // Use the selected model from dropdown
-        formData.append('model', model);
-        
-        // Add streaming parameter if enabled
-        if (enableSttStreamingCheckbox && enableSttStreamingCheckbox.checked) {
-            formData.append('stream', 'true');
-        }
-
         const response = await fetch(apiUrl, {
             method: 'POST',
             headers: headers,
@@ -2583,1008 +2240,356 @@ async function callSttApi(provider, apiKey, baseUrl, model, file) {
             signal: signal
         });
 
-        // Handle streaming vs non-streaming responses
-        if (enableSttStreamingCheckbox && enableSttStreamingCheckbox.checked && response.body) {
-            // Handle streaming response
-            const sttResult = await handleSttStreamingResponse(response, model, fileSize, actualFile, startTime);
-            
-            // Use the actual response data instead of streaming info
-            if (sttResult?.responseData) {
-                lastApiResponse = JSON.stringify(sttResult.responseData, null, 2);
-            } else {
-                // Fallback if no response data captured
-                lastApiResponse = JSON.stringify({
-                    text: sttResult?.transcript || "",
-                    usage: null
-                }, null, 2);
-            }
-        } else {
-            // Handle non-streaming response (existing code)
-            const endTime = performance.now();
-            const durationInSeconds = ((endTime - startTime) / 1000).toFixed(2);
-            
-            const data = await handleApiResponse(response);
-
-            const transcript = data.text || data.transcript || JSON.stringify(data);
-            outputText.innerHTML = `<strong>Transcribed by ${model}:</strong><br>${transcript.replace(/\\n/g, '<br>')}`;
-            
-            // Display stats
-            statsArea.innerHTML = `
-                <span><strong>Transcription Time:</strong> ${durationInSeconds}s</span>
-                <span><strong>File Size:</strong> ${fileSize} KB</span>
-                <span><strong>Model:</strong> ${model}</span>
-                <span><strong>Characters Generated:</strong> ${transcript.length}</span>
-            `;
-            
-            // Add file duration if we can get it
-            if (actualFile.type.includes('audio')) {
-                const audio = new Audio();
-                audio.src = URL.createObjectURL(actualFile);
-                audio.onloadedmetadata = () => {
-                    const audioDuration = audio.duration.toFixed(2);
-                    if (audioDuration && audioDuration > 0) {
-                        statsArea.innerHTML += `<span><strong>Audio Length:</strong> ${audioDuration}s</span>`;
-                        
-                        // Add processing speed relative to audio length
-                        const processingRatio = (audioDuration / durationInSeconds).toFixed(2);
-                        statsArea.innerHTML += `<span><strong>Processing Speed:</strong> ${processingRatio}x realtime</span>`;
-                    }
-                };
-                audio.load();
-            }
-            
-            // If we have usage data, show it
-            if (data.usage) {
-                if (data.usage.prompt_tokens) {
-                    statsArea.innerHTML += `<span><strong>Prompt Tokens:</strong> ${data.usage.prompt_tokens}</span>`;
-                }
-                if (data.usage.completion_tokens) {
-                    statsArea.innerHTML += `<span><strong>Completion Tokens:</strong> ${data.usage.completion_tokens}</span>`;
-                }
-                if (data.usage.total_tokens) {
-                    statsArea.innerHTML += `<span><strong>Total Tokens:</strong> ${data.usage.total_tokens}</span>`;
-                }
-            }
-            
-            statsArea.style.display = 'block';
-        }
+        const data = await handleApiResponse(response);
         
-    } catch (err) {
-        // Handle cancellation
-        if (err.name === 'AbortError') {
-            outputText.innerHTML = 'Request cancelled by user.';
-            outputArea.style.borderColor = 'orange';
-            statsArea.style.display = 'none';
-        } else {
-            // lastApiResponse might contain error details
-            displayError(err.message); // displayError will hide loader
-            statsArea.style.display = 'none'; // Hide stats on error
-        }
-    } finally {
-        hideLoader(); // Ensure loader is hidden
-        hideStopButton(); // Hide stop button
-        currentRequestController = null; // Clear controller reference
-    }
-}
-
-// Universal function to extract video URL from various API response structures.
-function extractVideoUrl(responseData) {
-    console.log('Extracting video URL from response:', responseData);
-    
-    if (!responseData) {
-        console.error('No response data provided to extractVideoUrl');
-        return null;
-    }
-    
-    // Collection of all found URLs with priority scoring
-    const foundUrls = [];
-    
-    // Recursive function to find all URLs in the response
-    function findAllUrls(obj, path = '', depth = 0) {
-        if (depth > 10) return; // Prevent infinite recursion
-        
-        if (typeof obj === 'string') {
-            // Check if it's a valid URL
-            if (isValidUrl(obj)) {
-                const priority = calculateUrlPriority(obj, path);
-                foundUrls.push({ url: obj, path: path, priority: priority });
-                console.log(`Found URL at ${path}: ${obj} (priority: ${priority})`);
-            }
-        } else if (Array.isArray(obj)) {
-            obj.forEach((item, index) => {
-                findAllUrls(item, `${path}[${index}]`, depth + 1);
-            });
-        } else if (obj && typeof obj === 'object') {
-            Object.entries(obj).forEach(([key, value]) => {
-                const newPath = path ? `${path}.${key}` : key;
-                findAllUrls(value, newPath, depth + 1);
-            });
-        }
-    }
-    
-    // Helper function to check if a string is a valid URL
-    function isValidUrl(string) {
-        try {
-            // Must be a URL starting with http/https
-            if (!string.startsWith('http://') && !string.startsWith('https://')) {
-                return false;
-            }
-            new URL(string);
-            return true;
-        } catch (_) {
-            return false;
-        }
-    }
-    
-    // Function to calculate URL priority based on context and content
-    function calculateUrlPriority(url, path) {
-        let priority = 0;
-        const pathLower = path.toLowerCase();
-        
-        // High priority: video-specific fields
-        if (pathLower.includes('video_url') || pathLower.includes('videourl')) {
-            priority += 100;
-        }
-        
-        // High priority: video-related field names
-        if (pathLower.includes('video') && pathLower.includes('url')) {
-            priority += 90;
-        }
-        
-        // Medium-high priority: common video response structures
-        if (pathLower.includes('data') && pathLower.includes('url')) {
-            priority += 80;
-        }
-        
-        if (pathLower.includes('result') && pathLower.includes('url')) {
-            priority += 75;
-        }
-        
-        if (pathLower.includes('output') && (pathLower.includes('url') || pathLower === 'output')) {
-            priority += 70;
-        }
-        
-        // Medium priority: general URL fields
-        if (pathLower.endsWith('url') || pathLower === 'url') {
-            priority += 60;
-        }
-        
-        // URL content analysis
-        // Very high priority: obvious video file extensions
-        if (/\.(mp4|avi|mov|webm|mkv|m4v|3gp|flv|wmv)(\?|$)/i.test(url)) {
-            priority += 200;
-        }
-        
-        // High priority: video-related domains or paths
-        if (/\/video|\/v\/|\/watch|\/media|\/stream/i.test(url)) {
-            priority += 50;
-        }
-        
-        // Medium priority: common video hosting patterns
-        if (/youtube|vimeo|cloudinary|amazonaws|blob:|streamable/i.test(url)) {
-            priority += 40;
-        }
-        
-        // Low priority: might be thumbnails or other media
-        if (/thumbnail|thumb|preview|poster|image/i.test(pathLower)) {
-            priority -= 30;
-        }
-        
-        // Bonus for secure URLs
-        if (url.startsWith('https://')) {
-            priority += 5;
-        }
-        
-        return priority;
-    }
-    
-    // Find all URLs in the response
-    findAllUrls(responseData);
-    
-    if (foundUrls.length === 0) {
-        console.error('No URLs found in response. Available fields:', Object.keys(responseData));
-        return null;
-    }
-    
-    // Sort URLs by priority (highest first)
-    foundUrls.sort((a, b) => b.priority - a.priority);
-    
-    console.log('All found URLs with priorities:', foundUrls);
-    
-    // Return the highest priority URL
-    const bestUrl = foundUrls[0];
-    console.log(`Selected best URL: ${bestUrl.url} from path: ${bestUrl.path} (priority: ${bestUrl.priority})`);
-    
-    return bestUrl.url;
-}
-
-// Sets up the video download button with appropriate event listeners.
-function setupVideoDownload(videoUrl, model) {
-    const fileName = `video-${model}-${Date.now()}.mp4`;
-    
-    // Get the download button and clear any existing listeners
-    const downloadBtn = document.getElementById('download-video-btn');
-    
-    // Clone the button to remove all event listeners, then replace it
-    const newDownloadBtn = downloadBtn.cloneNode(true);
-    downloadBtn.parentNode.replaceChild(newDownloadBtn, downloadBtn);
-    
-    // Make sure the button is visible and properly styled
-    newDownloadBtn.style.display = 'inline-block';
-    newDownloadBtn.textContent = 'Download Video';
-    newDownloadBtn.disabled = false;
-    
-    newDownloadBtn.addEventListener('click', async (e) => {
-        e.preventDefault();
-        
-        try {
-            // Show download status
-            const originalText = newDownloadBtn.textContent;
-            newDownloadBtn.textContent = 'Downloading...';
-            newDownloadBtn.disabled = true;
-            
-            // Fetch the video
-            const response = await fetch(videoUrl, {
-                method: 'GET',
-                headers: {
-                    'Accept': 'video/*',
-                }
-            });
-            
-            if (!response.ok) {
-                throw new Error(`Failed to fetch video: ${response.status} ${response.statusText}`);
-            }
-            
-            // Get the video blob
-            const blob = await response.blob();
-            
-            // Create download link
-            const downloadUrl = URL.createObjectURL(blob);
-            const tempLink = document.createElement('a');
-            tempLink.href = downloadUrl;
-            tempLink.download = fileName;
-            tempLink.style.display = 'none';
-            
-            // Trigger download
-            document.body.appendChild(tempLink);
-            tempLink.click();
-            document.body.removeChild(tempLink);
-            
-            // Cleanup
-            setTimeout(() => {
-                URL.revokeObjectURL(downloadUrl);
-            }, 1000);
-            
-            // Reset button
-            newDownloadBtn.textContent = originalText;
-            newDownloadBtn.disabled = false;
-            
-        } catch (error) {
-            console.error('Download failed:', error);
-            
-            // Fallback: try to open in new tab
-            console.log('Attempting fallback download method...');
-            const tempLink = document.createElement('a');
-            tempLink.href = videoUrl;
-            tempLink.download = fileName;
-            tempLink.target = '_blank';
-            tempLink.rel = 'noopener noreferrer';
-            tempLink.style.display = 'none';
-            
-            document.body.appendChild(tempLink);
-            tempLink.click();
-            document.body.removeChild(tempLink);
-            
-            // Reset button
-            newDownloadBtn.textContent = 'Download Video';
-            newDownloadBtn.disabled = false;
-            
-            // Show user-friendly message
-            outputText.innerHTML += '<br><small style="color: orange;">Note: Direct download failed, opened video in new tab. You can right-click and "Save as..." to download.</small>';
-        }
-    });
-}
-
-// Handles video generation API calls.
-async function callVideoApi(provider, apiKey, baseUrl, model, prompt) {
-    showLoader(); // Show loader at the start
-    clearOutput();
-    outputText.innerHTML = 'Generating video...';
-    outputArea.style.display = 'block';
-    statsArea.style.display = 'none';
-
-    const aspectRatioEnabled = videoAspectRatioEnabled.checked;
-    const aspectRatio = videoAspectRatioSelect.value;
-    const duration = parseInt(videoDurationInput.value);
-
-    let apiUrl = '';
-    let headers = {};
-    let body = {};
-
-    // Configure based on provider for direct API calls
-    switch (provider) {
-        case 'openai':
-            // OpenAI doesn't have video generation yet, show placeholder
-            displayError('OpenAI does not currently support video generation. Try using a different provider or a compatible service.');
-            return;
-        case 'openai_compatible':
-            if (!baseUrl) return displayError('Base URL is required for OpenAI Compatible video generation.');
-            const cleanBaseUrl = baseUrl.endsWith('/') ? baseUrl.slice(0, -1) : baseUrl;
-            apiUrl = `${cleanBaseUrl}/videos/generations`;
-            headers = { 'Content-Type': 'application/json', 'Authorization': `Bearer ${apiKey}` };
-            body = { model: model, prompt: prompt, duration: duration };
-            if (aspectRatioEnabled) {
-                body.aspect_ratio = aspectRatio;
-            }
-            break;
-        case 'deepseek':
-            displayError('Deepseek does not currently support video generation. Try using a different provider.');
-            return;
-        case 'antrophic':
-            displayError('Antrophic does not currently support video generation. Try using a different provider.');
-            return;
-        case 'openrouter':
-            // OpenRouter might have video models available
-            apiUrl = 'https://openrouter.ai/api/v1/videos/generations';
-            headers = { 'Content-Type': 'application/json', 'Authorization': `Bearer ${apiKey}` };
-
-             const getToggleStateOpenRouter = (paramId) => {
-                const toggle = document.querySelector(`.param-toggle[data-param-id="${paramId}"]`);
-                return toggle ? toggle.checked : true;
-            };
-
-            body = { model: model, prompt: prompt }; // Start with required params
-
-            // Include duration if toggled and has value
-            if (getToggleStateOpenRouter('video-duration') && duration) {
-                body.duration = duration;
-            }
-
-             // Include aspect ratio if its parent toggle is enabled and a value is selected
-             const aspectRatioToggleOpenRouter = document.getElementById('video-aspect-ratio-enabled');
-             if (aspectRatioToggleOpenRouter && aspectRatioToggleOpenRouter.checked && aspectRatio) {
-                 body.aspect_ratio = aspectRatio;
-             }
-            break;
-        default:
-            return displayError('Video generation is not supported for the selected provider. Try OpenAI Compatible or OpenRouter.');
-    }
-
-    // Store payload before sending
-    lastRequestPayload = JSON.stringify(body, null, 2);
-    payloadContainer.style.display = 'block';
-
-    // Record start time for timing stats
-    const startTime = performance.now();
-    
-    try {
-        // For providers that we know don't support video, displayError is called in the switch,
-        // and displayError itself handles hideLoader. So no explicit hideLoader here is needed for these cases.
-        // The 'return' in the switch for these providers will prevent further execution.
-
-        const response = await fetch(apiUrl, {
-            method: 'POST',
-            headers: headers,
-            body: JSON.stringify(body)
-        });
+        dom.outputText.innerHTML = `<strong>Transcription:</strong><br>${data.text}`;
+        dom.outputArea.style.borderColor = '#ccc';
 
         const endTime = performance.now();
         const durationInSeconds = ((endTime - startTime) / 1000).toFixed(2);
-
-        const data = await handleApiResponse(response);
-        console.log("Video API Response Data:", data);
-
-        // Extract video URL and show stats - improved to handle multiple response formats
-        let videoUrl = extractVideoUrl(data);
-        
-        if (videoUrl) {
-            outputText.innerHTML = `Video generated successfully by ${model}.`;
-            outputVideo.src = videoUrl;
-            outputVideo.style.display = 'block';
-            outputArea.style.borderColor = '#ccc';
-            
-            // Setup proper video download
-            setupVideoDownload(videoUrl, model);
-            downloadVideoBtn.style.display = 'inline-block';
-            
-            // Display stats
-            let statsHtml = `
-                <span><strong>Generation Time:</strong> ${durationInSeconds}s</span>
-                <span><strong>Duration:</strong> ${duration}s</span>
-                <span><strong>Model:</strong> ${model}</span>
-            `;
-            
-            // Add aspect ratio if enabled
-            if (aspectRatioEnabled) {
-                statsHtml += `<span><strong>Aspect Ratio:</strong> ${aspectRatio}</span>`;
-            }
-
-            // Add provider-specific data
-            if (data.created) {
-                statsHtml += `<span><strong>Created:</strong> ${new Date(data.created * 1000).toLocaleString()}</span>`;
-            }
-            
-            // Check for usage data if available
-            if (data.usage && data.usage.prompt_tokens) {
-                statsHtml += `<span><strong>Prompt Tokens:</strong> ${data.usage.prompt_tokens}</span>`;
-            }
-            
-            statsArea.innerHTML = statsHtml;
-            statsArea.style.display = 'block';
-            
-        } else {
-            throw new Error('Could not find video URL in API response. Response structure: ' + JSON.stringify(data, null, 2));
-        }
+        dom.statsArea.innerHTML = `<span><strong>Transcription Time:</strong> ${durationInSeconds}s</span>`;
+        dom.statsArea.style.display = 'block';
 
     } catch (error) {
-        displayError(error.message); // displayError will hide loader
-        statsArea.style.display = 'none';
-    } finally {
-        // Ensure loader is hidden for all other cases, including successful calls or other errors
-        if (!(provider === 'openai' || provider === 'deepseek' || provider === 'antrophic')) {
-            hideLoader();
+        if (error.name === 'AbortError') {
+            dom.outputText.innerHTML = 'Request cancelled by user.';
+            dom.outputArea.style.borderColor = 'orange';
+        } else {
+            displayError(error.message);
         }
+    } finally {
+        hideLoader();
+        hideStopButton();
+        currentRequestController = null;
     }
 }
 
 
+// Handles video generation API calls.
+async function callVideoApi(provider, apiKey, baseUrl, model, prompt) {
+    showLoader();
+    showStopButton();
+    clearOutput();
+    dom.outputText.innerHTML = 'Sending video request...';
+    dom.outputArea.style.display = 'block';
 
-// --- INITIALIZATION ---
+    const controller = new AbortController();
+    const { signal } = controller;
+    currentRequestController = controller;
 
-// Binds all event listeners for the application.
-function bindEventListeners() {
-    // Main actions
-    sendButton.addEventListener('click', handleSendClick);
-    stopButton.addEventListener('click', handleStopClick);
-    togglePayloadBtn.addEventListener('click', handleTogglePayload);
-    toggleResponseBtn.addEventListener('click', handleToggleResponse);
-    providerSelect.addEventListener('change', handleProviderChange);
-    modelSelect.addEventListener('change', handleModelSelectionChange);
-    refreshModelsBtn.addEventListener('click', fetchModels);
+    const apiUrl = getApiUrl(provider, 'video', baseUrl);
 
-    // Generation type and options
-    generationTypeRadios.forEach(radio => {
-        radio.addEventListener('click', handleGenerationTypeChange);
-    });
-    audioTypeSelect.addEventListener('change', handleAudioTypeChange);
-    if (enableSttStreamingCheckbox) {
-        enableSttStreamingCheckbox.addEventListener('change', saveGeneralSettings);
-    }
-    enableQualityCheckbox.addEventListener('change', handleEnableQualityChange);
-    qualitySelect.addEventListener('change', handleQualitySelectChange);
-    videoAspectRatioEnabled.addEventListener('change', handleAspectRatioToggle);
-    
-    // Image model type selection
-    if (imageModelTypeSelect) {
-        imageModelTypeSelect.addEventListener('change', handleImageModelTypeChange);
-    }
-    
-    // Image resolution selection
-    if (imageResolutionSelect) {
-        imageResolutionSelect.addEventListener('change', saveGeneralSettings);
-    }
-    
-    // Image aspect ratio selection
-    if (imageAspectRatioSelect) {
-        imageAspectRatioSelect.addEventListener('change', saveGeneralSettings);
-    }
-    
-    // FLUX orientation selection
-    if (fluxOrientationSelect) {
-        fluxOrientationSelect.addEventListener('change', saveGeneralSettings);
-    }
-    
-    // FLUX aspect ratio selection
-    if (fluxAspectRatioSelect) {
-        fluxAspectRatioSelect.addEventListener('change', saveGeneralSettings);
+    // This is a placeholder for a real video API endpoint
+    if (!apiUrl) {
+        hideLoader();
+        hideStopButton();
+        // Using a placeholder API for demonstration
+        apiUrl = 'https://api.placeholder.com/video';
+        // return displayError('Video generation is currently only supported for specific compatible providers.');
     }
 
-    // --- PARAMETER TOGGLE MANAGEMENT ---
-    // Control visibility and reset to defaults when enabled
-    function handleParamToggle(groupId, checkboxEl, resetFunction = null) {
-        const group = document.getElementById(groupId);
-        if (!group || !checkboxEl) return;
-        
-        if (checkboxEl.checked) {
-            group.style.display = '';
-            // Reset to default value when toggle is turned ON (except for custom params)
-            if (resetFunction && groupId !== 'custom-params-group') {
-                resetFunction();
-            }
-        } else {
-            group.style.display = 'none';
-        }
-    }
+    let headers = { 'Authorization': `Bearer ${apiKey}` };
 
-    // Default value reset functions
-    const resetToDefaults = {
-        temperature: () => {
-            temperatureInput.value = 1;
-            temperatureValue.textContent = '1.0';
-        },
-        topP: () => {
-            topPInput.value = 1;
-            topPValue.textContent = '1.00';
-        },
-        topK: () => {
-            topKInput.value = 50;
-            topKValue.textContent = '50';
-        },
-        maxTokens: () => {
-            maxTokensInput.value = '1024';
-        },
-        reasoningEffort: () => {
-            reasoningEffortSelect.value = 'medium';
-        },
-        systemPrompt: () => {
-            // Don't reset system prompt as it's usually intentional content
-        }
+    const body = {
+        model: model,
+        prompt: prompt,
+        duration: parseInt(dom.videoDurationInput.value, 10) || 5,
     };
 
-    // Setup listeners for all parameter switches
-    if (enableSystemPromptCheckbox) {
-        enableSystemPromptCheckbox.addEventListener('change', () => {
-            handleParamToggle('system-prompt-group', enableSystemPromptCheckbox, resetToDefaults.systemPrompt);
-            saveGeneralSettings();
-        });
-        handleParamToggle('system-prompt-group', enableSystemPromptCheckbox);
-    }
-    
-    if (enableTemperatureCheckbox) {
-        enableTemperatureCheckbox.addEventListener('change', () => {
-            handleParamToggle('temperature-group', enableTemperatureCheckbox, resetToDefaults.temperature);
-            saveGeneralSettings();
-        });
-        handleParamToggle('temperature-group', enableTemperatureCheckbox);
-    }
-    
-    if (enableTopPCheckbox) {
-        enableTopPCheckbox.addEventListener('change', () => {
-            handleParamToggle('top-p-group', enableTopPCheckbox, resetToDefaults.topP);
-            saveGeneralSettings();
-        });
-        handleParamToggle('top-p-group', enableTopPCheckbox);
-    }
-    
-    if (enableTopKCheckbox) {
-        enableTopKCheckbox.addEventListener('change', () => {
-            handleParamToggle('top-k-group', enableTopKCheckbox, resetToDefaults.topK);
-            saveGeneralSettings();
-        });
-        handleParamToggle('top-k-group', enableTopKCheckbox);
-    }
-    
-    if (enableMaxTokensCheckbox) {
-        enableMaxTokensCheckbox.addEventListener('change', () => {
-            handleParamToggle('max-tokens-group', enableMaxTokensCheckbox, resetToDefaults.maxTokens);
-            saveGeneralSettings();
-        });
-        handleParamToggle('max-tokens-group', enableMaxTokensCheckbox);
-    }
-    
-    if (enableReasoningEffortCheckbox) {
-        enableReasoningEffortCheckbox.addEventListener('change', () => {
-            handleParamToggle('reasoning-effort-group', enableReasoningEffortCheckbox, resetToDefaults.reasoningEffort);
-            saveGeneralSettings();
-        });
-        handleParamToggle('reasoning-effort-group', enableReasoningEffortCheckbox);
-    }
-    
-    if (enableCustomParamsCheckbox) {
-        enableCustomParamsCheckbox.addEventListener('change', () => {
-            handleParamToggle('custom-params-group', enableCustomParamsCheckbox);
-            saveGeneralSettings();
-        });
-        handleParamToggle('custom-params-group', enableCustomParamsCheckbox);
+    if (dom.videoAspectRatioEnabled.checked) {
+        body.aspect_ratio = dom.videoAspectRatioSelect.value;
     }
 
-    temperatureInput.addEventListener('input', () => {
-        temperatureValue.textContent = parseFloat(temperatureInput.value).toFixed(1);
-        saveGeneralSettings();
-    });
-    topPInput.addEventListener('input', () => {
-        topPValue.textContent = parseFloat(topPInput.value).toFixed(2);
-        saveGeneralSettings();
-    });
-    topKInput.addEventListener('input', () => {
-        topKValue.textContent = topKInput.value;
-        saveGeneralSettings();
-    });
+    lastRequestPayload = JSON.stringify(body, null, 2);
+    dom.payloadContainer.style.display = 'block';
+
+    const startTime = performance.now();
+    try {
+        // --- Placeholder Logic ---
+        // Since there's no standard video generation API, we'll simulate a response.
+        // In a real scenario, you would replace this with a fetch call.
+        await new Promise(resolve => setTimeout(resolve, 2000)); // Simulate network delay
+
+        // Simulate a successful response with a placeholder video
+        const placeholderVideoUrl = 'https://test-videos.co.uk/vids/bigbuckbunny/mp4/h264/360/Big_Buck_Bunny_360_10s_1MB.mp4';
+        
+        dom.outputVideo.src = placeholderVideoUrl;
+        dom.outputVideo.style.display = 'block';
+        
+        dom.downloadVideoBtn.href = placeholderVideoUrl;
+        dom.downloadVideoBtn.download = `video-${model}-${Date.now()}.mp4`;
+        dom.downloadVideoBtn.style.display = 'inline-block';
+        
+        dom.outputText.innerHTML = 'Video generated successfully (placeholder).';
+        dom.outputArea.style.borderColor = '#ccc';
+
+        const endTime = performance.now();
+        const durationInSeconds = ((endTime - startTime) / 1000).toFixed(2);
+        dom.statsArea.innerHTML = `<span><strong>Generation Time:</strong> ${durationInSeconds}s</span>`;
+        dom.statsArea.style.display = 'block';
+
+    } catch (error) {
+        if (error.name === 'AbortError') {
+            dom.outputText.innerHTML = 'Request cancelled by user.';
+            dom.outputArea.style.borderColor = 'orange';
+        } else {
+            displayError(error.message);
+        }
+    } finally {
+        hideLoader();
+        hideStopButton();
+        currentRequestController = null;
+    }
+}
 
 
-    // Inputs that trigger a settings save
+// --- EVENT LISTENERS ---
+// All event listeners are set up here when the DOM is ready.
+
+document.addEventListener('DOMContentLoaded', () => {
+    // --- Initial Setup ---
+    initializeTheme();
+    loadGeneralSettings().then(() => {
+        // After general settings are loaded, load provider-specific credentials
+        loadProviderCredentials(dom.providerSelect.value);
+        // Then fetch models for the initially selected provider
+        fetchModels();
+        // Update the visibility of the toggles
+        updateAllToggleVisibility();
+    });
+    renderSavedConfigs();
+    toggleGenerationOptions(); // Set initial UI state based on default/loaded settings
+    
+    // --- Provider & Credentials ---
+    dom.providerSelect.addEventListener('change', () => {
+        const selectedProvider = dom.providerSelect.value;
+        loadProviderCredentials(selectedProvider);
+        saveGeneralSettings(); // Save the new provider selection
+        fetchModels(); // Fetch models for the new provider
+    });
+
+    dom.apiKeyInput.addEventListener('input', () => {
+        saveProviderCredentials(dom.providerSelect.value);
+    });
+
+    dom.baseUrlInput.addEventListener('input', () => {
+        saveProviderCredentials(dom.providerSelect.value);
+    });
+
+    // --- Model Selection ---
+    dom.modelSelect.addEventListener('change', handleModelSelectionChange);
+    dom.customModelInput.addEventListener('input', handleModelSelectionChange);
+    dom.refreshModelsBtn.addEventListener('click', fetchModels);
+
+    // --- Generation Type ---
+    dom.generationTypeRadios.forEach(radio => {
+        radio.addEventListener('change', () => {
+            toggleGenerationOptions();
+            saveGeneralSettings();
+        });
+    });
+
+    // --- Main Action Buttons ---
+    dom.sendButton.addEventListener('click', async () => {
+        clearOutput();
+        const provider = dom.providerSelect.value;
+        const apiKey = dom.apiKeyInput.value.trim();
+        const baseUrl = dom.baseUrlInput.value.trim();
+        const model = dom.modelSelect.value === 'custom' ? dom.customModelInput.value.trim() : dom.modelSelect.value;
+        const prompt = dom.promptInput.value.trim();
+        const generationType = document.querySelector('input[name="generation-type"]:checked')?.value;
+
+        if (!apiKey) {
+            displayError('API Key is required.');
+            return;
+        }
+        if (!model) {
+            displayError('Model is required.');
+            return;
+        }
+        if (!prompt && generationType !== 'audio') { // Prompt not needed for STT audio
+            displayError('Prompt is required.');
+            return;
+        }
+
+        // Validate parameters before sending
+        const warnings = validateParameterCompatibility(provider);
+        if (warnings.length > 0) {
+            // For now, just log them. Could also show a confirmation dialog.
+            console.warn('Parameter compatibility warnings:', warnings);
+        }
+
+        switch (generationType) {
+            case 'text':
+                await callTextApi(provider, apiKey, baseUrl, model, prompt);
+                break;
+            case 'image':
+                await callImageApi(provider, apiKey, baseUrl, model, prompt);
+                break;
+            case 'audio':
+                await callAudioApi(provider, apiKey, baseUrl, model, prompt);
+                break;
+            case 'video':
+                await callVideoApi(provider, apiKey, baseUrl, model, prompt);
+                break;
+            default:
+                displayError('Invalid generation type selected.');
+        }
+    });
+
+    dom.stopButton.addEventListener('click', () => {
+        if (currentRequestController) {
+            currentRequestController.abort();
+            console.log('Request cancellation sent.');
+        }
+    });
+
+    // --- Settings Persistence (on input change) ---
     const inputsToSave = [
-        customModelInput, promptInput, enableStreamingCheckbox, customQualityInput,
-        imageModelTypeSelect, imageResolutionSelect, imageAspectRatioSelect, 
-        fluxOrientationSelect, fluxAspectRatioSelect, fluxStepsInput,
-        voiceSelect, ttsInstructionsInput, responseFormatSelect, videoDurationInput,
-        videoAspectRatioSelect, systemPromptInput, maxTokensInput, reasoningEffortSelect, customParamsInput,
-        // NEW: Checkbox toggles trigger save as well:
-        enableSystemPromptCheckbox, enableTemperatureCheckbox, enableTopPCheckbox, enableTopKCheckbox,
-        enableMaxTokensCheckbox, enableReasoningEffortCheckbox, enableCustomParamsCheckbox,
-        enableSttStreamingCheckbox
+        dom.promptInput, dom.systemPromptInput, dom.temperatureInput, dom.topPInput,
+        dom.topKInput, dom.maxTokensInput, dom.customParamsInput, dom.imageModelTypeSelect,
+        dom.qualitySelect, dom.customQualityInput, dom.imageResolutionSelect,
+        dom.imageAspectRatioSelect, dom.fluxOrientationSelect, dom.fluxAspectRatioSelect,
+        dom.fluxStepsInput, dom.audioTypeSelect, dom.voiceSelect, dom.ttsInstructionsInput,
+        dom.responseFormatSelect, dom.videoDurationInput, dom.videoAspectRatioSelect
     ];
     inputsToSave.forEach(input => {
-        if (input) { // Ensure element exists before adding listener
-            input.addEventListener('input', saveGeneralSettings);
-        }
+        if (input) input.addEventListener('input', saveGeneralSettings);
     });
     
-    // Special case for API credentials
-    apiKeyInput.addEventListener('input', () => saveProviderCredentials(providerSelect.value));
-    if (baseUrlInput) {
-        baseUrlInput.addEventListener('input', () => saveProviderCredentials(providerSelect.value));
+    const checkboxesToSave = [
+        dom.enableStreamingCheckbox, dom.enableSystemPromptCheckbox, dom.enableTemperatureCheckbox,
+        dom.enableTopPCheckbox, dom.enableTopKCheckbox, dom.enableMaxTokensCheckbox,
+        dom.enableReasoningEffortCheckbox, dom.enableCustomParamsCheckbox, dom.enableQualityCheckbox,
+        dom.enableSttStreamingCheckbox, dom.videoAspectRatioEnabled
+    ];
+    checkboxesToSave.forEach(checkbox => {
+        if (checkbox) checkbox.addEventListener('change', saveGeneralSettings);
+    });
+
+    dom.temperatureInput.addEventListener('input', () => {
+        dom.temperatureValue.textContent = parseFloat(dom.temperatureInput.value).toFixed(1);
+    });
+    dom.topPInput.addEventListener('input', () => {
+        dom.topPValue.textContent = parseFloat(dom.topPInput.value).toFixed(2);
+    });
+    dom.topKInput.addEventListener('input', () => {
+        dom.topKValue.textContent = dom.topKInput.value;
+    });
+
+    // --- Image & Video Options ---
+    if (dom.imageModelTypeSelect) dom.imageModelTypeSelect.addEventListener('change', handleImageModelTypeChange);
+    if (dom.qualitySelect) {
+        dom.qualitySelect.addEventListener('change', () => {
+            dom.customQualityInput.style.display = dom.qualitySelect.value === 'custom' ? 'block' : 'none';
+            saveGeneralSettings();
+        });
     }
-    
-    // FLUX steps slider functionality
-    if (fluxStepsInput) {
-        fluxStepsInput.addEventListener('input', () => {
+    if (dom.videoAspectRatioEnabled) dom.videoAspectRatioEnabled.addEventListener('change', toggleAspectRatio);
+    if (dom.fluxStepsInput) {
+        dom.fluxStepsInput.addEventListener('input', () => {
             const fluxStepsValue = document.getElementById('flux-steps-value');
             if (fluxStepsValue) {
-                fluxStepsValue.textContent = fluxStepsInput.value;
+                fluxStepsValue.textContent = dom.fluxStepsInput.value;
             }
             saveGeneralSettings();
         });
     }
 
-    // Electron-specific listener
-    const newWindowBtn = document.getElementById('open-new-window-btn');
-    if (newWindowBtn) {
-        if (window.electronAPI && window.electronAPI.send) {
-            newWindowBtn.addEventListener('click', () => window.electronAPI.send('open-new-window'));
-        } else {
-            newWindowBtn.style.display = 'none'; // Hide if not in Electron
+
+    // --- Audio Options ---
+    if (dom.audioTypeSelect) {
+        dom.audioTypeSelect.addEventListener('change', () => {
+            toggleGenerationOptions(); // Re-render UI for TTS/STT
+            saveGeneralSettings();
+        });
+    }
+
+    
+
+
+    // --- Parameter Toggles ---
+    const parameterToggles = {
+        'enable-system-prompt-checkbox': document.getElementById('system-prompt-group'),
+        'enable-temperature-checkbox': document.getElementById('temperature-group'),
+        'enable-top-p-checkbox': document.getElementById('top-p-group'),
+        'enable-top-k-checkbox': document.getElementById('top-k-group'),
+        'enable-max-tokens-checkbox': document.getElementById('max-tokens-group'),
+        'enable-reasoning-effort-checkbox': document.getElementById('reasoning-effort-group'),
+        'enable-custom-params-checkbox': document.getElementById('custom-params-group'),
+        'enable-quality-checkbox': document.getElementById('quality-options-container'),
+    };
+
+    Object.keys(parameterToggles).forEach(checkboxId => {
+        const checkbox = document.getElementById(checkboxId);
+        if (checkbox) {
+            checkbox.addEventListener('change', () => {
+                updateAllToggleVisibility();
+                saveGeneralSettings();
+            });
         }
-    }
-
-    // Clear All Data button listener
-    if (clearAllDataBtn) {
-        clearAllDataBtn.addEventListener('click', async () => {
-            const confirmed = confirm(
-                'Are you sure you want to clear ALL stored data?\n\n' +
-                'This will remove:\n' +
-                '• All saved provider configurations\n' +
-                '• API keys and credentials\n' +
-                '• Theme preferences\n' +
-                '• All other app settings\n\n' +
-                'This action cannot be undone!'
-            );
-            
-            if (confirmed) {
-                const success = await clearAllStorageData();
-                if (success) {
-                    alert('All storage data has been cleared successfully.\n\nThe page will now reload to reset the application.');
-                    // Reload the page to reset the UI to default state
-                    window.location.reload();
-                } else {
-                    alert('There was an error clearing some data. Please check the console for details.');
-                }
-            }
-        });
-    }
-
-    // Listeners for all collapsible sections to save their state
-    document.querySelectorAll('.settings-details').forEach(details => {
-        details.addEventListener('toggle', () => {
-            const key = `details-panel-open-${details.querySelector('summary').textContent.trim().replace(/\s+/g, '-')}`;
-            setStoredValue(key, details.open);
-        });
     });
 
-    if (saveConfigBtn) {
-        saveConfigBtn.addEventListener('click', () => {
-            saveConfiguration();
-        });
-    } else {
-        console.error('ERROR: saveConfigBtn not found! Element with ID "save-config-btn" does not exist.');
-    }
-
-    if (savedConfigsList) {
-        savedConfigsList.addEventListener('click', (e) => {
-            const target = e.target;
-            // Ensure we are targeting a button with the correct data attribute
-            if (target.tagName === 'BUTTON' && target.dataset.configName) {
-                const configName = target.dataset.configName;
-                if (target.classList.contains('restore-btn')) {
-                    restoreConfiguration(configName);
-                } else if (target.classList.contains('delete-btn')) {
-                    // Add a confirmation dialog before deleting
-                    if (confirm(`Are you sure you want to delete the "${configName}" configuration?`)) {
-                        deleteConfiguration(configName);
-                    }
-                }
-            }
-        });
-    } else {
-        console.error('ERROR: savedConfigsList not found! Element with ID "saved-configs-list" does not exist.');
-    }
-
-    // --- Custom Parameters Enhancement ---
-    // JSON formatting functionality
-    const formatJsonBtn = document.getElementById('format-json-btn');
-    const clearJsonBtn = document.getElementById('clear-json-btn');
-    // customParamsInput is already declared globally at the top of the file
-
-    if (formatJsonBtn && customParamsInput) {
-        formatJsonBtn.addEventListener('click', () => {
-            try {
-                const value = customParamsInput.value.trim();
-                if (!value) return;
-                
-                const parsed = JSON.parse(value);
-                const formatted = JSON.stringify(parsed, null, 2);
-                customParamsInput.value = formatted;
-                
-                // Visual feedback
-                formatJsonBtn.style.background = 'var(--success-color)';
-                formatJsonBtn.querySelector('svg').style.color = 'white';
-                setTimeout(() => {
-                    formatJsonBtn.style.background = '';
-                    formatJsonBtn.querySelector('svg').style.color = '';
-                }, 1000);
-            } catch (error) {
-                // Visual feedback for error
-                formatJsonBtn.style.background = 'var(--error-color)';
-                formatJsonBtn.querySelector('svg').style.color = 'white';
-                setTimeout(() => {
-                    formatJsonBtn.style.background = '';
-                    formatJsonBtn.querySelector('svg').style.color = '';
-                }, 1000);
-                console.warn('Invalid JSON for formatting:', error.message);
-            }
-        });
-    }
-
-    if (clearJsonBtn && customParamsInput) {
-        clearJsonBtn.addEventListener('click', () => {
-            if (customParamsInput.value.trim() && confirm('Clear all custom parameters?')) {
-                customParamsInput.value = '';
-                saveGeneralSettings();
-            }
-        });
-    }
-
-    // Parameter examples functionality
-    const paramExamples = document.querySelectorAll('.param-example');
-    paramExamples.forEach(example => {
-        example.addEventListener('click', () => {
-            try {
-                const paramData = JSON.parse(example.dataset.param);
-                const currentValue = customParamsInput.value.trim();
-                
-                let currentParams = {};
-                if (currentValue) {
-                    try {
-                        currentParams = JSON.parse(currentValue);
-                    } catch (error) {
-                        console.warn('Current JSON is invalid, starting fresh:', error.message);
-                    }
-                }
-
-                // Merge the new parameter
-                Object.assign(currentParams, paramData);
-                
-                // Format and set the new value
-                const formatted = JSON.stringify(currentParams, null, 2);
-                customParamsInput.value = formatted;
-                
-                // Save settings
-                saveGeneralSettings();
-                
-                // Visual feedback
-                example.style.transform = 'scale(0.95)';
-                setTimeout(() => {
-                    example.style.transform = '';
-                }, 150);
-                
-            } catch (error) {
-                console.error('Error adding parameter example:', error);
-            }
-        });
+    // --- Payload/Response Display ---
+    dom.togglePayloadBtn.addEventListener('click', () => {
+        const isActive = dom.payloadDisplayArea.style.display === 'block';
+        dom.payloadDisplayArea.style.display = isActive ? 'none' : 'block';
+        dom.togglePayloadBtn.textContent = isActive ? 'Show Request' : 'Hide Request';
+        dom.togglePayloadBtn.classList.toggle('active', !isActive);
+        if (!isActive && lastRequestPayload) {
+            dom.payloadDisplayArea.textContent = lastRequestPayload;
+        }
     });
 
-    // Enhanced JSON validation with real-time feedback
-    if (customParamsInput) {
-        let validationTimeout;
-        customParamsInput.addEventListener('input', () => {
-            clearTimeout(validationTimeout);
-            validationTimeout = setTimeout(() => {
-                const value = customParamsInput.value.trim();
-                if (!value) {
-                    customParamsInput.style.borderColor = '';
-                    customParamsInput.style.boxShadow = '';
-                    return;
-                }
-                
-                try {
-                    JSON.parse(value);
-                    // Valid JSON
-                    customParamsInput.style.borderColor = 'var(--success-color)';
-                    customParamsInput.style.boxShadow = 'inset 0 1px 3px rgba(0, 0, 0, 0.1), 0 0 0 3px rgba(40, 167, 69, 0.1)';
-                } catch (error) {
-                    // Invalid JSON
-                    customParamsInput.style.borderColor = 'var(--error-color)';
-                    customParamsInput.style.boxShadow = 'inset 0 1px 3px rgba(0, 0, 0, 0.1), 0 0 0 3px rgba(220, 53, 69, 0.1)';
-                }
-            }, 500);
-        });
-
-        // Reset border on focus out if empty
-        customParamsInput.addEventListener('blur', () => {
-            if (!customParamsInput.value.trim()) {
-                customParamsInput.style.borderColor = '';
-                customParamsInput.style.boxShadow = '';
-            }
-        });
-    }
-}
-
-// --- EVENT HANDLER FUNCTIONS ---
-
-async function handleSendClick() {
-    await saveProviderCredentials(providerSelect.value);
-    await saveGeneralSettings();
-
-    const provider = providerSelect.value;
-    const apiKey = apiKeyInput.value.trim();
-    const model = modelSelect.value === 'custom'
-        ? customModelInput.value.trim()
-        : modelSelect.value;
-    const prompt = promptInput.value.trim();
-    const baseUrl = baseUrlInput.value.trim();
-    const generationType = document.querySelector('input[name="generation-type"]:checked').value;
-
-    if (!apiKey) return displayError('Please enter your API Key.');
-    if (!model) return displayError('Please enter the Model Name.');
-    if (generationType === 'text' || generationType === 'image' || generationType === 'video') {
-        if (!prompt) return displayError('Please enter a prompt or description.');
-    }
-    if (provider === 'openai_compatible' && !baseUrl) return displayError('Please enter the Base URL for OpenAI Compatible provider.');
-
-    switch (generationType) {
-        case 'text':
-            callTextApi(provider, apiKey, baseUrl, model, prompt);
-            break;
-        case 'image':
-            // Validate image model type selection
-            const modelType = imageModelTypeSelect ? imageModelTypeSelect.value : '';
-            if (!modelType) {
-                return displayError('Please select an image model type first.');
-            }
-            callImageApi(provider, apiKey, baseUrl, model, prompt);
-            break;
-        case 'audio':
-            const audioType = audioTypeSelect.value;
-            if (audioType === 'tts') {
-                if (!prompt) return displayError('Please enter text for TTS.');
-                const voice = voiceSelect.value || 'alloy';
-                const instructions = ttsInstructionsInput.value.trim();
-                const responseFormat = responseFormatSelect.value || 'mp3';
-                callTtsApi(provider, apiKey, baseUrl, model, prompt, voice, instructions, responseFormat);
-            } else { // STT
-                const file = audioFileInput.files[0];
-                // File is optional now - will use demo.mp3 if not provided
-                callSttApi(provider, apiKey, baseUrl, model, file);
-            }
-            break;
-        case 'video':
-            const duration = parseInt(videoDurationInput.value);
-            if (!duration || duration < 1 || duration > 60) return displayError('Please enter a valid duration (1-60 seconds).');
-            callVideoApi(provider, apiKey, baseUrl, model, prompt);
-            break;
-        default:
-            displayError('Invalid generation type selected.');
-    }
-}
-
-function handleTogglePayload() {
-    const isHidden = payloadDisplayArea.style.display === 'none';
-    responseDisplayArea.style.display = 'none';
-    toggleResponseBtn.classList.remove('active');
-    if (isHidden) {
-        payloadDisplayArea.textContent = lastRequestPayload || 'No request payload data available.';
-        payloadDisplayArea.style.display = 'block';
-        togglePayloadBtn.classList.add('active');
-    } else {
-        payloadDisplayArea.style.display = 'none';
-        togglePayloadBtn.classList.remove('active');
-    }
-}
-
-function handleToggleResponse() {
-    const isHidden = responseDisplayArea.style.display === 'none';
-    payloadDisplayArea.style.display = 'none';
-    togglePayloadBtn.classList.remove('active');
-    if (isHidden) {
-        responseDisplayArea.textContent = lastApiResponse || 'No response data available.';
-        responseDisplayArea.style.display = 'block';
-        toggleResponseBtn.classList.add('active');
-    } else {
-        responseDisplayArea.style.display = 'none';
-        toggleResponseBtn.classList.remove('active');
-    }
-}
-
-async function handleProviderChange() {
-    await saveGeneralSettings();
-    await loadProviderCredentials(providerSelect.value);
-    toggleBaseUrlInput();
-    fetchModels(); // Refresh models when provider changes
-}
-
-async function handleGenerationTypeChange() {
-    await saveGeneralSettings();
-    toggleGenerationOptions();
-}
-
-async function handleAudioTypeChange() {
-    await saveGeneralSettings();
-    toggleGenerationOptions();
-}
-
-
-// Handle stop button click to cancel ongoing requests
-function handleStopClick() {
-    if (currentRequestController) {
-        currentRequestController.abort();
-        currentRequestController = null;
-        hideStopButton();
-        hideLoader();
-        outputText.innerHTML = 'Request cancelled by user.';
-        outputArea.style.display = 'block';
-        outputArea.style.borderColor = 'orange';
-    }
-}
-
-async function handleEnableQualityChange() {
-    qualityOptionsContainer.style.display = enableQualityCheckbox.checked ? 'block' : 'none';
-    customQualityInput.style.display = (enableQualityCheckbox.checked && qualitySelect.value === 'custom') ? 'block' : 'none';
-    await saveGeneralSettings();
-}
-
-async function handleQualitySelectChange() {
-    customQualityInput.style.display = (enableQualityCheckbox.checked && qualitySelect.value === 'custom') ? 'block' : 'none';
-    await saveGeneralSettings();
-}
-
-async function handleAspectRatioToggle() {
-    await saveGeneralSettings();
-    toggleAspectRatio();
-}
-
-// Main application initialization function.
-async function initializeApp() {
-    // Restore the open/closed state of all collapsible sections
-    for (const details of document.querySelectorAll('.settings-details')) {
-        const key = `details-panel-open-${details.querySelector('summary').textContent.trim().replace(/\s+/g, '-')}`;
-        const isOpen = await getStoredValue(key);
-        // Default to open if no value is stored, except for "Advanced Options"
-        if (details.querySelector('summary').textContent.includes('Advanced')) {
-            details.open = typeof isOpen === 'boolean' ? isOpen : false; // Default advanced to closed
-        } else {
-            details.open = typeof isOpen === 'boolean' ? isOpen : true; // Default others to open
+    dom.toggleResponseBtn.addEventListener('click', () => {
+        const isActive = dom.responseDisplayArea.style.display === 'block';
+        dom.responseDisplayArea.style.display = isActive ? 'none' : 'block';
+        dom.toggleResponseBtn.textContent = isActive ? 'Show Response' : 'Hide Response';
+        dom.toggleResponseBtn.classList.toggle('active', !isActive);
+        if (!isActive && lastApiResponse) {
+            dom.responseDisplayArea.textContent = lastApiResponse;
         }
-    }
-    
-    initializeTheme();
-    await loadGeneralSettings();
-    await loadProviderCredentials(providerSelect.value);
-    toggleBaseUrlInput();
-    await fetchModels(); // Fetch models on initial load
-    await renderSavedConfigs(); // Render the list of saved configurations
-    bindEventListeners();
-    
-    // Initialize image options UI state
-    updateImageOptionsUI();
-    
-    // Initialize FLUX steps slider value display
-    if (fluxStepsInput) {
-        const fluxStepsValue = document.getElementById('flux-steps-value');
-        if (fluxStepsValue) {
-            fluxStepsValue.textContent = fluxStepsInput.value;
-        }
-    }
-}
+    });
 
-// --- APP START ---
-document.addEventListener('DOMContentLoaded', initializeApp);
+    // --- Provider Configurations ---
+    dom.saveConfigBtn.addEventListener('click', saveConfiguration);
+    dom.savedConfigsList.addEventListener('click', (event) => {
+        const target = event.target;
+        const configName = target.dataset.configName;
+        if (!configName) return;
+
+        if (target.classList.contains('restore-btn')) {
+            restoreConfiguration(configName);
+        } else if (target.classList.contains('delete-btn')) {
+            if (confirm(`Are you sure you want to delete the "${configName}" configuration?`)) {
+                deleteConfiguration(configName);
+            }
+        }
+    });
+
+    // --- Clear All Data ---
+    dom.clearAllDataBtn.addEventListener('click', async () => {
+        if (confirm('Are you sure you want to delete ALL stored data, including API keys and configurations? This action cannot be undone.')) {
+            const success = await clearAllStorageData();
+            if (success) {
+                alert('All storage data has been cleared. The application will now reload.');
+                location.reload();
+            } else {
+                alert('There was an error clearing the data. Check the console for details.');
+            }
+        }
+    });
+    
+    // --- New Window Button ---
+    const openNewWindowBtn = document.getElementById('open-new-window-btn');
+    if (openNewWindowBtn) {
+        openNewWindowBtn.addEventListener('click', () => {
+            if (window.electronAPI && window.electronAPI.openNewWindow) {
+                window.electronAPI.openNewWindow();
+            } else {
+                // Fallback for web version
+                window.open(location.href, '_blank');
+            }
+        });
+    }
+});

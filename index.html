@@ -49,7 +49,7 @@
             <details class="settings-details" open>
                 <summary>1. Provider Settings</summary>
                 <fieldset>
-                    <label for="provider-select">Provider:</label>
+                    <label for="provider-select" style="margin-top: 0px;">Provider:</label>
                     <select id="provider-select">
                         <option value="openai_compatible" selected>OpenAI Compatible</option>
                         <option value="openai">OpenAI</option>
@@ -72,9 +72,11 @@
             <details class="settings-details">
                 <summary>Provider Configurations</summary>
                 <fieldset>
-                    <label for="config-name-input">Configuration Name:</label>
-                    <input type="text" id="config-name-input" placeholder="e.g., My Work Account, Groq Llama3">
-                    <button id="save-config-btn">Save Current Configuration</button>
+                    <label for="config-name-input" style="margin-top: 0px;">Configuration Name:</label>
+                    <div class="model-selection-wrapper">
+                        <input type="text" id="config-name-input" placeholder="e.g., My Work Account, Groq Llama3">
+                        <button id="save-config-btn" class="icon-btn" title="Save Current Configuration">Save</button>
+                    </div>
                     
                     <div id="saved-configs-list-container">
                         <hr class="config-separator">
@@ -169,10 +171,10 @@
                                     <span class="slider"></span>
                                 </span>
                             </label>
-                        </div>
-                        <div class="form-group slider-group" id="temperature-group">
-                            <label for="temperature-input">Temperature: <span id="temperature-value">1.0</span></label>
-                            <input type="range" id="temperature-input" min="0" max="2" step="0.1" value="1">
+                            <div class="form-group slider-group" id="temperature-group">
+                                <span id="temperature-value" class="slider-value">1.0</span>
+                                <input type="range" id="temperature-input" min="0" max="2" step="0.1" value="1">
+                            </div>
                         </div>
                         <div class="enable-param-container">
                             <label class="enable-param-title" for="enable-top-p-checkbox">
@@ -182,10 +184,10 @@
                                     <span class="slider"></span>
                                 </span>
                             </label>
-                        </div>
-                        <div class="form-group slider-group" id="top-p-group">
-                            <label for="top-p-input">Top P: <span id="top-p-value">1.0</span></label>
-                            <input type="range" id="top-p-input" min="0" max="1" step="0.01" value="1">
+                            <div class="form-group slider-group" id="top-p-group">
+                                <span id="top-p-value" class="slider-value">1.0</span>
+                                <input type="range" id="top-p-input" min="0" max="1" step="0.01" value="1">
+                            </div>
                         </div>
                         <div class="enable-param-container">
                             <label class="enable-param-title" for="enable-top-k-checkbox">
@@ -195,10 +197,10 @@
                                     <span class="slider"></span>
                                 </span>
                             </label>
-                        </div>
-                        <div class="form-group slider-group" id="top-k-group">
-                            <label for="top-k-input">Top K: <span id="top-k-value">50</span></label>
-                            <input type="range" id="top-k-input" min="0" max="1000" step="50" value="50">
+                            <div class="form-group slider-group" id="top-k-group">
+                                <span id="top-k-value" class="slider-value">50</span>
+                                <input type="range" id="top-k-input" min="0" max="1000" step="50" value="50">
+                            </div>
                         </div>
                         <div class="enable-param-container">
                             <label class="enable-param-title" for="enable-max-tokens-checkbox">
@@ -208,10 +210,9 @@
                                     <span class="slider"></span>
                                 </span>
                             </label>
-                        </div>
-                        <div class="form-group" id="max-tokens-group">
-                            <label for="max-tokens-input">Max Tokens:</label>
-                            <input type="number" id="max-tokens-input" placeholder="e.g., 4096">
+                            <div class="form-group" id="max-tokens-group">
+                                <input type="number" id="max-tokens-input" placeholder="e.g., 4096">
+                            </div>
                         </div>
                         <div class="enable-param-container">
                             <label class="enable-param-title" for="enable-reasoning-effort-checkbox">
@@ -221,14 +222,13 @@
                                     <span class="slider"></span>
                                 </span>
                             </label>
-                        </div>
-                        <div class="form-group" id="reasoning-effort-group">
-                            <label for="reasoning-effort-select">Reasoning Effort:</label>
-                            <select id="reasoning-effort-select">
-                                <option value="low">Low</option>
-                                <option value="medium" selected>Medium</option>
-                                <option value="high">High</option>
-                            </select>
+                            <div class="form-group" id="reasoning-effort-group">
+                                <select id="reasoning-effort-select">
+                                    <option value="low">Low</option>
+                                    <option value="medium" selected>Medium</option>
+                                    <option value="high">High</option>
+                                </select>
+                            </div>
                         </div>
                         <div class="enable-param-container">
                             <label class="enable-param-title" for="enable-custom-params-checkbox">
@@ -241,19 +241,15 @@
                         </div>
                         <div class="form-group custom-params-form" id="custom-params-group">
                             <div class="custom-params-input-wrapper">
-                                <label for="custom-params-input" class="custom-params-label">
-                                    <span class="label-text">Custom Parameters (JSON format)</span>
-                                    <span class="help-tooltip" title="Enter additional API parameters as valid JSON. These will be merged with the request body.">?</span>
-                                </label>
                                 <div class="textarea-container">
                                     <textarea
                                         id="custom-params-input"
                                         rows="5"
                                         placeholder='{
-  "min_p": 0.1,
-  "repeat_penalty": 1.1,
-  "frequency_penalty": 0.5
-}'></textarea>
+                                        "min_p": 0.1,
+                                        "repeat_penalty": 1.1,
+                                        "frequency_penalty": 0.5
+                                        }'></textarea>
                                     <div class="json-actions">
                                         <button type="button" id="format-json-btn" class="json-action-btn" title="Format JSON">
                                             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
