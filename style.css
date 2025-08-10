@@ -104,7 +104,7 @@ main {
 /* --- FORMS & INPUTS --- */
 label {
     display: block;
-    margin: 20px 0 8px;
+    margin: 8px 0 8px;
     font-weight: 600;
     color: var(--text-color-muted);
 }
@@ -657,6 +657,92 @@ button.copy-btn {
 
 .dark-mode .saved-config-item .delete-btn:hover {
     background-color: #e54848;
+}
+
+/* --- AUDIO FILE INPUT --- */
+.audio-file-wrapper {
+    position: relative;
+    display: inline-block;
+    width: 100%;
+}
+
+#audio-file-input {
+    position: absolute;
+    opacity: 0;
+    width: 100%;
+    height: 100%;
+    cursor: pointer;
+    z-index: 2;
+}
+
+.audio-file-label {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 30px 20px;
+    border: 2px dashed var(--border-color);
+    border-radius: 8px;
+    background-color: var(--output-bg-color);
+    cursor: pointer;
+    transition: all 0.3s ease;
+    text-align: center;
+    min-height: 120px;
+}
+
+.audio-file-label:hover {
+    border-color: var(--button-bg-color);
+    background-color: var(--hover-bg-color);
+}
+
+.audio-file-label.dragover {
+    border-color: var(--button-bg-color);
+    background-color: rgba(0, 123, 255, 0.1);
+    transform: scale(1.02);
+}
+
+.dark-mode .audio-file-label.dragover {
+    background-color: rgba(13, 110, 253, 0.15);
+}
+
+.audio-file-icon {
+    width: 40px;
+    height: 40px;
+    margin-bottom: 12px;
+    color: var(--text-color-muted);
+    transition: color 0.3s ease;
+}
+
+.audio-file-label:hover .audio-file-icon {
+    color: var(--button-bg-color);
+}
+
+.audio-file-text {
+    color: var(--text-color);
+    font-weight: 600;
+    margin-bottom: 4px;
+}
+
+.audio-file-subtext {
+    color: var(--text-color-muted);
+    font-size: 0.9em;
+}
+
+.audio-file-selected {
+    border-color: var(--button-bg-color);
+    background-color: rgba(0, 123, 255, 0.05);
+}
+
+.dark-mode .audio-file-selected {
+    background-color: rgba(13, 110, 253, 0.1);
+}
+
+.audio-file-selected .audio-file-icon {
+    color: var(--button-bg-color);
+}
+
+.audio-file-selected .audio-file-text {
+    color: var(--button-bg-color);
 }
 
 /* --- CUSTOM PARAMETERS --- */

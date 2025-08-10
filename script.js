@@ -38,6 +38,7 @@ const dom = {
     audioTypeSelect: document.getElementById('audio-type-select'),
     sttInputContainer: document.getElementById('stt-input-container'),
     audioFileInput: document.getElementById('audio-file-input'),
+    audioFileLabel: document.getElementById('audio-file-label'),
     voiceOptionsContainer: document.getElementById('voice-options-container'),
     voiceSelect: document.getElementById('voice-select'),
     ttsInstructionsInput: document.getElementById('tts-instructions-input'),
@@ -2255,11 +2256,24 @@ async function callTextToSpeechApi(provider, apiKey, baseUrl, model, prompt, sig
 
 // Handles Speech-to-Text (STT) API calls.
 async function callSpeechToTextApi(provider, apiKey, baseUrl, model, signal) {
-    const audioFile = dom.audioFileInput.files[0];
+    let audioFile = dom.audioFileInput.files[0];
+    
+    // If no audio file is selected, use demo.mp3 from project root
     if (!audioFile) {
-        hideLoader();
-        hideStopButton();
-        return displayError('Please select an audio file for transcription.');
+        try {
+            const response = await fetch('./demo.mp3');
+            if (!response.ok) {
+                hideLoader();
+                hideStopButton();
+                return displayError('No audio file selected and demo.mp3 not found. Please select an audio file for transcription.');
+            }
+            const blob = await response.blob();
+            audioFile = new File([blob], 'demo.mp3', { type: 'audio/mpeg' });
+        } catch (error) {
+            hideLoader();
+            hideStopButton();
+            return displayError('Failed to load demo.mp3. Please select an audio file for transcription.');
+        }
     }
 
     const apiUrl = getApiUrl(provider, 'stt', baseUrl);
@@ -2698,5 +2712,64 @@ document.addEventListener('DOMContentLoaded', () => {
                 dom.addParamBtn.click();
             }
         });
+    }
+
+    // --- Audio File Input Enhancement ---
+    if (dom.audioFileInput && dom.audioFileLabel) {
+        // File selection handler
+        dom.audioFileInput.addEventListener('change', (e) => {
+            const file = e.target.files[0];
+            updateAudioFileDisplay(file);
+        });
+
+        // Drag and drop handlers
+        ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+            dom.audioFileLabel.addEventListener(eventName, preventDefaults, false);
+        });
+
+        function preventDefaults(e) {
+            e.preventDefault();
+            e.stopPropagation();
+        }
+
+        ['dragenter', 'dragover'].forEach(eventName => {
+            dom.audioFileLabel.addEventListener(eventName, () => {
+                dom.audioFileLabel.classList.add('dragover');
+            }, false);
+        });
+
+        ['dragleave', 'drop'].forEach(eventName => {
+            dom.audioFileLabel.addEventListener(eventName, () => {
+                dom.audioFileLabel.classList.remove('dragover');
+            }, false);
+        });
+
+        dom.audioFileLabel.addEventListener('drop', (e) => {
+            const files = e.dataTransfer.files;
+            if (files.length > 0) {
+                dom.audioFileInput.files = files;
+                updateAudioFileDisplay(files[0]);
+            }
+        }, false);
+    }
+
+    function updateAudioFileDisplay(file) {
+        if (file) {
+            const textEl = dom.audioFileLabel.querySelector('.audio-file-text');
+            const subtextEl = dom.audioFileLabel.querySelector('.audio-file-subtext');
+            if (textEl && subtextEl) {
+                textEl.textContent = file.name;
+                subtextEl.textContent = `${(file.size / 1024 / 1024).toFixed(2)} MB • ${file.type}`;
+                dom.audioFileLabel.classList.add('audio-file-selected');
+            }
+        } else {
+            const textEl = dom.audioFileLabel.querySelector('.audio-file-text');
+            const subtextEl = dom.audioFileLabel.querySelector('.audio-file-subtext');
+            if (textEl && subtextEl) {
+                textEl.textContent = 'Drop audio file here or click to browse';
+                subtextEl.textContent = 'Supports MP3, WAV, M4A, and other audio formats';
+                dom.audioFileLabel.classList.remove('audio-file-selected');
+            }
+        }
     }
 });

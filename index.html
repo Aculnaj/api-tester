@@ -128,7 +128,6 @@
                         </div>
                         <input type="text" id="custom-model-input" placeholder="Enter custom model name" style="display:none; margin-top: 8px;">
                     </div>
-                    <label for="prompt-input" id="prompt-label">Prompt / Image Description:</label>
                     <div id="audio-input-container" style="display: none;">
                         <label for="audio-type-select">Audio Type:</label>
                         <select id="audio-type-select">
@@ -137,9 +136,19 @@
                         </select>
                         <div id="stt-input-container" style="display: none;">
                             <label for="audio-file-input">Audio File:</label>
-                            <input type="file" id="audio-file-input" accept="audio/*">
+                            <div class="audio-file-wrapper">
+                                <input type="file" id="audio-file-input" accept="audio/*">
+                                <label for="audio-file-input" class="audio-file-label" id="audio-file-label">
+                                    <svg class="audio-file-icon" xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 16 16">
+                                        <path d="M6.5 1A1.5 1.5 0 0 0 5 2.5v11A1.5 1.5 0 0 0 6.5 15h3A1.5 1.5 0 0 0 11 13.5v-11A1.5 1.5 0 0 0 9.5 1h-3zM8 11a1 1 0 1 1 0-2 1 1 0 0 1 0 2zm0-3a1 1 0 1 1 0-2 1 1 0 0 1 0 2z"/>
+                                    </svg>
+                                    <div class="audio-file-text">Drop audio file here or click to browse</div>
+                                    <div class="audio-file-subtext">Supports MP3, WAV, M4A, and other audio formats</div>
+                                </label>
+                            </div>
                         </div>
                     </div>
+                    <label for="prompt-input" id="prompt-label">Prompt / Image Description:</label>
                     <textarea id="prompt-input" rows="4" placeholder="Enter text prompt or image description..."></textarea>
                 </fieldset>
             </details>
