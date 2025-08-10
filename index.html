@@ -35,6 +35,12 @@
                     <path fill-rule="evenodd" d="M8 2a.5.5 0 0 1 .5.5v5h5a.5.5 0 0 1 0 1h-5v5a.5.5 0 0 1-1 0v-5h-5a.5.5 0 0 1 0-1h5v-5A.5.5 0 0 1 8 2Z"/>
                 </svg>
             </button>
+            <button id="clear-all-data-btn" class="theme-mode-btn" title="Clear All Storage Data">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-trash" viewBox="0 0 16 16">
+                    <path d="M5.5 5.5A.5.5 0 0 1 6 6v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zm2.5 0a.5.5 0 0 1 .5.5v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zm3 .5a.5.5 0 0 0-1 0v6a.5.5 0 0 0 1 0V6z"/>
+                    <path fill-rule="evenodd" d="M14.5 3a1 1 0 0 1-1 1H13v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V4h-.5a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1H6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1h3.5a1 1 0 0 1 1 1v1zM4.118 4 4 4.059V13a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1V4.059L11.882 4H4.118zM2.5 3V2h11v1h-11z"/>
+                </svg>
+            </button>
         </div>
     </header>
 
@@ -43,12 +49,12 @@
             <details class="settings-details" open>
                 <summary>1. Provider Settings</summary>
                 <fieldset>
-                    <label for="provider-select">Provider:</label>
+                    <label for="provider-select" style="margin-top: 0px;">Provider:</label>
                     <select id="provider-select">
                         <option value="openai_compatible" selected>OpenAI Compatible</option>
                         <option value="openai">OpenAI</option>
                         <option value="deepseek">Deepseek</option>
-                        <option value="claude">Claude</option>
+                        <option value="antrophic">Antrophic</option>
                         <option value="openrouter">OpenRouter</option>
                     </select>
 
@@ -66,9 +72,11 @@
             <details class="settings-details">
                 <summary>Provider Configurations</summary>
                 <fieldset>
-                    <label for="config-name-input">Configuration Name:</label>
-                    <input type="text" id="config-name-input" placeholder="e.g., My Work Account, Groq Llama3">
-                    <button id="save-config-btn">Save Current Configuration</button>
+                    <label for="config-name-input" style="margin-top: 0px;">Configuration Name:</label>
+                    <div class="model-selection-wrapper">
+                        <input type="text" id="config-name-input" placeholder="e.g., My Work Account, Groq Llama3">
+                        <button id="save-config-btn" class="icon-btn" title="Save Current Configuration">Save</button>
+                    </div>
                     
                     <div id="saved-configs-list-container">
                         <hr class="config-separator">
@@ -107,15 +115,6 @@
                         </div>
                     </div>
 
-                    <!-- Audio Type removed from here: now will be in Advanced Options -->
-                    <!-- Audio Type - now back at the top of the Generation Task -->
-                    <div id="audio-type-row" style="display:none; margin-bottom: 10px;">
-                        <label for="audio-type-select">Audio Type:</label>
-                        <select id="audio-type-select">
-                            <option value="tts" selected>Text-to-Speech (TTS)</option>
-                            <option value="stt">Speech-to-Text (STT)</option>
-                        </select>
-                    </div>
                     <div id="model-container">
                         <label for="model-select">Model:</label>
                         <div class="model-selection-wrapper">
@@ -129,23 +128,37 @@
                         </div>
                         <input type="text" id="custom-model-input" placeholder="Enter custom model name" style="display:none; margin-top: 8px;">
                     </div>
-                    <label for="prompt-input" id="prompt-label">Prompt / Image Description:</label>
-                    <textarea id="prompt-input" rows="4" placeholder="Enter text prompt or image description..."></textarea>
-
-                    <div id="audio-generation-controls" style="display: none;">
+                    
+                    <div id="video-endpoint-container" style="display: none;">
+                        <label for="video-endpoint-select">Video Endpoint:</label>
+                        <select id="video-endpoint-select">
+                            <option value="/videos/generations" selected>/videos/generations</option>
+                            <option value="/images/generations">/images/generations</option>
+                        </select>
+                    </div>
+                    
+                    <div id="audio-input-container" style="display: none;">
+                        <label for="audio-type-select">Audio Type:</label>
+                        <select id="audio-type-select">
+                            <option value="tts" selected>Text-to-Speech (TTS)</option>
+                            <option value="stt">Speech-to-Text (STT)</option>
+                        </select>
                         <div id="stt-input-container" style="display: none;">
                             <label for="audio-file-input">Audio File:</label>
-                            <input type="file" id="audio-file-input" accept="audio/*">
-                        </div>
-                        <div id="recorder-controls" style="display:none;">
-                            <button type="button" id="record-btn">Start Recording</button>
-                            <audio id="recording-preview" controls style="display:none;"></audio>
-                        </div>
-                        <div id="voice-options-container" style="display:none;">
-                            <label for="voice-input">Voice:</label>
-                            <input type="text" id="voice-input" placeholder="Enter voice name">
+                            <div class="audio-file-wrapper">
+                                <input type="file" id="audio-file-input" accept="audio/*">
+                                <label for="audio-file-input" class="audio-file-label" id="audio-file-label">
+                                    <svg class="audio-file-icon" xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 16 16">
+                                        <path d="M6.5 1A1.5 1.5 0 0 0 5 2.5v11A1.5 1.5 0 0 0 6.5 15h3A1.5 1.5 0 0 0 11 13.5v-11A1.5 1.5 0 0 0 9.5 1h-3zM8 11a1 1 0 1 1 0-2 1 1 0 0 1 0 2zm0-3a1 1 0 1 1 0-2 1 1 0 0 1 0 2z"/>
+                                    </svg>
+                                    <div class="audio-file-text">Drop audio file here or click to browse</div>
+                                    <div class="audio-file-subtext">Supports MP3, WAV, M4A, and other audio formats</div>
+                                </label>
+                            </div>
                         </div>
                     </div>
+                    <label for="prompt-input" id="prompt-label">Prompt / Image Description:</label>
+                    <textarea id="prompt-input" rows="4" placeholder="Enter text prompt or image description..."></textarea>
                 </fieldset>
             </details>
         </section>
@@ -176,10 +189,10 @@
                                     <span class="slider"></span>
                                 </span>
                             </label>
-                        </div>
-                        <div class="form-group slider-group" id="temperature-group">
-                            <label for="temperature-input">Temperature: <span id="temperature-value">1.0</span></label>
-                            <input type="range" id="temperature-input" min="0" max="2" step="0.1" value="1">
+                            <div class="form-group slider-group" id="temperature-group">
+                                <span id="temperature-value" class="slider-value">1.0</span>
+                                <input type="range" id="temperature-input" min="0" max="2" step="0.1" value="1">
+                            </div>
                         </div>
                         <div class="enable-param-container">
                             <label class="enable-param-title" for="enable-top-p-checkbox">
@@ -189,10 +202,23 @@
                                     <span class="slider"></span>
                                 </span>
                             </label>
+                            <div class="form-group slider-group" id="top-p-group">
+                                <span id="top-p-value" class="slider-value">1.0</span>
+                                <input type="range" id="top-p-input" min="0" max="1" step="0.01" value="1">
+                            </div>
                         </div>
-                        <div class="form-group slider-group" id="top-p-group">
-                            <label for="top-p-input">Top P: <span id="top-p-value">1.0</span></label>
-                            <input type="range" id="top-p-input" min="0" max="1" step="0.01" value="1">
+                        <div class="enable-param-container">
+                            <label class="enable-param-title" for="enable-top-k-checkbox">
+                                <span>Top K</span>
+                                <span class="switch">
+                                    <input type="checkbox" id="enable-top-k-checkbox">
+                                    <span class="slider"></span>
+                                </span>
+                            </label>
+                            <div class="form-group slider-group" id="top-k-group">
+                                <span id="top-k-value" class="slider-value">50</span>
+                                <input type="range" id="top-k-input" min="0" max="1000" step="50" value="50">
+                            </div>
                         </div>
                         <div class="enable-param-container">
                             <label class="enable-param-title" for="enable-max-tokens-checkbox">
@@ -202,22 +228,61 @@
                                     <span class="slider"></span>
                                 </span>
                             </label>
-                        </div>
-                        <div class="form-group" id="max-tokens-group">
-                            <label for="max-tokens-input">Max Tokens:</label>
-                            <input type="number" id="max-tokens-input" placeholder="e.g., 4096">
+                            <div class="form-group" id="max-tokens-group">
+                                <input type="number" id="max-tokens-input" placeholder="e.g., 4096">
+                            </div>
                         </div>
                         <div class="enable-param-container">
-                            <label class="enable-param-title" for="enable-inference-effort-checkbox">
-                                <span>Resoning Effort</span>
+                            <label class="enable-param-title" for="enable-reasoning-effort-checkbox">
+                                <span>Reasoning Effort</span>
                                 <span class="switch">
-                                    <input type="checkbox" id="enable-inference-effort-checkbox">
+                                    <input type="checkbox" id="enable-reasoning-effort-checkbox">
+                                    <span class="slider"></span>
+                                </span>
+                            </label>
+                            <div class="form-group" id="reasoning-effort-group">
+                                <select id="reasoning-effort-select">
+                                    <option value="low">Low</option>
+                                    <option value="medium" selected>Medium</option>
+                                    <option value="high">High</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="enable-param-container">
+                            <label class="enable-param-title" for="enable-custom-params-checkbox">
+                                <span>Custom Parameters</span>
+                                <span class="switch">
+                                    <input type="checkbox" id="enable-custom-params-checkbox">
                                     <span class="slider"></span>
                                 </span>
                             </label>
                         </div>
-                        <div class="form-group" id="inference-effort-group">
-                            <input type="text" id="inference-effort-input" placeholder="e.g., low, medium, high">
+                        <div class="form-group custom-params-container" id="custom-params-group">
+                            <div class="custom-param-add-section">
+                                <div class="custom-param-inputs">
+                                    <input type="text" id="param-name-input" placeholder="Parameter name (e.g., min_p)" class="param-name-input">
+                                    <input type="text" id="param-value-input" placeholder="Value (e.g., 0.1)" class="param-value-input">
+                                    <button type="button" id="add-param-btn" class="icon-btn add-param-btn" title="Add Parameter">
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+                                            <path d="M8 2a.5.5 0 0 1 .5.5v5h5a.5.5 0 0 1 0 1h-5v5a.5.5 0 0 1-1 0v-5h-5a.5.5 0 0 1 0-1h5v-5A.5.5 0 0 1 8 2Z"/>
+                                        </svg>
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="custom-params-list" id="custom-params-list">
+                                <!-- Added parameters will appear here -->
+                            </div>
+                            <div class="custom-params-presets">
+                                <div class="presets-label">Common Parameters:</div>
+                                <div class="param-presets">
+                                    <button type="button" class="param-preset-btn" data-name="min_p" data-value="0.1">min_p</button>
+                                    <button type="button" class="param-preset-btn" data-name="repeat_penalty" data-value="1.1">repeat_penalty</button>
+                                    <button type="button" class="param-preset-btn" data-name="frequency_penalty" data-value="0.5">frequency_penalty</button>
+                                    <button type="button" class="param-preset-btn" data-name="presence_penalty" data-value="0.3">presence_penalty</button>
+                                    <button type="button" class="param-preset-btn" data-name="mirostat" data-value="2">mirostat</button>
+                                    <button type="button" class="param-preset-btn" data-name="tfs_z" data-value="1.0">tfs_z</button>
+                                </div>
+                            </div>
                         </div>
                         <div class="enable-streaming-container">
                             <label class="enable-streaming-title" for="enable-streaming-checkbox">
@@ -229,63 +294,129 @@
                             </label>
                         </div>
                     </div>
-                    <!-- Audio Advanced Options in Advanced Options (displayed contextually by script.js) -->
-                    <div id="tts-advanced-options" style="display:none; margin-top:18px;">
-                        <label for="tts-format-select">TTS Audio Format:</label>
-                        <select id="tts-format-select">
-                            <option value="mp3" selected>mp3</option>
-                            <option value="wav">wav</option>
-                            <option value="opus">opus</option>
-                            <option value="custom">Custom</option>
-                        </select>
-                        <input type="text" id="custom-tts-format-input" placeholder="Enter custom format" style="display:none; margin-top: 8px;">
-                    </div>
-                    <div id="stt-advanced-options" style="display:none; margin-top:18px;">
-                        <label for="stt-streaming-checkbox">
-                            <span>Streaming (STT)</span>
-                            <span class="switch">
-                                <input type="checkbox" id="stt-streaming-checkbox" checked>
-                                <span class="slider"></span>
-                            </span>
-                        </label>
-                    </div>
 
                     <!-- Image Options -->
                     <div id="image-options-container" style="display: none;">
-                        <div class="enable-quality-container">
-                            <label class="enable-quality-title" for="enable-quality-checkbox">
-                                <span>Enable Quality</span>
+                        <label for="image-model-type-select">Model Type:</label>
+                        <select id="image-model-type-select">
+                            <option value="" selected>Select a model type first</option>
+                            <option value="dalle2">Dall-E-2 (OpenAI)</option>
+                            <option value="dalle3">Dall-E-3 (OpenAI)</option>
+                            <option value="gptimage1">GPT-IMAGE-1 (OpenAI)</option>
+                            <option value="flux">FLUX.1 (BlackForestLabs)</option>
+                            <option value="imagen">IMAGEN (Google)</option>
+                        </select>
+                        
+                        <div id="image-quality-container" style="display: none;">
+                            <div class="enable-quality-container">
+                                <label class="enable-quality-title" for="enable-quality-checkbox">
+                                    <span>Enable Quality</span>
+                                    <span class="switch">
+                                        <input type="checkbox" id="enable-quality-checkbox">
+                                        <span class="slider"></span>
+                                    </span>
+                                </label>
+                            </div>
+                            <div id="quality-options-container">
+                                <label for="quality-select">Image Quality:</label>
+                                <select id="quality-select">
+                                    <option value="low">Low</option>
+                                    <option value="medium" selected>Medium</option>
+                                    <option value="high">High</option>
+                                    <option value="auto">Auto</option>
+                                    <option value="standard">Standard</option>
+                                    <option value="hd">hd</option>
+                                    <option value="custom">Custom</option>
+                                </select>
+                                <input type="text" id="custom-quality-input" placeholder="Enter custom quality" style="display:none;">
+                            </div>
+                        </div>
+                        
+                        <div id="image-resolution-container">
+                            <label for="image-resolution-select">Image Resolution:</label>
+                            <select id="image-resolution-select">
+                                <option value="1024x1024" selected>1024x1024</option>
+                            </select>
+                            
+                            <div id="image-resolution-inputs" style="display: none;">
+                                <label for="flux-orientation-select">Image Orientation:</label>
+                                <select id="flux-orientation-select">
+                                    <option value="landscape" selected>Landscape (Horizontal)</option>
+                                    <option value="portrait">Portrait (Vertical)</option>
+                                </select>
+                                
+                                <label for="flux-aspect-ratio-select" style="margin-top: 10px;">Aspect Ratio:</label>
+                                <select id="flux-aspect-ratio-select">
+                                    <option value="1:1" selected>1:1</option>
+                                    <option value="4:3">4:3</option>
+                                    <option value="16:9">16:9</option>
+                                    <option value="21:9">21:9</option>
+                                </select>
+                                
+                                <div id="flux-steps-container" style="margin-top: 10px;">
+                                    <label for="flux-steps-input">Steps: <span id="flux-steps-value">0</span></label>
+                                    <input type="range" id="flux-steps-input" min="0" max="40" value="0">
+                                    <small>Set to 0 (default) to omit steps parameter from request</small>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div id="image-aspect-ratio-container" style="display: none;">
+                            <label for="image-aspect-ratio-select">Aspect Ratio:</label>
+                            <select id="image-aspect-ratio-select">
+                                <option value="1:1" selected>1:1</option>
+                                <option value="9:16">9:16</option>
+                                <option value="16:9">16:9</option>
+                                <option value="3:4">3:4</option>
+                                <option value="4:3">4:3</option>
+                            </select>
+                        </div>
+                        
+                        <small id="image-model-note">Please select a model type to configure image generation options.</small>
+                    </div>
+
+                    <!-- Audio Options -->
+                    <div id="audio-options-container" style="display: none;">
+                        <div class="enable-streaming-container">
+                            <label class="enable-streaming-title" for="enable-stt-streaming-checkbox">
+                                <span>Streaming</span>
                                 <span class="switch">
-                                    <input type="checkbox" id="enable-quality-checkbox">
+                                    <input type="checkbox" id="enable-stt-streaming-checkbox">
                                     <span class="slider"></span>
                                 </span>
                             </label>
                         </div>
-                        <div id="quality-options-container">
-                            <label for="quality-select">Image Quality:</label>
-                            <select id="quality-select">
-                                <option value="low">Low</option>
-                                <option value="medium" selected>Medium</option>
-                                <option value="high">High</option>
-                                <option value="auto">Auto</option>
-                                <option value="standard">Standard</option>
-                                <option value="hd">hd</option>
-                                <option value="custom">Custom</option>
+                        <div id="voice-options-container" style="display:none;">
+                            <label for="voice-select">Voice:</label>
+                            <select id="voice-select">
+                                <option value="alloy" selected>Alloy</option>
+                                <option value="ash">Ash</option>
+                                <option value="ballad">Ballad</option>
+                                <option value="coral">Coral</option>
+                                <option value="echo">Echo</option>
+                                <option value="fable">Fable</option>
+                                <option value="onyx">Onyx</option>
+                                <option value="nova">Nova</option>
+                                <option value="sage">Sage</option>
+                                <option value="shimmer">Shimmer</option>
+                                <option value="verse">Verse</option>
                             </select>
-                            <input type="text" id="custom-quality-input" placeholder="Enter custom quality" style="display:none;">
+                            
+                            <label for="tts-instructions-input">Instructions (Optional):</label>
+                            <textarea id="tts-instructions-input" rows="2" placeholder="Control the voice with additional instructions..."></textarea>
+                            <small>Note: Instructions do not work with tts-1 or tts-1-hd models.</small>
+                            
+                            <label for="response-format-select">Audio Format:</label>
+                            <select id="response-format-select">
+                                <option value="mp3" selected>MP3</option>
+                                <option value="opus">Opus</option>
+                                <option value="aac">AAC</option>
+                                <option value="flac">FLAC</option>
+                                <option value="wav">WAV</option>
+                                <option value="pcm">PCM</option>
+                            </select>
                         </div>
-                        <label>Image Size (Width x Height):</label>
-                        <div class="size-inputs">
-                            <input type="number" id="image-width-input" placeholder="Width" value="1024" min="1">
-                            <span>x</span>
-                            <input type="number" id="image-height-input" placeholder="Height" value="1024" min="1">
-                        </div>
-                        <small>Note: Most models only support specific resolutions (e.g., 1024x1024, 512x512). Check provider documentation.</small>
                     </div>
-
-                    <!-- Audio Options -->
-                   <!-- Audio Options (now only for legacy/fallback, will be hidden by JS) -->
-                   <div id="audio-options-container" style="display: none;"></div>
 
                     <!-- Video Options -->
                     <div id="video-options-container" style="display: none;">
@@ -320,10 +451,8 @@
             </details>
         </section>
 
-        <!-- Advanced Option for TTS format -->
-        <!-- TTS format option section removed, now in main Advanced Options above -->
-
         <button id="send-button">Generate</button>
+        <button id="stop-button" style="display: none; background-color: #dc3545; color: white;">Stop Generating</button>
 
         <div id="output-area">
             <p id="output-text"></p>
@@ -350,6 +479,17 @@
             <pre id="response-display-area" class="payload-display" style="display: none;"></pre>
         </div>
     </main>
+
+    <footer>
+        <div class="footer-content">
+            <a href="https://github.com/Aculnaj/api-tester" target="_blank" rel="noopener noreferrer" class="github-link">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+                    <path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.012 8.012 0 0 0 16 8c0-4.42-3.58-8-8-8z"/>
+                </svg>
+                GitHub Repository
+            </a>
+        </div>
+    </footer>
 
     <script src="script.js"></script>
 </body>
