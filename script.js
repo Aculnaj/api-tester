@@ -47,6 +47,8 @@ const dom = {
     outputAudio: document.getElementById('output-audio'),
     downloadAudio: document.getElementById('download-audio'),
     videoOptionsContainer: document.getElementById('video-options-container'),
+    videoEndpointContainer: document.getElementById('video-endpoint-container'),
+    videoEndpointSelect: document.getElementById('video-endpoint-select'),
     videoAspectRatioEnabled: document.getElementById('video-aspect-ratio-enabled'),
     videoAspectRatioSelect: document.getElementById('video-aspect-ratio'),
     aspectRatioGroup: document.getElementById('aspect-ratio-group'),
@@ -1151,11 +1153,12 @@ function toggleGenerationOptions() {
     const generationType = document.querySelector('input[name="generation-type"]:checked')?.value;
     if (!generationType) return;
 
-    // Hide all advanced option groups first
+    // Hide all containers first
     dom.textGenerationOptions.style.display = 'none';
     dom.imageOptionsContainer.style.display = 'none';
     dom.audioOptionsContainer.style.display = 'none';
     dom.videoOptionsContainer.style.display = 'none';
+    if (dom.videoEndpointContainer) dom.videoEndpointContainer.style.display = 'none';
 
     // Always show prompt input, but hide for STT
     dom.promptInput.style.display = 'block';
@@ -1213,6 +1216,7 @@ function toggleGenerationOptions() {
             break;
         case 'video':
             dom.videoOptionsContainer.style.display = 'block';
+            if (dom.videoEndpointContainer) dom.videoEndpointContainer.style.display = 'block';
             document.getElementById('prompt-label').textContent = 'Video Description:';
             // Aspect ratio group visibility is now primarily controlled by its toggle
             const aspectRatioToggle = document.getElementById('video-aspect-ratio-enabled');
@@ -2343,18 +2347,24 @@ async function callVideoApi(provider, apiKey, baseUrl, model, prompt) {
     const { signal } = controller;
     currentRequestController = controller;
 
-    const apiUrl = getApiUrl(provider, 'video', baseUrl);
-
-    // This is a placeholder for a real video API endpoint
-    if (!apiUrl) {
-        hideLoader();
-        hideStopButton();
-        // Using a placeholder API for demonstration
-        apiUrl = 'https://api.placeholder.com/video';
-        // return displayError('Video generation is currently only supported for specific compatible providers.');
+    // Get selected video endpoint
+    const selectedEndpoint = dom.videoEndpointSelect?.value || '/videos/generations';
+    
+    // Construct the full API URL
+    let apiUrl;
+    if (provider === 'openai_compatible' && baseUrl) {
+        const cleanBaseUrl = baseUrl.replace(/\/+$/, ''); // Remove trailing slashes
+        apiUrl = `${cleanBaseUrl}${selectedEndpoint}`;
+    } else {
+        // For other providers, you might want to add specific endpoint mappings
+        const cleanBaseUrl = baseUrl ? baseUrl.replace(/\/+$/, '') : 'https://api.openai.com/v1';
+        apiUrl = `${cleanBaseUrl}${selectedEndpoint}`;
     }
 
-    let headers = { 'Authorization': `Bearer ${apiKey}` };
+    let headers = { 
+        'Authorization': `Bearer ${apiKey}`,
+        'Content-Type': 'application/json'
+    };
 
     const body = {
         model: model,
@@ -2362,7 +2372,8 @@ async function callVideoApi(provider, apiKey, baseUrl, model, prompt) {
         duration: parseInt(dom.videoDurationInput.value, 10) || 5,
     };
 
-    if (dom.videoAspectRatioEnabled.checked) {
+    // Add aspect ratio if enabled
+    if (dom.videoAspectRatioEnabled.checked && dom.videoAspectRatioSelect.value) {
         body.aspect_ratio = dom.videoAspectRatioSelect.value;
     }
 
@@ -2371,27 +2382,56 @@ async function callVideoApi(provider, apiKey, baseUrl, model, prompt) {
 
     const startTime = performance.now();
     try {
-        // --- Placeholder Logic ---
-        // Since there's no standard video generation API, we'll simulate a response.
-        // In a real scenario, you would replace this with a fetch call.
-        await new Promise(resolve => setTimeout(resolve, 2000)); // Simulate network delay
+        const response = await fetch(apiUrl, {
+            method: 'POST',
+            headers: headers,
+            body: JSON.stringify(body),
+            signal
+        });
 
-        // Simulate a successful response with a placeholder video
-        const placeholderVideoUrl = 'https://test-videos.co.uk/vids/bigbuckbunny/mp4/h264/360/Big_Buck_Bunny_360_10s_1MB.mp4';
-        
-        dom.outputVideo.src = placeholderVideoUrl;
-        dom.outputVideo.style.display = 'block';
-        
-        dom.downloadVideoBtn.href = placeholderVideoUrl;
-        dom.downloadVideoBtn.download = `video-${model}-${Date.now()}.mp4`;
-        dom.downloadVideoBtn.style.display = 'inline-block';
-        
-        dom.outputText.innerHTML = 'Video generated successfully (placeholder).';
-        dom.outputArea.style.borderColor = '#ccc';
+        if (!response.ok) {
+            const errorText = await response.text();
+            throw new Error(`HTTP ${response.status}: ${errorText}`);
+        }
+
+        const data = await response.json();
+        lastApiResponse = JSON.stringify(data, null, 2);
+
+        // Handle the response format: {"data": [{"url": "...", "thumbnail": "..."}]}
+        if (data.data && data.data.length > 0) {
+            const videoData = data.data[0];
+            const videoUrl = videoData.url;
+            const thumbnailUrl = videoData.thumbnail;
+
+            // Set video source with autoplay disabled
+            dom.outputVideo.src = videoUrl;
+            dom.outputVideo.autoplay = false;  // Ensure autoplay is disabled
+            dom.outputVideo.controls = true;
+            dom.outputVideo.preload = 'metadata';
+            dom.outputVideo.style.display = 'block';
+            
+            // Set up download link
+            dom.downloadVideoBtn.href = videoUrl;
+            dom.downloadVideoBtn.download = `video-${model}-${Date.now()}.mp4`;
+            dom.downloadVideoBtn.style.display = 'inline-block';
+            
+            // Display success message with thumbnail info
+            let successMessage = 'Video generated successfully!';
+            if (thumbnailUrl) {
+                successMessage += ` <br><small>Thumbnail: <a href="${thumbnailUrl}" target="_blank">View</a></small>`;
+            }
+            
+            dom.outputText.innerHTML = successMessage;
+            dom.outputArea.style.borderColor = '#28a745';
+
+        } else {
+            throw new Error('Invalid response format: missing video data');
+        }
 
         const endTime = performance.now();
         const durationInSeconds = ((endTime - startTime) / 1000).toFixed(2);
-        dom.statsArea.innerHTML = `<span><strong>Generation Time:</strong> ${durationInSeconds}s</span>`;
+        dom.statsArea.innerHTML = `<span><strong>Generation Time:</strong> ${durationInSeconds}s</span>
+                                   <span><strong>Endpoint:</strong> ${selectedEndpoint}</span>`;
         dom.statsArea.style.display = 'block';
 
     } catch (error) {

@@ -816,17 +816,32 @@ button.copy-btn {
 
 .remove-param-btn {
     background: transparent !important;
-    color: var(--error-color) !important;
-    border: 1px solid var(--error-color) !important;
-    padding: 4px !important;
+    color: var(--text-color-muted) !important;
+    border: 1px solid var(--border-color) !important;
+    border-radius: 4px !important;
+    padding: 6px !important;
     margin: 0 !important;
-    aspect-ratio: 1;
-    width: auto !important;
+    width: 28px !important;
+    height: 28px !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    cursor: pointer !important;
+    transition: all 0.2s ease !important;
+    flex-shrink: 0;
 }
 
 .remove-param-btn:hover {
     background-color: var(--error-color) !important;
     color: white !important;
+    border-color: var(--error-color) !important;
+    transform: scale(1.05) !important;
+}
+
+.remove-param-btn svg {
+    width: 12px;
+    height: 12px;
+    pointer-events: none;
 }
 
 .custom-params-presets {
