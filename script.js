@@ -2432,6 +2432,11 @@ document.addEventListener('DOMContentLoaded', () => {
     // --- Model Selection ---
     dom.modelSelect.addEventListener('change', handleModelSelectionChange);
     dom.customModelInput.addEventListener('input', handleModelSelectionChange);
+    
+    // Refresh models when dropdown is clicked
+    dom.modelSelect.addEventListener('click', () => {
+        fetchModels();
+    });
     dom.refreshModelsBtn.addEventListener('click', fetchModels);
 
     // --- Generation Type ---
