@@ -65,9 +65,9 @@ body.dark-mode {
 /* --- GENERAL BODY & LAYOUT --- */
 body {
     font-family: var(--font-family);
-    padding: 20px;
+    padding: 20px 20px 0 20px;
     max-width: 800px;
-    margin: 20px auto;
+    margin: 20px auto 0 auto;
     border: 1px solid var(--border-color);
     border-radius: 12px;
     background-color: var(--bg-color);
@@ -879,6 +879,47 @@ button.copy-btn {
     color: var(--text-color) !important;
     border-color: var(--button-bg-color) !important;
     transform: none;
+}
+
+/* --- FOOTER --- */
+footer {
+    margin-top: 40px;
+    padding: 20px 0;
+    border-top: 1px solid var(--border-color);
+    text-align: center;
+}
+
+.footer-content {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.github-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    color: var(--text-color-muted);
+    text-decoration: none;
+    font-size: 0.9em;
+    padding: 8px 16px;
+    border-radius: 6px;
+    transition: all 0.2s ease;
+    border: 1px solid transparent;
+}
+
+.github-link:hover {
+    color: var(--text-color);
+    background-color: var(--hover-bg-color);
+    border-color: var(--border-color);
+    text-decoration: none;
+    transform: translateY(-1px);
+}
+
+.github-link svg {
+    width: 16px;
+    height: 16px;
+    fill: currentColor;
 }
 
 /* --- MODEL SELECTION WRAPPER --- */
