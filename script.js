@@ -1435,10 +1435,14 @@ async function callTextApi(provider, apiKey, baseUrl, model, prompt) {
     // Base body
     let body = {
         model: model,
-        messages: messages,
-        stream: streamEnabled,
-        stream_options: { include_usage: true }
+        messages: messages
     };
+
+    // Only include stream and stream_options when streaming is enabled
+    if (streamEnabled) {
+        body.stream = true;
+        body.stream_options = { include_usage: true };
+    }
 
     // Add optional parameters ONLY IF ENABLED
     if (dom.enableTemperatureCheckbox?.checked && dom.temperatureInput.value) body.temperature = parseFloat(dom.temperatureInput.value);
@@ -1470,9 +1474,6 @@ async function callTextApi(provider, apiKey, baseUrl, model, prompt) {
         case 'openai_compatible':
         case 'openrouter':
             headers = { 'Content-Type': 'application/json', 'Authorization': `Bearer ${apiKey}` };
-            if (provider === 'deepseek' || provider === 'openrouter') {
-                body.stream = false; // Override for Deepseek and OpenRouter
-            }
             break;
         case 'antrophic':
             headers = { 'Content-Type': 'application/json', 'x-api-key': apiKey, 'anthropic-version': '2023-06-01' };
