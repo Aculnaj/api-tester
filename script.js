@@ -2349,7 +2349,7 @@ async function callVideoApi(provider, apiKey, baseUrl, model, prompt) {
     currentRequestController = controller;
 
     // Get selected video endpoint
-    const selectedEndpoint = dom.videoEndpointSelect?.value || '/videos/generations';
+    const selectedEndpoint = dom.videoEndpointSelect?.value || '/video/generations';
     
     // Construct the full API URL
     let apiUrl;
