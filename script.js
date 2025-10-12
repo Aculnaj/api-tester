@@ -49,6 +49,7 @@ const dom = {
     videoOptionsContainer: document.getElementById('video-options-container'),
     videoEndpointContainer: document.getElementById('video-endpoint-container'),
     videoEndpointSelect: document.getElementById('video-endpoint-select'),
+    customVideoEndpointInput: document.getElementById('custom-video-endpoint-input'),
     videoAspectRatioEnabled: document.getElementById('video-aspect-ratio-enabled'),
     videoAspectRatioSelect: document.getElementById('video-aspect-ratio'),
     aspectRatioGroup: document.getElementById('aspect-ratio-group'),
@@ -221,6 +222,8 @@ const LAST_RESPONSE_FORMAT_KEY = 'lastResponseFormat';
 const LAST_VIDEO_DURATION_KEY = 'lastVideoDuration';
 const LAST_VIDEO_ASPECT_RATIO_ENABLED_KEY = 'lastVideoAspectRatioEnabled';
 const LAST_VIDEO_ASPECT_RATIO_KEY = 'lastVideoAspectRatio';
+const LAST_VIDEO_ENDPOINT_KEY = 'lastVideoEndpoint';
+const LAST_CUSTOM_VIDEO_ENDPOINT_KEY = 'lastCustomVideoEndpoint';
 const LAST_STREAMING_ENABLED_KEY = 'lastStreamingEnabled';
 
 const LAST_ENABLE_SYSTEM_PROMPT_KEY = 'lastEnableSystemPrompt';
@@ -364,6 +367,22 @@ async function loadGeneralSettings() {
         dom.videoAspectRatioSelect.value = lastVideoAspectRatio || '16:9';
     }
 
+    // Load video endpoint settings
+    const lastVideoEndpoint = await getStoredValue(LAST_VIDEO_ENDPOINT_KEY);
+    if (dom.videoEndpointSelect) {
+        dom.videoEndpointSelect.value = lastVideoEndpoint || '/videos/generations';
+    }
+
+    const lastCustomVideoEndpoint = await getStoredValue(LAST_CUSTOM_VIDEO_ENDPOINT_KEY);
+    if (dom.customVideoEndpointInput) {
+        dom.customVideoEndpointInput.value = lastCustomVideoEndpoint || '';
+    }
+
+    // Show custom input if 'custom' was last selected
+    if (dom.videoEndpointSelect && dom.videoEndpointSelect.value === 'custom' && dom.customVideoEndpointInput) {
+        dom.customVideoEndpointInput.style.display = 'block';
+    }
+
     const lastStreamingEnabled = await getStoredValue(LAST_STREAMING_ENABLED_KEY);
     if (dom.enableStreamingCheckbox) {
         // Default to true if not found in storage (current behavior is streaming on)
@@ -486,6 +505,8 @@ async function saveGeneralSettings() {
     if (dom.videoDurationInput) await setStoredValue(LAST_VIDEO_DURATION_KEY, dom.videoDurationInput.value);
     if (dom.videoAspectRatioEnabled) await setStoredValue(LAST_VIDEO_ASPECT_RATIO_ENABLED_KEY, dom.videoAspectRatioEnabled.checked);
     if (dom.videoAspectRatioSelect) await setStoredValue(LAST_VIDEO_ASPECT_RATIO_KEY, dom.videoAspectRatioSelect.value);
+    if (dom.videoEndpointSelect) await setStoredValue(LAST_VIDEO_ENDPOINT_KEY, dom.videoEndpointSelect.value);
+    if (dom.customVideoEndpointInput) await setStoredValue(LAST_CUSTOM_VIDEO_ENDPOINT_KEY, dom.customVideoEndpointInput.value);
 
     // Save text generation settings
     await setStoredValue(LAST_SYSTEM_PROMPT_KEY, dom.systemPromptInput.value);
@@ -1364,13 +1385,14 @@ function getApiUrl(provider, generationType, baseUrl) {
             image: 'https://api.openai.com/v1/images/generations',
             audio: 'https://api.openai.com/v1/audio/speech',
             stt: 'https://api.openai.com/v1/audio/transcriptions',
+            video: `https://api.openai.com/v1/videos/generations`
         },
         openai_compatible: {
             text: `${cleanBaseUrl}/chat/completions`,
             image: `${cleanBaseUrl}/images/generations`,
             audio: `${cleanBaseUrl}/audio/speech`,
             stt: `${cleanBaseUrl}/audio/transcriptions`,
-            video: `${cleanBaseUrl}/video/generations`,
+            video: `${cleanBaseUrl}/videos/generations`,
         },
         deepseek: {
             text: 'https://api.deepseek.com/chat/completions',
@@ -2266,13 +2288,29 @@ async function callSpeechToTextApi(provider, apiKey, baseUrl, model, signal) {
     // If no audio file is selected, use demo.mp3 from project root
     if (!audioFile) {
         try {
-            const response = await fetch('./demo.mp3');
-            if (!response.ok) {
-                hideLoader();
-                hideStopButton();
-                return displayError('No audio file selected and demo.mp3 not found. Please select an audio file for transcription.');
+            let blob;
+            try {
+                // Try fetch first
+                const response = await fetch('./demo.mp3');
+                if (!response.ok) throw new Error('Fetch failed');
+                blob = await response.blob();
+            } catch (fetchError) {
+                // Fallback to XMLHttpRequest for local files
+                blob = await new Promise((resolve, reject) => {
+                    const xhr = new XMLHttpRequest();
+                    xhr.open('GET', './demo.mp3', true);
+                    xhr.responseType = 'blob';
+                    xhr.onload = function() {
+                        if (this.status === 200 || this.status === 0) {
+                            resolve(this.response);
+                        } else {
+                            reject(new Error('XHR failed'));
+                        }
+                    };
+                    xhr.onerror = () => reject(new Error('XHR error'));
+                    xhr.send();
+                });
             }
-            const blob = await response.blob();
             audioFile = new File([blob], 'demo.mp3', { type: 'audio/mpeg' });
         } catch (error) {
             hideLoader();
@@ -2349,7 +2387,22 @@ async function callVideoApi(provider, apiKey, baseUrl, model, prompt) {
     currentRequestController = controller;
 
     // Get selected video endpoint
-    const selectedEndpoint = dom.videoEndpointSelect?.value || '/video/generations';
+    let selectedEndpoint = dom.videoEndpointSelect?.value || '/videos/generations';
+    
+    // If custom is selected, use the custom input value
+    if (selectedEndpoint === 'custom') {
+        const customEndpoint = dom.customVideoEndpointInput?.value.trim();
+        if (!customEndpoint) {
+            hideLoader();
+            hideStopButton();
+            return displayError('Please enter a custom video endpoint.');
+        }
+        selectedEndpoint = customEndpoint;
+        // Ensure it starts with /
+        if (!selectedEndpoint.startsWith('/')) {
+            selectedEndpoint = '/' + selectedEndpoint;
+        }
+    }
     
     // Construct the full API URL
     let apiUrl;
@@ -2599,6 +2652,17 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
     if (dom.videoAspectRatioEnabled) dom.videoAspectRatioEnabled.addEventListener('change', toggleAspectRatio);
+    if (dom.videoEndpointSelect) {
+        dom.videoEndpointSelect.addEventListener('change', () => {
+            if (dom.customVideoEndpointInput) {
+                dom.customVideoEndpointInput.style.display = dom.videoEndpointSelect.value === 'custom' ? 'block' : 'none';
+            }
+            saveGeneralSettings();
+        });
+    }
+    if (dom.customVideoEndpointInput) {
+        dom.customVideoEndpointInput.addEventListener('input', saveGeneralSettings);
+    }
     if (dom.fluxStepsInput) {
         dom.fluxStepsInput.addEventListener('input', () => {
             const fluxStepsValue = document.getElementById('flux-steps-value');
@@ -2812,5 +2876,64 @@ document.addEventListener('DOMContentLoaded', () => {
                 dom.audioFileLabel.classList.remove('audio-file-selected');
             }
         }
+    }
+
+    // --- Demo Audio Button Handler ---
+    const useDemoAudioBtn = document.getElementById('use-demo-audio-btn');
+    if (useDemoAudioBtn) {
+        useDemoAudioBtn.addEventListener('click', async () => {
+            try {
+                let blob;
+                
+                // Try to load the file using different methods
+                try {
+                    // Method 1: Try fetch (works in web servers and some Electron setups)
+                    const response = await fetch('./demo.mp3');
+                    if (!response.ok) throw new Error('Fetch failed');
+                    blob = await response.blob();
+                } catch (fetchError) {
+                    console.log('Fetch method failed, trying alternative method:', fetchError);
+                    
+                    // Method 2: Use XMLHttpRequest for local files
+                    blob = await new Promise((resolve, reject) => {
+                        const xhr = new XMLHttpRequest();
+                        xhr.open('GET', './demo.mp3', true);
+                        xhr.responseType = 'blob';
+                        xhr.onload = function() {
+                            if (this.status === 200 || this.status === 0) {
+                                resolve(this.response);
+                            } else {
+                                reject(new Error('XHR failed with status: ' + this.status));
+                            }
+                        };
+                        xhr.onerror = function() {
+                            reject(new Error('XHR failed'));
+                        };
+                        xhr.send();
+                    });
+                }
+                
+                const file = new File([blob], 'demo.mp3', { type: 'audio/mpeg' });
+                
+                // Create a DataTransfer object to set the files property
+                const dataTransfer = new DataTransfer();
+                dataTransfer.items.add(file);
+                dom.audioFileInput.files = dataTransfer.files;
+                
+                // Update the display
+                updateAudioFileDisplay(file);
+                
+                // Visual feedback
+                useDemoAudioBtn.style.backgroundColor = '#28a745';
+                useDemoAudioBtn.style.color = 'white';
+                setTimeout(() => {
+                    useDemoAudioBtn.style.backgroundColor = '';
+                    useDemoAudioBtn.style.color = '';
+                }, 1000);
+            } catch (error) {
+                console.error('Failed to load demo audio:', error);
+                alert('Failed to load demo audio file. Make sure demo.mp3 exists in the project folder.');
+            }
+        });
     }
 });

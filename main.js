@@ -1,3 +1,4 @@
+// @ts-nocheck
 const { app, BrowserWindow, ipcMain, nativeTheme, Menu } = require('electron');
 const path = require('path');
 const express = require('express');
@@ -98,13 +99,71 @@ const PORT = 3001;
 expressApp.use(cors());
 expressApp.use(express.json());
 
-// Video generation endpoint
+// Video generation endpoint - /videos/generations
 expressApp.post('/videos/generations', async (req, res) => {
   try {
     // Retrieve model, prompt, aspect_ratio, and duration from req.body
     const { model, prompt, aspect_ratio, duration } = req.body;
 
-    console.log('Video generation request received:', {
+    console.log('Video generation request received at /videos/generations:', {
+      model,
+      prompt,
+      aspect_ratio,
+      duration,
+    });
+
+    // Array of sample video URLs
+    const sampleVideos = [
+      'https://sample-videos.com/video123/mp4/720/big_buck_bunny_720p_1mb.mp4',
+      'https://sample-videos.com/video123/mp4/480/big_buck_bunny_480p_1mb.mp4',
+      'https://jsoncompare.org/LearningContainer/SampleFiles/Video/MP4/sample-mp4-file.mp4',
+      // Add more diverse URLs if needed for testing different video types/sources
+    ];
+
+    // Select a video URL pseudo-randomly
+    const selectedVideoUrl = sampleVideos[Math.floor(Math.random() * sampleVideos.length)];
+
+    console.log(`Selected placeholder video URL: ${selectedVideoUrl}`);
+
+    // Simulate API processing time
+    await new Promise(resolve => setTimeout(resolve, 1500 + Math.random() * 1000)); // Simulate some delay
+
+    // Modified videoResponse object to include input parameters
+    const videoResponse = {
+      data: [{
+        url: selectedVideoUrl, // Use the dynamically selected URL
+        source: 'placeholder-service',
+        requested_model: model,
+        requested_duration: duration,
+        requested_aspect_ratio: aspect_ratio || 'N/A' // Use 'N/A' if aspect_ratio is not provided
+      }],
+      usage: {
+        prompt_tokens: prompt ? prompt.length : 0, // Simple placeholder usage, check if prompt exists
+        // Arbitrary calculation for generation_units
+        generation_units: (duration || 1) * (aspect_ratio === '16:9' ? 2 : 1)
+      },
+      created: Math.floor(Date.now() / 1000)
+    };
+    
+    res.json(videoResponse);
+    
+  } catch (error) {
+    console.error('Error in placeholder video generation:', error);
+    res.status(500).json({
+      error: {
+        message: error.message || 'Failed to generate video'
+      }
+    });
+  }
+});
+
+// Video generation endpoint - /videos (shorter version)
+expressApp.post('/videos', async (req, res) => {
+  try {
+    // Retrieve model, prompt, aspect_ratio, and duration from req.body
+    const { model, prompt, aspect_ratio, duration } = req.body;
+
+    console.log('Video generation request received at /videos:', {
       model,
       prompt,
       aspect_ratio,
