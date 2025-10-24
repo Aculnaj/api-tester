@@ -437,28 +437,49 @@
                             <label class="enable-aspect-ratio-title" for="video-aspect-ratio-enabled">
                                 <span>Enable Aspect Ratio</span>
                                 <span class="switch">
-                                    <input type="checkbox" id="video-aspect-ratio-enabled" onchange="toggleAspectRatio()">
+                                    <input type="checkbox" id="video-aspect-ratio-enabled">
                                     <span class="slider"></span>
                                 </span>
                             </label>
+                            <div class="form-group" id="aspect-ratio-group" style="display: none;">
+                                <label for="video-aspect-ratio">Aspect Ratio:</label>
+                                <select id="video-aspect-ratio">
+                                    <option value="16:9">16:9 (Widescreen)</option>
+                                    <option value="9:16">9:16 (Portrait)</option>
+                                    <option value="1:1">1:1 (Square)</option>
+                                    <option value="4:3">4:3 (Standard)</option>
+                                    <option value="21:9">21:9 (Ultrawide)</option>
+                                </select>
+                            </div>
                         </div>
-                        <div class="form-group" id="aspect-ratio-group" style="display: none;">
-                            <label for="video-aspect-ratio">Aspect Ratio:</label>
-                            <select id="video-aspect-ratio">
-                                <option value="16:9">16:9 (Widescreen)</option>
-                                <option value="9:16">9:16 (Portrait)</option>
-                                <option value="1:1">1:1 (Square)</option>
-                                <option value="4:3">4:3 (Standard)</option>
-                                <option value="21:9">21:9 (Ultrawide)</option>
-                            </select>
-                            <!-- Note: Aspect Ratio select is controlled by Enable Aspect Ratio,
-                                 so it doesn't need an individual toggle. -->
+                        
+                        <div class="enable-aspect-ratio-container">
+                            <label class="enable-aspect-ratio-title" for="video-size-enabled">
+                                <span>Enable Size</span>
+                                <span class="switch">
+                                    <input type="checkbox" id="video-size-enabled">
+                                    <span class="slider"></span>
+                                </span>
+                            </label>
+                            <div class="form-group" id="video-size-group" style="display: none;">
+                                <label for="video-size-select">Video Size:</label>
+                                <select id="video-size-select">
+                                    <option value="1280x720" selected>1280x720 (Landscape)</option>
+                                    <option value="720x1280">720x1280 (Portrait)</option>
+                                    <option value="custom">Custom...</option>
+                                </select>
+                                <input type="text" id="custom-video-size-input" placeholder="e.g., 1920x1080" style="display:none; margin-top: 8px;">
+                            </div>
                         </div>
-                        <div class="form-group form-group-toggle">
-                            <label for="video-duration">Duration (seconds):</label>
-                            <input type="number" id="video-duration" min="1" max="60" value="5" placeholder="Duration in seconds">
-                            <!-- Toggle switch for video duration removed as requested -->
-                        </div>
+                        
+                        <label for="video-duration-type">Duration Parameter:</label>
+                        <select id="video-duration-type">
+                            <option value="duration" selected>duration</option>
+                            <option value="seconds">seconds</option>
+                        </select>
+                        
+                        <label for="video-duration">Duration Value:</label>
+                        <input type="number" id="video-duration" min="1" max="60" value="5" placeholder="Duration value">
                     </div>
                 </fieldset>
             </details>

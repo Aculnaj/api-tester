@@ -399,7 +399,7 @@ button:active {
     background-color: var(--button-text-color);
 }
 
-.enable-param-container, .enable-streaming-container {
+.enable-param-container, .enable-streaming-container, .enable-aspect-ratio-container {
     display: flex;
     align-items: center;
     justify-content: space-between;
@@ -421,7 +421,7 @@ button:active {
     border-color: rgba(13, 110, 253, 0.3);
 }
 
-.enable-param-title, .enable-streaming-title {
+.enable-param-title, .enable-streaming-title, .enable-aspect-ratio-title {
     font-size: 1em;
     font-weight: 600;
     color: var(--text-color);
@@ -431,7 +431,7 @@ button:active {
     cursor: pointer;
 }
 
-.enable-param-title span:first-child, .enable-streaming-title span:first-child {
+.enable-param-title span:first-child, .enable-streaming-title span:first-child, .enable-aspect-ratio-title span:first-child {
     flex-grow: 1;
 }
 

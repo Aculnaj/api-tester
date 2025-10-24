@@ -53,6 +53,11 @@ const dom = {
     videoAspectRatioEnabled: document.getElementById('video-aspect-ratio-enabled'),
     videoAspectRatioSelect: document.getElementById('video-aspect-ratio'),
     aspectRatioGroup: document.getElementById('aspect-ratio-group'),
+    videoSizeEnabled: document.getElementById('video-size-enabled'),
+    videoSizeSelect: document.getElementById('video-size-select'),
+    customVideoSizeInput: document.getElementById('custom-video-size-input'),
+    videoSizeGroup: document.getElementById('video-size-group'),
+    videoDurationType: document.getElementById('video-duration-type'),
     videoDurationInput: document.getElementById('video-duration'),
     outputVideo: document.getElementById('output-video'),
     downloadVideoBtn: document.getElementById('download-video-btn'),
@@ -219,9 +224,13 @@ const LAST_AUDIO_TYPE_KEY = 'lastAudioType';
 const LAST_VOICE_SELECT_KEY = 'lastVoiceSelect';
 const LAST_TTS_INSTRUCTIONS_KEY = 'lastTtsInstructions';
 const LAST_RESPONSE_FORMAT_KEY = 'lastResponseFormat';
+const LAST_VIDEO_DURATION_TYPE_KEY = 'lastVideoDurationType';
 const LAST_VIDEO_DURATION_KEY = 'lastVideoDuration';
 const LAST_VIDEO_ASPECT_RATIO_ENABLED_KEY = 'lastVideoAspectRatioEnabled';
 const LAST_VIDEO_ASPECT_RATIO_KEY = 'lastVideoAspectRatio';
+const LAST_VIDEO_SIZE_ENABLED_KEY = 'lastVideoSizeEnabled';
+const LAST_VIDEO_SIZE_KEY = 'lastVideoSize';
+const LAST_CUSTOM_VIDEO_SIZE_KEY = 'lastCustomVideoSize';
 const LAST_VIDEO_ENDPOINT_KEY = 'lastVideoEndpoint';
 const LAST_CUSTOM_VIDEO_ENDPOINT_KEY = 'lastCustomVideoEndpoint';
 const LAST_STREAMING_ENABLED_KEY = 'lastStreamingEnabled';
@@ -355,6 +364,11 @@ async function loadGeneralSettings() {
     if (dom.responseFormatSelect) dom.responseFormatSelect.value = await getStoredValue(LAST_RESPONSE_FORMAT_KEY) || 'mp3';
 
     // Load video settings
+    const lastVideoDurationType = await getStoredValue(LAST_VIDEO_DURATION_TYPE_KEY);
+    if (dom.videoDurationType) {
+        dom.videoDurationType.value = lastVideoDurationType || 'duration';
+    }
+    
     if (dom.videoDurationInput) dom.videoDurationInput.value = await getStoredValue(LAST_VIDEO_DURATION_KEY) || '5';
 
     const lastVideoAspectRatioEnabled = await getStoredValue(LAST_VIDEO_ASPECT_RATIO_ENABLED_KEY);
@@ -365,6 +379,35 @@ async function loadGeneralSettings() {
     const lastVideoAspectRatio = await getStoredValue(LAST_VIDEO_ASPECT_RATIO_KEY);
     if (dom.videoAspectRatioSelect) {
         dom.videoAspectRatioSelect.value = lastVideoAspectRatio || '16:9';
+    }
+
+    const lastVideoSizeEnabled = await getStoredValue(LAST_VIDEO_SIZE_ENABLED_KEY);
+    if (dom.videoSizeEnabled) {
+        dom.videoSizeEnabled.checked = typeof lastVideoSizeEnabled === 'boolean' ? lastVideoSizeEnabled : false;
+    }
+
+    const lastVideoSize = await getStoredValue(LAST_VIDEO_SIZE_KEY);
+    if (dom.videoSizeSelect) {
+        dom.videoSizeSelect.value = lastVideoSize || '1280x720';
+    }
+
+    const lastCustomVideoSize = await getStoredValue(LAST_CUSTOM_VIDEO_SIZE_KEY);
+    if (dom.customVideoSizeInput) {
+        dom.customVideoSizeInput.value = lastCustomVideoSize || '';
+    }
+
+    // Show custom input if 'custom' was last selected
+    if (dom.videoSizeSelect && dom.videoSizeSelect.value === 'custom' && dom.customVideoSizeInput) {
+        dom.customVideoSizeInput.style.display = 'block';
+    }
+    
+    // Apply visibility based on loaded toggle states
+    if (dom.videoAspectRatioEnabled && dom.aspectRatioGroup) {
+        dom.aspectRatioGroup.style.display = dom.videoAspectRatioEnabled.checked ? 'block' : 'none';
+    }
+    
+    if (dom.videoSizeEnabled && dom.videoSizeGroup) {
+        dom.videoSizeGroup.style.display = dom.videoSizeEnabled.checked ? 'block' : 'none';
     }
 
     // Load video endpoint settings
@@ -502,9 +545,13 @@ async function saveGeneralSettings() {
     if (dom.enableSttStreamingCheckbox) await setStoredValue(LAST_ENABLE_STT_STREAMING_KEY, dom.enableSttStreamingCheckbox.checked);
 
     // Save video settings
+    if (dom.videoDurationType) await setStoredValue(LAST_VIDEO_DURATION_TYPE_KEY, dom.videoDurationType.value);
     if (dom.videoDurationInput) await setStoredValue(LAST_VIDEO_DURATION_KEY, dom.videoDurationInput.value);
     if (dom.videoAspectRatioEnabled) await setStoredValue(LAST_VIDEO_ASPECT_RATIO_ENABLED_KEY, dom.videoAspectRatioEnabled.checked);
     if (dom.videoAspectRatioSelect) await setStoredValue(LAST_VIDEO_ASPECT_RATIO_KEY, dom.videoAspectRatioSelect.value);
+    if (dom.videoSizeEnabled) await setStoredValue(LAST_VIDEO_SIZE_ENABLED_KEY, dom.videoSizeEnabled.checked);
+    if (dom.videoSizeSelect) await setStoredValue(LAST_VIDEO_SIZE_KEY, dom.videoSizeSelect.value);
+    if (dom.customVideoSizeInput) await setStoredValue(LAST_CUSTOM_VIDEO_SIZE_KEY, dom.customVideoSizeInput.value);
     if (dom.videoEndpointSelect) await setStoredValue(LAST_VIDEO_ENDPOINT_KEY, dom.videoEndpointSelect.value);
     if (dom.customVideoEndpointInput) await setStoredValue(LAST_CUSTOM_VIDEO_ENDPOINT_KEY, dom.customVideoEndpointInput.value);
 
@@ -806,6 +853,19 @@ function toggleAspectRatio() {
     } else {
         dom.aspectRatioGroup.style.display = 'none';
         dom.aspectRatioGroup.classList.add('disabled');
+    }
+}
+
+// Function to toggle video size visibility
+function toggleVideoSize() {
+    const sizeEnabled = dom.videoSizeEnabled.checked;
+    
+    if (sizeEnabled) {
+        dom.videoSizeGroup.style.display = 'block';
+        dom.videoSizeGroup.classList.remove('disabled');
+    } else {
+        dom.videoSizeGroup.style.display = 'none';
+        dom.videoSizeGroup.classList.add('disabled');
     }
 }
 
@@ -1943,8 +2003,7 @@ async function callImageApi(provider, apiKey, baseUrl, model, prompt) {
     const body = {
         model: model,
         prompt: prompt,
-        n: 1,
-        response_format: "url"
+        n: 1
     };
     
     // Initialize width and height variables for stats display
@@ -2420,15 +2479,29 @@ async function callVideoApi(provider, apiKey, baseUrl, model, prompt) {
         'Content-Type': 'application/json'
     };
 
+    // Build request body
     const body = {
         model: model,
-        prompt: prompt,
-        duration: parseInt(dom.videoDurationInput.value, 10) || 5,
+        prompt: prompt
     };
+
+    // Add duration or seconds based on selected type
+    const durationType = dom.videoDurationType ? dom.videoDurationType.value : 'duration';
+    const durationValue = dom.videoDurationInput.value || '5';
+    body[durationType] = String(durationValue);
 
     // Add aspect ratio if enabled
     if (dom.videoAspectRatioEnabled.checked && dom.videoAspectRatioSelect.value) {
         body.aspect_ratio = dom.videoAspectRatioSelect.value;
+    }
+
+    // Add size if enabled
+    if (dom.videoSizeEnabled.checked && dom.videoSizeSelect.value) {
+        if (dom.videoSizeSelect.value === 'custom' && dom.customVideoSizeInput.value.trim()) {
+            body.size = dom.customVideoSizeInput.value.trim();
+        } else if (dom.videoSizeSelect.value !== 'custom') {
+            body.size = dom.videoSizeSelect.value;
+        }
     }
 
     lastRequestPayload = JSON.stringify(body, null, 2);
@@ -2451,15 +2524,26 @@ async function callVideoApi(provider, apiKey, baseUrl, model, prompt) {
         const data = await response.json();
         lastApiResponse = JSON.stringify(data, null, 2);
 
-        // Handle the response format: {"data": [{"url": "...", "thumbnail": "..."}]}
-        if (data.data && data.data.length > 0) {
+        // Check if this is an async response with a video ID
+        if (data.id && data.status) {
+            const videoId = data.id;
+            const initialStatus = data.status;
+            
+            dom.outputText.innerHTML = `Video generation started...<br>Status: <strong>${initialStatus}</strong><br>Video ID: ${videoId}<br><span id="video-progress">Progress: ${data.progress || 0}%</span>`;
+            dom.outputArea.style.borderColor = '#ffc107'; // Yellow for in-progress
+            
+            // Poll for video completion
+            await pollVideoStatus(provider, apiKey, baseUrl, videoId, selectedEndpoint, startTime, signal);
+            
+        } else if (data.data && data.data.length > 0) {
+            // Direct response with video URL (synchronous generation)
             const videoData = data.data[0];
             const videoUrl = videoData.url;
             const thumbnailUrl = videoData.thumbnail;
 
             // Set video source with autoplay disabled
             dom.outputVideo.src = videoUrl;
-            dom.outputVideo.autoplay = false;  // Ensure autoplay is disabled
+            dom.outputVideo.autoplay = false;
             dom.outputVideo.controls = true;
             dom.outputVideo.preload = 'metadata';
             dom.outputVideo.style.display = 'block';
@@ -2478,15 +2562,14 @@ async function callVideoApi(provider, apiKey, baseUrl, model, prompt) {
             dom.outputText.innerHTML = successMessage;
             dom.outputArea.style.borderColor = '#28a745';
 
+            const endTime = performance.now();
+            const durationInSeconds = ((endTime - startTime) / 1000).toFixed(2);
+            dom.statsArea.innerHTML = `<span><strong>Generation Time:</strong> ${durationInSeconds}s</span>
+                                       <span><strong>Endpoint:</strong> ${selectedEndpoint}</span>`;
+            dom.statsArea.style.display = 'block';
         } else {
-            throw new Error('Invalid response format: missing video data');
+            throw new Error('Invalid response format: missing video data or ID');
         }
-
-        const endTime = performance.now();
-        const durationInSeconds = ((endTime - startTime) / 1000).toFixed(2);
-        dom.statsArea.innerHTML = `<span><strong>Generation Time:</strong> ${durationInSeconds}s</span>
-                                   <span><strong>Endpoint:</strong> ${selectedEndpoint}</span>`;
-        dom.statsArea.style.display = 'block';
 
     } catch (error) {
         if (error.name === 'AbortError') {
@@ -2500,6 +2583,148 @@ async function callVideoApi(provider, apiKey, baseUrl, model, prompt) {
         hideStopButton();
         currentRequestController = null;
     }
+}
+
+// Poll for video status until completion
+async function pollVideoStatus(provider, apiKey, baseUrl, videoId, endpoint, startTime, signal) {
+    const pollInterval = 2000; // Poll every 2 seconds
+    const maxPolls = 300; // Maximum 10 minutes (300 * 2s = 600s)
+    let pollCount = 0;
+    
+    // Construct the status check URL
+    let statusUrl;
+    if (provider === 'openai_compatible' && baseUrl) {
+        const cleanBaseUrl = baseUrl.replace(/\/+$/, '');
+        statusUrl = `${cleanBaseUrl}${endpoint}/${videoId}`;
+    } else {
+        const cleanBaseUrl = baseUrl ? baseUrl.replace(/\/+$/, '') : 'https://api.openai.com/v1';
+        statusUrl = `${cleanBaseUrl}${endpoint}/${videoId}`;
+    }
+    
+    const headers = {
+        'Authorization': `Bearer ${apiKey}`,
+        'Content-Type': 'application/json'
+    };
+    
+    while (pollCount < maxPolls) {
+        if (signal.aborted) {
+            throw new DOMException('Request cancelled by user', 'AbortError');
+        }
+        
+        await new Promise(resolve => setTimeout(resolve, pollInterval));
+        pollCount++;
+        
+        try {
+            const response = await fetch(statusUrl, {
+                method: 'GET',
+                headers: headers,
+                signal
+            });
+            
+            if (!response.ok) {
+                const errorText = await response.text();
+                throw new Error(`Status check failed: HTTP ${response.status}: ${errorText}`);
+            }
+            
+            const statusData = await response.json();
+            lastApiResponse = JSON.stringify(statusData, null, 2);
+            
+            const status = statusData.status;
+            const progress = statusData.progress || 0;
+            
+            // Update progress display
+            const progressEl = document.getElementById('video-progress');
+            if (progressEl) {
+                progressEl.textContent = `Progress: ${progress}%`;
+            }
+            
+            const elapsed = ((performance.now() - startTime) / 1000).toFixed(1);
+            dom.outputText.innerHTML = `Video generation in progress...<br>Status: <strong>${status}</strong><br>Progress: <strong>${progress}%</strong><br>Elapsed: ${elapsed}s`;
+            
+            if (status === 'completed') {
+                // Video is ready! Now we need to download it
+                console.log('Video completed! Full response:', statusData);
+                
+                // The completed video needs to be downloaded from a specific endpoint
+                // Construct download URL: GET {baseUrl}{endpoint}/{videoId}/content
+                let downloadUrl;
+                if (provider === 'openai_compatible' && baseUrl) {
+                    const cleanBaseUrl = baseUrl.replace(/\/+$/, '');
+                    downloadUrl = `${cleanBaseUrl}${endpoint}/${videoId}/content`;
+                } else {
+                    const cleanBaseUrl = baseUrl ? baseUrl.replace(/\/+$/, '') : 'https://api.openai.com/v1';
+                    downloadUrl = `${cleanBaseUrl}${endpoint}/${videoId}/content`;
+                }
+                
+                console.log('Attempting to download video from:', downloadUrl);
+                
+                // Update status
+                dom.outputText.innerHTML = `Video completed! Downloading...<br>Video ID: ${videoId}`;
+                
+                try {
+                    // Download the video
+                    const downloadResponse = await fetch(downloadUrl, {
+                        method: 'GET',
+                        headers: headers,
+                        signal
+                    });
+                    
+                    if (!downloadResponse.ok) {
+                        throw new Error(`Failed to download video: HTTP ${downloadResponse.status}`);
+                    }
+                    
+                    // Get the video as a blob
+                    const videoBlob = await downloadResponse.blob();
+                    const videoUrl = URL.createObjectURL(videoBlob);
+                    
+                    console.log('Video downloaded successfully, blob URL:', videoUrl);
+                    
+                    // Set video source
+                    dom.outputVideo.src = videoUrl;
+                    dom.outputVideo.autoplay = false;
+                    dom.outputVideo.controls = true;
+                    dom.outputVideo.preload = 'metadata';
+                    dom.outputVideo.style.display = 'block';
+                    
+                    // Set up download link
+                    dom.downloadVideoBtn.href = videoUrl;
+                    dom.downloadVideoBtn.download = `video-${videoId}-${Date.now()}.mp4`;
+                    dom.downloadVideoBtn.style.display = 'inline-block';
+                    
+                    // Display success message
+                    dom.outputText.innerHTML = 'Video generated and downloaded successfully!';
+                    dom.outputArea.style.borderColor = '#28a745';
+                    
+                    const endTime = performance.now();
+                    const durationInSeconds = ((endTime - startTime) / 1000).toFixed(2);
+                    dom.statsArea.innerHTML = `<span><strong>Total Time:</strong> ${durationInSeconds}s</span>
+                                               <span><strong>Video ID:</strong> ${videoId}</span>
+                                               <span><strong>Size:</strong> ${statusData.size || 'N/A'}</span>
+                                               <span><strong>Duration:</strong> ${statusData.seconds || 'N/A'}s</span>`;
+                    dom.statsArea.style.display = 'block';
+                    
+                } catch (downloadError) {
+                    console.error('Error downloading video:', downloadError);
+                    throw new Error(`Video completed but download failed: ${downloadError.message}`);
+                }
+                
+                return; // Exit polling
+            } else if (status === 'failed' || status === 'error') {
+                throw new Error(`Video generation failed: ${statusData.error || 'Unknown error'}`);
+            }
+            // Otherwise continue polling (status: queued, processing, etc.)
+            
+        } catch (error) {
+            if (error.name === 'AbortError') {
+                throw error; // Re-throw abort errors
+            }
+            console.error('Error polling video status:', error);
+            // Continue polling even on errors (might be temporary network issues)
+        }
+    }
+    
+    // Timeout reached
+    throw new Error(`Video generation timed out after ${maxPolls * pollInterval / 1000} seconds. Video ID: ${videoId}`);
 }
 
 
@@ -2617,7 +2842,7 @@ document.addEventListener('DOMContentLoaded', () => {
         dom.qualitySelect, dom.customQualityInput, dom.imageResolutionSelect,
         dom.imageAspectRatioSelect, dom.fluxOrientationSelect, dom.fluxAspectRatioSelect,
         dom.fluxStepsInput, dom.audioTypeSelect, dom.voiceSelect, dom.ttsInstructionsInput,
-        dom.responseFormatSelect, dom.videoDurationInput, dom.videoAspectRatioSelect
+        dom.responseFormatSelect, dom.videoDurationType, dom.videoDurationInput, dom.videoAspectRatioSelect, dom.videoSizeSelect
     ];
     inputsToSave.forEach(input => {
         if (input) input.addEventListener('input', saveGeneralSettings);
@@ -2627,7 +2852,7 @@ document.addEventListener('DOMContentLoaded', () => {
         dom.enableStreamingCheckbox, dom.enableSystemPromptCheckbox, dom.enableTemperatureCheckbox,
         dom.enableTopPCheckbox, dom.enableTopKCheckbox, dom.enableMaxTokensCheckbox,
         dom.enableReasoningEffortCheckbox, dom.enableCustomParamsCheckbox, dom.enableQualityCheckbox,
-        dom.enableSttStreamingCheckbox, dom.videoAspectRatioEnabled
+        dom.enableSttStreamingCheckbox, dom.videoAspectRatioEnabled, dom.videoSizeEnabled
     ];
     checkboxesToSave.forEach(checkbox => {
         if (checkbox) checkbox.addEventListener('change', saveGeneralSettings);
@@ -2651,7 +2876,25 @@ document.addEventListener('DOMContentLoaded', () => {
             saveGeneralSettings();
         });
     }
-    if (dom.videoAspectRatioEnabled) dom.videoAspectRatioEnabled.addEventListener('change', toggleAspectRatio);
+    if (dom.videoAspectRatioEnabled) dom.videoAspectRatioEnabled.addEventListener('change', () => {
+        toggleAspectRatio();
+        saveGeneralSettings();
+    });
+    if (dom.videoSizeEnabled) {
+        dom.videoSizeEnabled.addEventListener('change', () => {
+            toggleVideoSize();
+            saveGeneralSettings();
+        });
+    }
+    if (dom.videoSizeSelect) {
+        dom.videoSizeSelect.addEventListener('change', () => {
+            dom.customVideoSizeInput.style.display = dom.videoSizeSelect.value === 'custom' ? 'block' : 'none';
+            saveGeneralSettings();
+        });
+    }
+    if (dom.customVideoSizeInput) {
+        dom.customVideoSizeInput.addEventListener('input', saveGeneralSettings);
+    }
     if (dom.videoEndpointSelect) {
         dom.videoEndpointSelect.addEventListener('change', () => {
             if (dom.customVideoEndpointInput) {
