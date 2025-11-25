@@ -1,39 +1,114 @@
-# Simple AI Generation Tool (Web-Based)
+# API Tester v2
 
-## Description
+A modern, web-based API testing tool for AI models with a beautiful glassmorphism UI.
 
-This repository contains the web-based client-side portion of a tool designed to generate text and images via API calls. The tool is intentionally kept simple, utilizing only Plain HTML, CSS, and JavaScript [1] to execute directly within a browser. It requires no server-side installation or complex application structure and can be used simply by opening the local files. It can also be accessed online at https://aculnaj.github.io/api-tester.
+## 🌐 Live Demo
 
-## Files
+Access the hosted version directly at **https://aculnaj.github.io/api-tester**
 
-The web part consists of the following files [1]:
+## ✨ Features
 
-*   `index.html`: The main structure of the user interface.
-*   `style.css`: Contains the styling rules for the appearance.
-*   `script.js`: Handles the dynamic functionality, API calls, and displaying results.
+### Generation Types
+- **Text Generation** - Chat completions with streaming support
+- **Image Generation** - Support for DALL-E 2/3, GPT-IMAGE-1, FLUX, and IMAGEN
+- **Audio Generation** - Text-to-Speech (TTS) and Speech-to-Text (STT)
+- **Video Generation** - Video generation API support
 
-## Functionality
+### Supported Providers
+- AetherAPI
+- OpenAI Compatible (custom endpoints)
+- OpenAI
+- OpenRouter
+- Gemini (Google)
+- Anthropic (Claude)
+- DeepSeek
+- xAI (Grok)
+- Cohere
+- Groq
+- Cerebras
+- Mistral
+- Fireworks
+- Together
+- NovitaAI
+- Scaleway
+- Nebius
+- Baseten
+- Replicate
+- ElevenLabs
 
-*   Performs API calls for both text and image generation [1].
-*   Allows selection from several AI providers, including OpenAI, Deepseek, OpenAI Compatible, Claude, and OpenRouter [1].
-*   Displays the generated text or image (or errors) directly on the page [1].
-*   For text generation, provides a switch to enable or disable response streaming. When enabled, text appears incrementally as it's received from the API. When disabled, the full response is shown after completion.
-*   Displays basic performance statistics (Time, Tokens/Sec, Token Counts) for text generation if the API response includes usage data [1].
-*   Includes basic input validation (checks for missing API key, model, prompt, Base URL, and proper numeric inputs) [1].
+### UI Features
+- 🎨 Modern glassmorphism design
+- 🌙 Dark/Light/System theme support
+- 📱 Responsive layout (mobile-friendly)
+- 💾 Local storage for settings persistence
+- 📋 Configuration save/export/import
+- 📊 Real-time statistics (tokens/sec, latency)
+- 🔄 Streaming response support
 
-## Technology
+## 🚀 Usage
 
-The tool is based on Plain HTML, CSS, and JavaScript for simplicity and direct browser execution [1].
+### Online
+Visit **https://aculnaj.github.io/api-tester** to use the tool directly.
 
-## Usage
+### Local Development
+1. Clone the repository
+2. Open `index.html` in a modern web browser
+3. Or serve with any static file server:
+   ```bash
+   # Python
+   python3 -m http.server 8080
+   
+   # Node.js
+   npx serve
+   ```
 
-Access the hosted version directly at **https://aculnaj.github.io/api-tester**.
+## 📁 Project Structure
 
-__Alternatively:__
-1.  Download the `index.html`, `style.css`, and `script.js` files.
-2.  Open the `index.html` file in a modern web browser.
-3.  Select a provider from the dropdown menu (e.g., OpenAI, Deepseek, etc.) [1].
-4.  Enter the required information (such as API Key, URL, Model) into the form fields [1].
-5.  Select the generation type (Text or Image) [1].
-6.  If "Text" generation is selected, an "Enable Streaming" switch will appear. Toggle this to control whether the response is displayed word by word or all at once.
-7.  Use the generation functions.
+```
+├── index.html          # Main HTML file
+├── css/
+│   ├── variables.css   # CSS custom properties
+│   ├── base.css        # Base styles and resets
+│   ├── layout.css      # Layout components
+│   ├── components.css  # UI components
+│   ├── sidebar.css     # Sidebar styles
+│   ├── tabs.css        # Tab navigation
+│   ├── forms.css       # Form elements
+│   ├── buttons.css     # Button styles
+│   ├── output.css      # Output area styles
+│   └── animations.css  # Animations and transitions
+├── js/
+│   ├── utils.js        # Utility functions
+│   ├── storage.js      # Local storage management
+│   ├── app.js          # Main application logic
+│   ├── ui/
+│   │   ├── theme.js    # Theme management
+│   │   ├── tabs.js     # Tab navigation
+│   │   ├── sidebar.js  # Sidebar functionality
+│   │   ├── forms.js    # Form handling
+│   │   └── toast.js    # Toast notifications
+│   └── api/
+│       ├── providers.js # Provider configurations
+│       ├── text.js      # Text generation API
+│       ├── image.js     # Image generation API
+│       ├── audio.js     # Audio generation API
+│       └── video.js     # Video generation API
+└── assets/
+    └── demo.mp3        # Demo audio for STT testing
+```
+
+## 🛠️ Technology
+
+Built with vanilla HTML, CSS, and JavaScript - no build tools or frameworks required.
+
+- **No dependencies** - Runs directly in the browser
+- **No build step** - Just open and use
+- **GitHub Pages ready** - Static files only
+
+## 📝 License
+
+MIT License
+
+## 👤 Author
+
+Eli

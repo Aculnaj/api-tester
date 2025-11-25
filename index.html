@@ -1,530 +1,674 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-theme="dark">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>API Tester</title>
-    <link rel="stylesheet" href="style.css">
+    <meta name="description" content="API Tester v2 - Modern API testing tool for AI models">
+    <title>API Tester v2</title>
+    
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    
+    <!-- CSS Files -->
+    <link rel="stylesheet" href="css/variables.css">
+    <link rel="stylesheet" href="css/base.css">
+    <link rel="stylesheet" href="css/layout.css">
+    <link rel="stylesheet" href="css/components.css">
+    <link rel="stylesheet" href="css/sidebar.css">
+    <link rel="stylesheet" href="css/tabs.css">
+    <link rel="stylesheet" href="css/forms.css">
+    <link rel="stylesheet" href="css/buttons.css">
+    <link rel="stylesheet" href="css/output.css">
+    <link rel="stylesheet" href="css/animations.css">
 </head>
 <body>
-    <div id="loading-indicator" style="display: none;">
-        <div class="spinner"></div>
-        <p>Loading...</p>
-    </div>
-
-    <header>
-        <h1>API Tester</h1>
-        <div class="theme-mode-group">
-            <button class="theme-mode-btn" data-theme-mode="system" title="System Theme">
-                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-display" viewBox="0 0 16 16">
-                    <path d="M0 4s0-2 2-2h12s2 0 2 2v6s0 2-2 2h-4v1h3a1 1 0 0 1 0 2H5a1 1 0 0 1 0-2h3v-1H2s-2 0-2-2V4zm2-1a1 1 0 0 0-1 1v6a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V4a1 1 0 0 0-1-1H2z"/>
-                </svg>
-            </button>
-            <button class="theme-mode-btn" data-theme-mode="light" title="Light Theme">
-                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-sun" viewBox="0 0 16 16">
-                    <path d="M8 11a3 3 0 1 1 0-6 3 3 0 0 1 0 6zM8 12a4 4 0 1 0 0-8 4 4 0 0 0 0 8zM8 0a.5.5 0 0 1 .5.5v2a.5.5 0 0 1-1 0v-2A.5.5 0 0 1 8 0zm0 13a.5.5 0 0 1 .5.5v2a.5.5 0 0 1-1 0v-2A.5.5 0 0 1 8 13zm-5-5a.5.5 0 0 1 .5-.5h2a.5.5 0 0 1 0 1h-2a.5.5 0 0 1-.5-.5zm10 0a.5.5 0 0 1 .5-.5h2a.5.5 0 0 1 0 1h-2a.5.5 0 0 1-.5-.5zM4.222 4.222a.5.5 0 0 1 .707 0l1.414 1.414a.5.5 0 0 1-.707.707L4.222 4.93a.5.5 0 0 1 0-.707zm9.193 9.193a.5.5 0 0 1 .707 0l1.414 1.414a.5.5 0 0 1-.707.707l-1.414-1.414a.5.5 0 0 1 0-.707zM4.222 11.778a.5.5 0 0 1 .707-.707l1.414 1.414a.5.5 0 0 1-.707.707l-1.414-1.414a.5.5 0 0 1 0-.707zm9.193-9.193a.5.5 0 0 1 0 .707l-1.414 1.414a.5.5 0 1 1-.707-.707l1.414-1.414a.5.5 0 0 1 .707 0z"/>
-                </svg>
-            </button>
-            <button class="theme-mode-btn" data-theme-mode="dark" title="Dark Theme">
-                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-moon" viewBox="0 0 16 16">
-                    <path d="M6 .278a.768.768 0 0 1 .08.858 7.208 7.208 0 0 0-.878 3.46c0 4.021 3.278 7.277 7.318 7.277.527 0 1.04-.055 1.533-.16a.787.787 0 0 1 .81.316.733.733 0 0 1-.031.893A8.349 8.349 0 0 1 8.344 16C3.734 16 0 12.286 0 7.71 0 4.266 2.114 1.312 5.124.06A.752.752 0 0 1 6 .278zM4.858 1.311A7.269 7.269 0 0 0 7.71 14.85c4.021 0 7.277-3.278 7.277-7.318 0-1.817-.67-3.478-1.755-4.744A7.334 7.334 0 0 0 4.858 1.311z"/>
-                </svg>
-            </button>
-            <button id="open-new-window-btn" class="theme-mode-btn" title="Open New Window">
-                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-plus-lg" viewBox="0 0 16 16">
-                    <path fill-rule="evenodd" d="M8 2a.5.5 0 0 1 .5.5v5h5a.5.5 0 0 1 0 1h-5v5a.5.5 0 0 1-1 0v-5h-5a.5.5 0 0 1 0-1h5v-5A.5.5 0 0 1 8 2Z"/>
-                </svg>
-            </button>
-            <button id="clear-all-data-btn" class="theme-mode-btn" title="Clear All Storage Data">
-                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-trash" viewBox="0 0 16 16">
-                    <path d="M5.5 5.5A.5.5 0 0 1 6 6v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zm2.5 0a.5.5 0 0 1 .5.5v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zm3 .5a.5.5 0 0 0-1 0v6a.5.5 0 0 0 1 0V6z"/>
-                    <path fill-rule="evenodd" d="M14.5 3a1 1 0 0 1-1 1H13v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V4h-.5a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1H6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1h3.5a1 1 0 0 1 1 1v1zM4.118 4 4 4.059V13a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1V4.059L11.882 4H4.118zM2.5 3V2h11v1h-11z"/>
-                </svg>
-            </button>
-        </div>
-    </header>
-
-    <main>
-        <section class="main-section">
-            <details class="settings-details" open>
-                <summary>1. Provider Settings</summary>
-                <fieldset>
-                    <label for="provider-select" style="margin-top: 0px;">Provider:</label>
-                    <select id="provider-select">
-                        <option value="openai_compatible" selected>OpenAI Compatible</option>
-                        <option value="openai">OpenAI</option>
-                        <option value="deepseek">Deepseek</option>
-                        <option value="antrophic">Antrophic</option>
-                        <option value="openrouter">OpenRouter</option>
-                    </select>
-
-                    <div id="base-url-container" style="display: none;">
-                        <label for="base-url-input">Base URL:</label>
-                        <input type="text" id="base-url-input" placeholder="Enter Base URL">
+    <div class="app">
+        <!-- Header -->
+        <header class="header">
+            <div class="header-left">
+                <button class="sidebar-toggle btn-icon btn-ghost" id="sidebar-toggle" aria-label="Toggle Sidebar">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <line x1="3" y1="12" x2="21" y2="12"></line>
+                        <line x1="3" y1="6" x2="21" y2="6"></line>
+                        <line x1="3" y1="18" x2="21" y2="18"></line>
+                    </svg>
+                </button>
+                <div class="header-logo">
+                    <div class="header-logo-icon">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M12 2L2 7l10 5 10-5-10-5z"></path>
+                            <path d="M2 17l10 5 10-5"></path>
+                            <path d="M2 12l10 5 10-5"></path>
+                        </svg>
                     </div>
+                    <span>API Tester</span>
+                    <span class="header-version">v2</span>
+                </div>
+            </div>
+            <div class="header-right">
+                <!-- Theme Toggle -->
+                <div class="theme-toggle-group">
+                    <button class="theme-toggle-btn" data-theme="system" title="System Theme">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <rect x="2" y="3" width="20" height="14" rx="2" ry="2"></rect>
+                            <line x1="8" y1="21" x2="16" y2="21"></line>
+                            <line x1="12" y1="17" x2="12" y2="21"></line>
+                        </svg>
+                    </button>
+                    <button class="theme-toggle-btn" data-theme="light" title="Light Theme">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <circle cx="12" cy="12" r="5"></circle>
+                            <line x1="12" y1="1" x2="12" y2="3"></line>
+                            <line x1="12" y1="21" x2="12" y2="23"></line>
+                            <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+                            <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+                            <line x1="1" y1="12" x2="3" y2="12"></line>
+                            <line x1="21" y1="12" x2="23" y2="12"></line>
+                            <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+                            <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+                        </svg>
+                    </button>
+                    <button class="theme-toggle-btn is-active" data-theme="dark" title="Dark Theme">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+                        </svg>
+                    </button>
+                </div>
+                <!-- GitHub Link -->
+                <a href="https://github.com/Aculnaj/api-tester" target="_blank" rel="noopener noreferrer" class="btn btn-ghost btn-icon" title="GitHub Repository">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/>
+                    </svg>
+                </a>
+            </div>
+        </header>
 
-                    <label for="api-key-input">API Key:</label>
-                    <input type="password" id="api-key-input" placeholder="Enter your API Key">
-                </fieldset>
-            </details>
-        </section>
-        <section class="main-section">
-            <details class="settings-details">
-                <summary>Provider Configurations</summary>
-                <fieldset>
-                    <label for="config-name-input" style="margin-top: 0px;">Configuration Name:</label>
-                    <div class="model-selection-wrapper">
-                        <input type="text" id="config-name-input" placeholder="e.g., My Work Account, Groq Llama3">
-                        <button id="save-config-btn" class="icon-btn" title="Save Current Configuration">Save</button>
-                    </div>
-                    
-                    <div id="saved-configs-list-container">
-                        <hr class="config-separator">
-                        <h3 class="saved-configs-title">Saved Configurations</h3>
-                        <div id="saved-configs-list">
-                            <!-- Saved configurations will be dynamically inserted here -->
-                        </div>
-                    </div>
-                </fieldset>
-            </details>
-        </section>
-
-        <section class="main-section">
-            <details class="settings-details" open>
-                <summary>2. Generation Task</summary>
-                <fieldset>
-                    <div class="generation-type-selector">
-                        <span class="main-label">Generation Type:</span>
-                        <div class="radio-group-wrapper">
-                            <label class="radio-label" for="generation-type-text">
-                                <input type="radio" id="generation-type-text" name="generation-type" value="text" checked>
-                                <span>Text</span>
-                            </label>
-                            <label class="radio-label" for="generation-type-image">
-                                <input type="radio" id="generation-type-image" name="generation-type" value="image">
-                                <span>Image</span>
-                            </label>
-                            <label class="radio-label" for="generation-type-audio">
-                                <input type="radio" id="generation-type-audio" name="generation-type" value="audio">
-                                <span>Audio</span>
-                            </label>
-                            <label class="radio-label" for="generation-type-video">
-                                <input type="radio" id="generation-type-video" name="generation-type" value="video">
-                                <span>Video</span>
-                            </label>
-                        </div>
-                    </div>
-
-                    <div id="model-container">
-                        <label for="model-select">Model:</label>
-                        <div class="model-selection-wrapper">
-                            <select id="model-select"></select>
-                            <button id="refresh-models-btn" class="icon-btn" title="Refresh Model List">
-                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-arrow-clockwise" viewBox="0 0 16 16">
-                                    <path fill-rule="evenodd" d="M8 3a5 5 0 1 0 4.546 2.914.5.5 0 0 1 .908-.417A6 6 0 1 1 8 2v1z"/>
-                                    <path d="M8 4.466V.534a.25.25 0 0 1 .41-.192l2.36 1.966c.12.1.12.284 0 .384L8.41 4.658A.25.25 0 0 1 8 4.466z"/>
+        <!-- Main Layout -->
+        <div class="main-layout">
+            <!-- Sidebar Overlay (Mobile) -->
+            <div class="sidebar-overlay" id="sidebar-overlay"></div>
+            
+            <!-- Sidebar -->
+            <aside class="sidebar" id="sidebar">
+                <div class="sidebar-content">
+                    <!-- Provider Settings Section -->
+                    <section class="sidebar-section">
+                        <div class="sidebar-section-header">
+                            <h3 class="sidebar-section-title">
+                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <circle cx="12" cy="12" r="3"></circle>
+                                    <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
                                 </svg>
-                            </button>
+                                Provider Settings
+                            </h3>
                         </div>
-                        <input type="text" id="custom-model-input" placeholder="Enter custom model name" style="display:none; margin-top: 8px;">
-                    </div>
-                    
-                    <div id="video-endpoint-container" style="display: none;">
-                        <label for="video-endpoint-select">Video Endpoint:</label>
-                        <select id="video-endpoint-select">
-                            <option value="/videos/generations" selected>/videos/generations</option>
-                            <option value="/videos">/videos</option>
-                            <option value="/images/generations">/images/generations</option>
-                            <option value="custom">Custom...</option>
-                        </select>
-                        <input type="text" id="custom-video-endpoint-input" placeholder="Enter custom endpoint (e.g., /v1/videos)" style="display:none; margin-top: 8px;">
-                    </div>
-                    
-                    <div id="audio-input-container" style="display: none;">
-                        <label for="audio-type-select">Audio Type:</label>
-                        <select id="audio-type-select">
-                            <option value="tts" selected>Text-to-Speech (TTS)</option>
-                            <option value="stt">Speech-to-Text (STT)</option>
-                        </select>
-                        <div id="stt-input-container" style="display: none;">
-                            <label for="audio-file-input">Audio File:</label>
-                            <div class="audio-file-wrapper">
-                                <div class="audio-file-drop-zone">
-                                    <input type="file" id="audio-file-input" accept="audio/*">
-                                    <label for="audio-file-input" class="audio-file-label" id="audio-file-label">
-                                        <svg class="audio-file-icon" xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 16 16">
-                                            <path d="M6.5 1A1.5 1.5 0 0 0 5 2.5v11A1.5 1.5 0 0 0 6.5 15h3A1.5 1.5 0 0 0 11 13.5v-11A1.5 1.5 0 0 0 9.5 1h-3zM8 11a1 1 0 1 1 0-2 1 1 0 0 1 0 2zm0-3a1 1 0 1 1 0-2 1 1 0 0 1 0 2z"/>
-                                        </svg>
-                                        <div class="audio-file-text">Drop audio file here or click to browse</div>
-                                        <div class="audio-file-subtext">Supports MP3, WAV, M4A, and other audio formats</div>
-                                    </label>
-                                </div>
-                                <button type="button" id="use-demo-audio-btn" class="use-demo-audio-btn" title="Use demo audio file">
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
-                                        <path d="M11.536 14.01A8.473 8.473 0 0 0 14.026 8a8.473 8.473 0 0 0-2.49-6.01l-.708.707A7.476 7.476 0 0 1 13.025 8c0 2.071-.84 3.946-2.197 5.303l.708.707z"/>
-                                        <path d="M10.121 12.596A6.48 6.48 0 0 0 12.025 8a6.48 6.48 0 0 0-1.904-4.596l-.707.707A5.483 5.483 0 0 1 11.025 8a5.483 5.483 0 0 1-1.61 3.89l.706.706z"/>
-                                        <path d="M8.707 11.182A4.486 4.486 0 0 0 10.025 8a4.486 4.486 0 0 0-1.318-3.182L8 5.525A3.489 3.489 0 0 1 9.025 8 3.49 3.49 0 0 1 8 10.475l.707.707zM6.717 3.55A.5.5 0 0 1 7 4v8a.5.5 0 0 1-.812.39L3.825 10.5H1.5A.5.5 0 0 1 1 10V6a.5.5 0 0 1 .5-.5h2.325l2.363-1.89a.5.5 0 0 1 .529-.06z"/>
-                                    </svg>
-                                    Use Demo Audio
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                    <label for="prompt-input" id="prompt-label">Prompt / Image Description:</label>
-                    <textarea id="prompt-input" rows="4" placeholder="Enter text prompt or image description..."></textarea>
-                </fieldset>
-            </details>
-        </section>
-
-        <section class="main-section">
-            <details class="settings-details">
-                <summary>3. Advanced Options</summary>
-                <fieldset>
-                    <!-- Text Options -->
-                    <div id="text-generation-options">
-                        <div class="enable-param-container">
-                            <label class="enable-param-title" for="enable-system-prompt-checkbox">
-                                <span>System Prompt</span>
-                                <span class="switch">
-                                    <input type="checkbox" id="enable-system-prompt-checkbox" checked>
-                                    <span class="slider"></span>
-                                </span>
-                            </label>
-                        </div>
-                        <div class="form-group" id="system-prompt-group">
-                            <textarea id="system-prompt-input" rows="2" placeholder="Enter system prompt..."></textarea>
-                        </div>
-                        <div class="enable-param-container">
-                            <label class="enable-param-title" for="enable-temperature-checkbox">
-                                <span>Temperature</span>
-                                <span class="switch">
-                                    <input type="checkbox" id="enable-temperature-checkbox">
-                                    <span class="slider"></span>
-                                </span>
-                            </label>
-                            <div class="form-group slider-group" id="temperature-group">
-                                <span id="temperature-value" class="slider-value">1.0</span>
-                                <input type="range" id="temperature-input" min="0" max="2" step="0.1" value="1">
-                            </div>
-                        </div>
-                        <div class="enable-param-container">
-                            <label class="enable-param-title" for="enable-top-p-checkbox">
-                                <span>Top P</span>
-                                <span class="switch">
-                                    <input type="checkbox" id="enable-top-p-checkbox">
-                                    <span class="slider"></span>
-                                </span>
-                            </label>
-                            <div class="form-group slider-group" id="top-p-group">
-                                <span id="top-p-value" class="slider-value">1.0</span>
-                                <input type="range" id="top-p-input" min="0" max="1" step="0.01" value="1">
-                            </div>
-                        </div>
-                        <div class="enable-param-container">
-                            <label class="enable-param-title" for="enable-top-k-checkbox">
-                                <span>Top K</span>
-                                <span class="switch">
-                                    <input type="checkbox" id="enable-top-k-checkbox">
-                                    <span class="slider"></span>
-                                </span>
-                            </label>
-                            <div class="form-group slider-group" id="top-k-group">
-                                <span id="top-k-value" class="slider-value">50</span>
-                                <input type="range" id="top-k-input" min="0" max="1000" step="50" value="50">
-                            </div>
-                        </div>
-                        <div class="enable-param-container">
-                            <label class="enable-param-title" for="enable-max-tokens-checkbox">
-                                <span>Max Tokens</span>
-                                <span class="switch">
-                                    <input type="checkbox" id="enable-max-tokens-checkbox">
-                                    <span class="slider"></span>
-                                </span>
-                            </label>
-                            <div class="form-group" id="max-tokens-group">
-                                <input type="number" id="max-tokens-input" placeholder="e.g., 4096">
-                            </div>
-                        </div>
-                        <div class="enable-param-container">
-                            <label class="enable-param-title" for="enable-reasoning-effort-checkbox">
-                                <span>Reasoning Effort</span>
-                                <span class="switch">
-                                    <input type="checkbox" id="enable-reasoning-effort-checkbox">
-                                    <span class="slider"></span>
-                                </span>
-                            </label>
-                            <div class="form-group" id="reasoning-effort-group">
-                                <select id="reasoning-effort-select">
-                                    <option value="low">Low</option>
-                                    <option value="medium" selected>Medium</option>
-                                    <option value="high">High</option>
+                        <div class="provider-settings">
+                            <!-- Provider Select -->
+                            <div class="provider-field">
+                                <label class="provider-field-label" for="provider-select">Provider</label>
+                                <select class="form-select" id="provider-select">
+                                    <option value="aetherapi" selected>AetherAPI</option>
+                                    <option value="openai_compatible">OpenAI Compatible</option>
+                                    <option value="openai">OpenAI</option>
+                                    <option value="openrouter">OpenRouter</option>
+                                    <option value="gemini">Gemini</option>
+                                    <option value="anthropic">Anthropic</option>
+                                    <option value="deepseek">DeepSeek</option>
+                                    <option value="xai">xAI</option>
+                                    <option value="cohere">Cohere</option>
+                                    <option value="groq">Groq</option>
+                                    <option value="cerebras">Cerebras</option>
+                                    <option value="mistral">Mistral</option>
+                                    <option value="fireworks">Fireworks</option>
+                                    <option value="together">Together</option>
+                                    <option value="novitaai">NovitaAI</option>
+                                    <option value="scaleway">Scaleway</option>
+                                    <option value="nebius">Nebius</option>
+                                    <option value="baseten">Baseten</option>
+                                    <option value="replicate">Replicate</option>
+                                    <option value="elevenlabs">ElevenLabs</option>
                                 </select>
                             </div>
-                        </div>
-                        <div class="enable-param-container">
-                            <label class="enable-param-title" for="enable-custom-params-checkbox">
-                                <span>Custom Parameters</span>
-                                <span class="switch">
-                                    <input type="checkbox" id="enable-custom-params-checkbox">
-                                    <span class="slider"></span>
-                                </span>
-                            </label>
-                        </div>
-                        <div class="form-group custom-params-container" id="custom-params-group">
-                            <div class="custom-param-add-section">
-                                <div class="custom-param-inputs">
-                                    <input type="text" id="param-name-input" placeholder="Parameter name (e.g., min_p)" class="param-name-input">
-                                    <input type="text" id="param-value-input" placeholder="Value (e.g., 0.1)" class="param-value-input">
-                                    <button type="button" id="add-param-btn" class="icon-btn add-param-btn" title="Add Parameter">
-                                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
-                                            <path d="M8 2a.5.5 0 0 1 .5.5v5h5a.5.5 0 0 1 0 1h-5v5a.5.5 0 0 1-1 0v-5h-5a.5.5 0 0 1 0-1h5v-5A.5.5 0 0 1 8 2Z"/>
+                            
+                            <!-- Base URL (for OpenAI Compatible) -->
+                            <div class="provider-field" id="base-url-container">
+                                <label class="provider-field-label" for="base-url-input">Base URL</label>
+                                <input type="text" class="form-input" id="base-url-input" placeholder="https://api.example.com/v1">
+                            </div>
+                            
+                            <!-- API Key -->
+                            <div class="provider-field">
+                                <div class="provider-field-label-row">
+                                    <label class="provider-field-label" for="api-key-input">API Key</label>
+                                    <a href="https://aetherapi.dev/" target="_blank" rel="noopener noreferrer" class="get-key-link" id="get-key-link">Get a key</a>
+                                </div>
+                                <div class="password-input-wrapper">
+                                    <input type="password" class="form-input" id="api-key-input" placeholder="Enter your API key">
+                                    <button type="button" class="password-toggle" id="api-key-toggle" aria-label="Toggle API key visibility">
+                                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="eye-icon">
+                                            <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                                            <circle cx="12" cy="12" r="3"></circle>
+                                        </svg>
+                                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="eye-off-icon hidden">
+                                            <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path>
+                                            <line x1="1" y1="1" x2="23" y2="23"></line>
                                         </svg>
                                     </button>
                                 </div>
                             </div>
-                            <div class="custom-params-list" id="custom-params-list">
-                                <!-- Added parameters will appear here -->
+                            
+                            <!-- Model Selection -->
+                            <div class="provider-field">
+                                <label class="provider-field-label" for="model-select">Model</label>
+                                <div class="model-select-wrapper">
+                                    <select class="form-select" id="model-select">
+                                        <option value="custom">Custom...</option>
+                                    </select>
+                                    <button type="button" class="model-refresh-btn" id="refresh-models-btn" title="Refresh model list">
+                                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                            <polyline points="23 4 23 10 17 10"></polyline>
+                                            <path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"></path>
+                                        </svg>
+                                    </button>
+                                </div>
+                                <input type="text" class="form-input mt-2 hidden" id="custom-model-input" placeholder="Enter custom model name">
                             </div>
-                            <div class="custom-params-presets">
-                                <div class="presets-label">Common Parameters:</div>
-                                <div class="param-presets">
-                                    <button type="button" class="param-preset-btn" data-name="min_p" data-value="0.1">min_p</button>
-                                    <button type="button" class="param-preset-btn" data-name="repeat_penalty" data-value="1.1">repeat_penalty</button>
-                                    <button type="button" class="param-preset-btn" data-name="frequency_penalty" data-value="0.5">frequency_penalty</button>
-                                    <button type="button" class="param-preset-btn" data-name="presence_penalty" data-value="0.3">presence_penalty</button>
-                                    <button type="button" class="param-preset-btn" data-name="mirostat" data-value="2">mirostat</button>
-                                    <button type="button" class="param-preset-btn" data-name="tfs_z" data-value="1.0">tfs_z</button>
+                        </div>
+                    </section>
+
+                    <!-- Saved Configurations Section -->
+                    <section class="sidebar-section">
+                        <div class="sidebar-section-header">
+                            <h3 class="sidebar-section-title">
+                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path>
+                                    <polyline points="17 21 17 13 7 13 7 21"></polyline>
+                                    <polyline points="7 3 7 8 15 8"></polyline>
+                                </svg>
+                                Saved Configs
+                            </h3>
+                        </div>
+                        
+                        <!-- Save Config Form -->
+                        <div class="save-config-form">
+                            <div class="save-config-row">
+                                <input type="text" class="form-input form-input-sm" id="config-name-input" placeholder="Configuration name">
+                                <button type="button" class="btn btn-sm btn-primary" id="save-config-btn">Save</button>
+                            </div>
+                        </div>
+                        
+                        <!-- Saved Configs List -->
+                        <div class="saved-configs mt-3" id="saved-configs-list">
+                            <div class="saved-configs-empty">
+                                No saved configurations yet
+                            </div>
+                        </div>
+                        
+                        <!-- Import/Export Buttons -->
+                        <div class="config-actions">
+                            <button type="button" class="btn btn-sm btn-ghost" id="export-configs-btn">
+                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="14" height="14">
+                                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                                    <polyline points="7 10 12 15 17 10"></polyline>
+                                    <line x1="12" y1="15" x2="12" y2="3"></line>
+                                </svg>
+                                Export
+                            </button>
+                            <button type="button" class="btn btn-sm btn-ghost" id="import-configs-btn">
+                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="14" height="14">
+                                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                                    <polyline points="17 8 12 3 7 8"></polyline>
+                                    <line x1="12" y1="3" x2="12" y2="15"></line>
+                                </svg>
+                                Import
+                            </button>
+                            <input type="file" class="config-import-input" id="config-import-input" accept=".json">
+                        </div>
+                    </section>
+                </div>
+                
+                <!-- Sidebar Footer -->
+                <div class="sidebar-footer">
+                    <button type="button" class="btn btn-sm btn-ghost btn-block" id="clear-all-data-btn">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="14" height="14">
+                            <polyline points="3 6 5 6 21 6"></polyline>
+                            <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+                        </svg>
+                        Clear All Data
+                    </button>
+                </div>
+            </aside>
+
+            <!-- Main Content -->
+            <main class="main-content">
+                <div class="content-area">
+                    <!-- Generation Type Tabs -->
+                    <div class="tabs generation-tabs">
+                        <div class="tab-list" role="tablist">
+                            <button class="tab-btn is-active" data-tab="text" role="tab" aria-selected="true">
+                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+                                </svg>
+                                <span>Text</span>
+                            </button>
+                            <button class="tab-btn" data-tab="image" role="tab" aria-selected="false">
+                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+                                    <circle cx="8.5" cy="8.5" r="1.5"></circle>
+                                    <polyline points="21 15 16 10 5 21"></polyline>
+                                </svg>
+                                <span>Image</span>
+                            </button>
+                            <button class="tab-btn" data-tab="audio" role="tab" aria-selected="false">
+                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <path d="M9 18V5l12-2v13"></path>
+                                    <circle cx="6" cy="18" r="3"></circle>
+                                    <circle cx="18" cy="16" r="3"></circle>
+                                </svg>
+                                <span>Audio</span>
+                            </button>
+                            <button class="tab-btn" data-tab="video" role="tab" aria-selected="false">
+                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <polygon points="23 7 16 12 23 17 23 7"></polygon>
+                                    <rect x="1" y="5" width="15" height="14" rx="2" ry="2"></rect>
+                                </svg>
+                                <span>Video</span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Request Panel -->
+                    <div class="panel request-panel">
+                        <div class="panel-header">
+                            <h2 class="panel-title">
+                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <line x1="22" y1="2" x2="11" y2="13"></line>
+                                    <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
+                                </svg>
+                                Request
+                            </h2>
+                        </div>
+                        <div class="panel-body">
+                            <!-- Tab Panels -->
+                            <div class="tab-panels">
+                                <!-- Text Tab Panel -->
+                                <div class="tab-panel is-active" id="panel-text" role="tabpanel">
+                                    <div class="form-group">
+                                        <label class="form-label" for="prompt-input">Prompt</label>
+                                        <textarea class="form-textarea" id="prompt-input" rows="4" placeholder="Enter your prompt here..."></textarea>
+                                    </div>
+                                    
+                                    <!-- Advanced Options -->
+                                    <div class="collapsible mt-4" id="text-advanced-options">
+                                        <button type="button" class="collapsible-trigger">
+                                            <span>Advanced Options</span>
+                                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                                <polyline points="6 9 12 15 18 9"></polyline>
+                                            </svg>
+                                        </button>
+                                        <div class="collapsible-content">
+                                            <div class="collapsible-body">
+                                                <!-- System Prompt -->
+                                                <div class="toggle-option mb-3" id="system-prompt-toggle">
+                                                    <div class="toggle-option-content">
+                                                        <span class="toggle-option-label">System Prompt</span>
+                                                    </div>
+                                                    <label class="toggle">
+                                                        <input type="checkbox" class="toggle-input" id="enable-system-prompt" checked>
+                                                        <span class="toggle-switch"></span>
+                                                    </label>
+                                                </div>
+                                                <div class="form-group" id="system-prompt-group">
+                                                    <textarea class="form-textarea" id="system-prompt-input" rows="2" placeholder="Enter system prompt..."></textarea>
+                                                </div>
+                                                
+                                                <!-- Temperature -->
+                                                <div class="toggle-option mb-3">
+                                                    <div class="toggle-option-content">
+                                                        <span class="toggle-option-label">Temperature</span>
+                                                    </div>
+                                                    <label class="toggle">
+                                                        <input type="checkbox" class="toggle-input" id="enable-temperature">
+                                                        <span class="toggle-switch"></span>
+                                                    </label>
+                                                </div>
+                                                <div class="form-group hidden" id="temperature-group">
+                                                    <div class="range-with-value">
+                                                        <div class="range-header">
+                                                            <span class="form-label">Value</span>
+                                                            <span class="range-value" id="temperature-value">1.0</span>
+                                                        </div>
+                                                        <input type="range" class="form-range" id="temperature-input" min="0" max="2" step="0.1" value="1">
+                                                    </div>
+                                                </div>
+                                                
+                                                <!-- Max Tokens -->
+                                                <div class="toggle-option mb-3">
+                                                    <div class="toggle-option-content">
+                                                        <span class="toggle-option-label">Max Tokens</span>
+                                                    </div>
+                                                    <label class="toggle">
+                                                        <input type="checkbox" class="toggle-input" id="enable-max-tokens">
+                                                        <span class="toggle-switch"></span>
+                                                    </label>
+                                                </div>
+                                                <div class="form-group hidden" id="max-tokens-group">
+                                                    <input type="number" class="form-input" id="max-tokens-input" value="4096" placeholder="e.g., 4096">
+                                                </div>
+                                                
+                                                <!-- Streaming -->
+                                                <div class="toggle-option">
+                                                    <div class="toggle-option-content">
+                                                        <span class="toggle-option-label">Streaming</span>
+                                                        <span class="toggle-option-description">Stream response tokens as they are generated</span>
+                                                    </div>
+                                                    <label class="toggle">
+                                                        <input type="checkbox" class="toggle-input" id="enable-streaming" checked>
+                                                        <span class="toggle-switch"></span>
+                                                    </label>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Image Tab Panel -->
+                                <div class="tab-panel" id="panel-image" role="tabpanel">
+                                    <div class="form-group">
+                                        <label class="form-label" for="image-prompt-input">Image Description</label>
+                                        <textarea class="form-textarea" id="image-prompt-input" rows="4" placeholder="Describe the image you want to generate..."></textarea>
+                                    </div>
+                                    
+                                    <div class="form-group">
+                                        <label class="form-label" for="image-model-type">Model Type</label>
+                                        <select class="form-select" id="image-model-type">
+                                            <option value="default" selected>Default</option>
+                                            <option value="dalle2">DALL-E 2 (OpenAI)</option>
+                                            <option value="dalle3">DALL-E 3 (OpenAI)</option>
+                                            <option value="gptimage1">GPT-IMAGE-1 (OpenAI)</option>
+                                            <option value="flux">FLUX.1 (BlackForestLabs)</option>
+                                            <option value="imagen">IMAGEN (Google)</option>
+                                        </select>
+                                    </div>
+                                    
+                                    <!-- Image Options (dynamic based on model type) -->
+                                    <div id="image-options-container" class="hidden">
+                                        <!-- DALL-E 2 Options -->
+                                        <div class="image-model-options hidden" id="dalle2-options">
+                                            <div class="form-group">
+                                                <label class="form-label" for="dalle2-size">Size</label>
+                                                <select class="form-select" id="dalle2-size">
+                                                    <option value="256x256">256x256</option>
+                                                    <option value="512x512">512x512</option>
+                                                    <option value="1024x1024" selected>1024x1024</option>
+                                                </select>
+                                            </div>
+                                        </div>
+                                        
+                                        <!-- DALL-E 3 Options -->
+                                        <div class="image-model-options hidden" id="dalle3-options">
+                                            <div class="form-group">
+                                                <label class="form-label" for="dalle3-size">Size</label>
+                                                <select class="form-select" id="dalle3-size">
+                                                    <option value="1024x1024" selected>1024x1024</option>
+                                                    <option value="1792x1024">1792x1024 (Landscape)</option>
+                                                    <option value="1024x1792">1024x1792 (Portrait)</option>
+                                                </select>
+                                            </div>
+                                            <div class="form-group">
+                                                <label class="form-label" for="dalle3-quality">Quality</label>
+                                                <select class="form-select" id="dalle3-quality">
+                                                    <option value="standard" selected>Standard</option>
+                                                    <option value="hd">HD</option>
+                                                </select>
+                                            </div>
+                                        </div>
+                                        
+                                        <!-- GPT-IMAGE-1 Options -->
+                                        <div class="image-model-options hidden" id="gptimage1-options">
+                                            <div class="form-group">
+                                                <label class="form-label" for="gptimage1-size">Size</label>
+                                                <select class="form-select" id="gptimage1-size">
+                                                    <option value="1024x1024" selected>1024x1024</option>
+                                                    <option value="1536x1024">1536x1024 (Landscape)</option>
+                                                    <option value="1024x1536">1024x1536 (Portrait)</option>
+                                                </select>
+                                            </div>
+                                            <div class="form-group">
+                                                <label class="form-label" for="gptimage1-quality">Quality</label>
+                                                <select class="form-select" id="gptimage1-quality">
+                                                    <option value="auto" selected>Auto</option>
+                                                    <option value="high">High</option>
+                                                    <option value="medium">Medium</option>
+                                                    <option value="low">Low</option>
+                                                </select>
+                                            </div>
+                                        </div>
+                                        
+                                        <!-- FLUX Options -->
+                                        <div class="image-model-options hidden" id="flux-options">
+                                            <div class="form-group">
+                                                <label class="form-label" for="flux-aspect-ratio">Aspect Ratio</label>
+                                                <select class="form-select" id="flux-aspect-ratio">
+                                                    <option value="1:1" selected>1:1 (Square)</option>
+                                                    <option value="16:9">16:9 (Landscape)</option>
+                                                    <option value="9:16">9:16 (Portrait)</option>
+                                                    <option value="4:3">4:3</option>
+                                                    <option value="3:4">3:4</option>
+                                                    <option value="21:9">21:9 (Ultrawide)</option>
+                                                </select>
+                                            </div>
+                                            <div class="form-group">
+                                                <label class="form-label" for="flux-steps">Steps (optional)</label>
+                                                <input type="number" class="form-input" id="flux-steps" placeholder="Leave empty for default" min="1" max="50">
+                                            </div>
+                                        </div>
+                                        
+                                        <!-- IMAGEN Options -->
+                                        <div class="image-model-options hidden" id="imagen-options">
+                                            <div class="form-group">
+                                                <label class="form-label" for="imagen-aspect-ratio">Aspect Ratio</label>
+                                                <select class="form-select" id="imagen-aspect-ratio">
+                                                    <option value="1:1" selected>1:1 (Square)</option>
+                                                    <option value="16:9">16:9 (Landscape)</option>
+                                                    <option value="9:16">9:16 (Portrait)</option>
+                                                    <option value="4:3">4:3</option>
+                                                    <option value="3:4">3:4</option>
+                                                </select>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Audio Tab Panel -->
+                                <div class="tab-panel" id="panel-audio" role="tabpanel">
+                                    <div class="form-group">
+                                        <label class="form-label" for="audio-type-select">Audio Type</label>
+                                        <select class="form-select" id="audio-type-select">
+                                            <option value="tts" selected>Text-to-Speech (TTS)</option>
+                                            <option value="stt">Speech-to-Text (STT)</option>
+                                        </select>
+                                    </div>
+                                    
+                                    <!-- TTS Options -->
+                                    <div id="tts-options">
+                                        <div class="form-group">
+                                            <label class="form-label" for="tts-text-input">Text to Speak</label>
+                                            <textarea class="form-textarea" id="tts-text-input" rows="4" placeholder="Enter text to convert to speech..."></textarea>
+                                        </div>
+                                        
+                                        <div class="form-row">
+                                            <div class="form-group">
+                                                <label class="form-label" for="voice-select">Voice</label>
+                                                <select class="form-select" id="voice-select">
+                                                    <option value="alloy">Alloy</option>
+                                                    <option value="echo">Echo</option>
+                                                    <option value="fable">Fable</option>
+                                                    <option value="onyx">Onyx</option>
+                                                    <option value="nova">Nova</option>
+                                                    <option value="shimmer">Shimmer</option>
+                                                </select>
+                                            </div>
+                                            <div class="form-group">
+                                                <label class="form-label" for="audio-format-select">Format</label>
+                                                <select class="form-select" id="audio-format-select">
+                                                    <option value="mp3">MP3</option>
+                                                    <option value="opus">Opus</option>
+                                                    <option value="aac">AAC</option>
+                                                    <option value="flac">FLAC</option>
+                                                    <option value="wav">WAV</option>
+                                                </select>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <!-- STT Options -->
+                                    <div id="stt-options" class="hidden">
+                                        <div class="form-group">
+                                            <label class="form-label">Audio File</label>
+                                            <div class="file-input-wrapper" id="audio-file-wrapper">
+                                                <input type="file" class="file-input" id="audio-file-input" accept="audio/*">
+                                                <div class="file-input-label">
+                                                    <svg class="file-input-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                                        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                                                        <polyline points="17 8 12 3 7 8"></polyline>
+                                                        <line x1="12" y1="3" x2="12" y2="15"></line>
+                                                    </svg>
+                                                    <span class="file-input-text">Drop audio file here or click to browse</span>
+                                                    <span class="file-input-hint">Supports MP3, WAV, M4A, and other audio formats</span>
+                                                </div>
+                                            </div>
+                                            <p class="form-hint mt-2">💡 If no file is selected, a demo audio file will be used automatically.</p>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Video Tab Panel -->
+                                <div class="tab-panel" id="panel-video" role="tabpanel">
+                                    <div class="form-group">
+                                        <label class="form-label" for="video-prompt-input">Video Description</label>
+                                        <textarea class="form-textarea" id="video-prompt-input" rows="4" placeholder="Describe the video you want to generate..."></textarea>
+                                    </div>
+                                    
+                                    <div class="form-row">
+                                        <div class="form-group">
+                                            <label class="form-label" for="video-endpoint-select">Endpoint</label>
+                                            <select class="form-select" id="video-endpoint-select">
+                                                <option value="/videos">/videos</option>
+                                                <option value="/videos/generations">/videos/generations</option>
+                                                <option value="/images/generations">/images/generations</option>
+                                            </select>
+                                        </div>
+                                        <div class="form-group">
+                                            <label class="form-label" for="video-duration-input">Duration (seconds)</label>
+                                            <input type="number" class="form-input" id="video-duration-input" value="5" min="1" max="60">
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
                         </div>
-                        <div class="enable-streaming-container">
-                            <label class="enable-streaming-title" for="enable-streaming-checkbox">
-                                <span>Streaming</span>
-                                <span class="switch">
-                                    <input type="checkbox" id="enable-streaming-checkbox" checked>
-                                    <span class="slider"></span>
-                                </span>
-                            </label>
+                        <div class="panel-footer">
+                            <button type="button" class="btn btn-generate btn-block" id="generate-btn">
+                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon>
+                                </svg>
+                                Generate
+                            </button>
+                            <button type="button" class="btn btn-stop btn-block hidden" id="stop-btn">
+                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+                                </svg>
+                                Stop
+                            </button>
                         </div>
                     </div>
 
-                    <!-- Image Options -->
-                    <div id="image-options-container" style="display: none;">
-                        <label for="image-model-type-select">Model Type:</label>
-                        <select id="image-model-type-select">
-                            <option value="" selected>Select a model type first</option>
-                            <option value="dalle2">Dall-E-2 (OpenAI)</option>
-                            <option value="dalle3">Dall-E-3 (OpenAI)</option>
-                            <option value="gptimage1">GPT-IMAGE-1 (OpenAI)</option>
-                            <option value="flux">FLUX.1 (BlackForestLabs)</option>
-                            <option value="imagen">IMAGEN (Google)</option>
-                        </select>
-                        
-                        <div id="image-quality-container" style="display: none;">
-                            <div class="enable-quality-container">
-                                <label class="enable-quality-title" for="enable-quality-checkbox">
-                                    <span>Enable Quality</span>
-                                    <span class="switch">
-                                        <input type="checkbox" id="enable-quality-checkbox">
-                                        <span class="slider"></span>
-                                    </span>
-                                </label>
-                            </div>
-                            <div id="quality-options-container">
-                                <label for="quality-select">Image Quality:</label>
-                                <select id="quality-select">
-                                    <option value="low">Low</option>
-                                    <option value="medium" selected>Medium</option>
-                                    <option value="high">High</option>
-                                    <option value="auto">Auto</option>
-                                    <option value="standard">Standard</option>
-                                    <option value="hd">hd</option>
-                                    <option value="custom">Custom</option>
-                                </select>
-                                <input type="text" id="custom-quality-input" placeholder="Enter custom quality" style="display:none;">
+                    <!-- Response Panel -->
+                    <div class="panel response-panel">
+                        <div class="panel-header">
+                            <h2 class="panel-title">
+                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline>
+                                </svg>
+                                Response
+                            </h2>
+                            <div class="panel-actions">
+                                <button type="button" class="btn btn-sm btn-ghost hidden" id="copy-response-btn">
+                                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="14" height="14">
+                                        <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+                                        <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+                                    </svg>
+                                    Copy
+                                </button>
                             </div>
                         </div>
-                        
-                        <div id="image-resolution-container">
-                            <label for="image-resolution-select">Image Resolution:</label>
-                            <select id="image-resolution-select">
-                                <option value="1024x1024" selected>1024x1024</option>
-                            </select>
-                            
-                            <div id="image-resolution-inputs" style="display: none;">
-                                <label for="flux-orientation-select">Image Orientation:</label>
-                                <select id="flux-orientation-select">
-                                    <option value="landscape" selected>Landscape (Horizontal)</option>
-                                    <option value="portrait">Portrait (Vertical)</option>
-                                </select>
+                        <div class="panel-body">
+                            <!-- Output Area -->
+                            <div class="output-container" id="output-container">
+                                <div class="output-area output-area-empty" id="output-area">
+                                    <svg class="output-area-empty-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                                        <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+                                    </svg>
+                                    <p class="output-area-empty-text">Response will appear here</p>
+                                </div>
                                 
-                                <label for="flux-aspect-ratio-select" style="margin-top: 10px;">Aspect Ratio:</label>
-                                <select id="flux-aspect-ratio-select">
-                                    <option value="1:1" selected>1:1</option>
-                                    <option value="4:3">4:3</option>
-                                    <option value="16:9">16:9</option>
-                                    <option value="21:9">21:9</option>
-                                </select>
+                                <!-- Stats Area (hidden by default) -->
+                                <div class="stats-area hidden" id="stats-area">
+                                    <!-- Stats will be populated dynamically -->
+                                </div>
                                 
-                                <div id="flux-steps-container" style="margin-top: 10px;">
-                                    <label for="flux-steps-input">Steps: <span id="flux-steps-value">0</span></label>
-                                    <input type="range" id="flux-steps-input" min="0" max="40" value="0">
-                                    <small>Set to 0 (default) to omit steps parameter from request</small>
+                                <!-- Payload Viewer (hidden by default) -->
+                                <div class="payload-viewer hidden" id="payload-viewer">
+                                    <div class="payload-tabs">
+                                        <button type="button" class="payload-tab-btn is-active" data-payload="request">Request</button>
+                                        <button type="button" class="payload-tab-btn" data-payload="response">Response</button>
+                                    </div>
+                                    <div class="payload-content">
+                                        <div class="payload-content-header">
+                                            <span class="payload-content-title">JSON</span>
+                                            <button type="button" class="btn btn-sm btn-ghost" id="copy-payload-btn">
+                                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="14" height="14">
+                                                    <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+                                                    <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+                                                </svg>
+                                                Copy
+                                            </button>
+                                        </div>
+                                        <pre class="payload-code" id="payload-code"></pre>
+                                    </div>
                                 </div>
                             </div>
                         </div>
-                        
-                        <div id="image-aspect-ratio-container" style="display: none;">
-                            <label for="image-aspect-ratio-select">Aspect Ratio:</label>
-                            <select id="image-aspect-ratio-select">
-                                <option value="1:1" selected>1:1</option>
-                                <option value="9:16">9:16</option>
-                                <option value="16:9">16:9</option>
-                                <option value="3:4">3:4</option>
-                                <option value="4:3">4:3</option>
-                            </select>
-                        </div>
-                        
-                        <small id="image-model-note">Please select a model type to configure image generation options.</small>
                     </div>
-
-                    <!-- Audio Options -->
-                    <div id="audio-options-container" style="display: none;">
-                        <div class="enable-streaming-container">
-                            <label class="enable-streaming-title" for="enable-stt-streaming-checkbox">
-                                <span>Streaming</span>
-                                <span class="switch">
-                                    <input type="checkbox" id="enable-stt-streaming-checkbox">
-                                    <span class="slider"></span>
-                                </span>
-                            </label>
-                        </div>
-                        <div id="voice-options-container" style="display:none;">
-                            <label for="voice-select">Voice:</label>
-                            <select id="voice-select">
-                                <option value="alloy" selected>Alloy</option>
-                                <option value="ash">Ash</option>
-                                <option value="ballad">Ballad</option>
-                                <option value="coral">Coral</option>
-                                <option value="echo">Echo</option>
-                                <option value="fable">Fable</option>
-                                <option value="onyx">Onyx</option>
-                                <option value="nova">Nova</option>
-                                <option value="sage">Sage</option>
-                                <option value="shimmer">Shimmer</option>
-                                <option value="verse">Verse</option>
-                            </select>
-                            
-                            <label for="tts-instructions-input">Instructions (Optional):</label>
-                            <textarea id="tts-instructions-input" rows="2" placeholder="Control the voice with additional instructions..."></textarea>
-                            <small>Note: Instructions do not work with tts-1 or tts-1-hd models.</small>
-                            
-                            <label for="response-format-select">Audio Format:</label>
-                            <select id="response-format-select">
-                                <option value="mp3" selected>MP3</option>
-                                <option value="opus">Opus</option>
-                                <option value="aac">AAC</option>
-                                <option value="flac">FLAC</option>
-                                <option value="wav">WAV</option>
-                                <option value="pcm">PCM</option>
-                            </select>
-                        </div>
-                    </div>
-
-                    <!-- Video Options -->
-                    <div id="video-options-container" style="display: none;">
-                        <div class="enable-aspect-ratio-container">
-                            <label class="enable-aspect-ratio-title" for="video-aspect-ratio-enabled">
-                                <span>Enable Aspect Ratio</span>
-                                <span class="switch">
-                                    <input type="checkbox" id="video-aspect-ratio-enabled">
-                                    <span class="slider"></span>
-                                </span>
-                            </label>
-                            <div class="form-group" id="aspect-ratio-group" style="display: none;">
-                                <label for="video-aspect-ratio">Aspect Ratio:</label>
-                                <select id="video-aspect-ratio">
-                                    <option value="16:9">16:9 (Widescreen)</option>
-                                    <option value="9:16">9:16 (Portrait)</option>
-                                    <option value="1:1">1:1 (Square)</option>
-                                    <option value="4:3">4:3 (Standard)</option>
-                                    <option value="21:9">21:9 (Ultrawide)</option>
-                                </select>
-                            </div>
-                        </div>
-                        
-                        <div class="enable-aspect-ratio-container">
-                            <label class="enable-aspect-ratio-title" for="video-size-enabled">
-                                <span>Enable Size</span>
-                                <span class="switch">
-                                    <input type="checkbox" id="video-size-enabled">
-                                    <span class="slider"></span>
-                                </span>
-                            </label>
-                            <div class="form-group" id="video-size-group" style="display: none;">
-                                <label for="video-size-select">Video Size:</label>
-                                <select id="video-size-select">
-                                    <option value="1280x720" selected>1280x720 (Landscape)</option>
-                                    <option value="720x1280">720x1280 (Portrait)</option>
-                                    <option value="custom">Custom...</option>
-                                </select>
-                                <input type="text" id="custom-video-size-input" placeholder="e.g., 1920x1080" style="display:none; margin-top: 8px;">
-                            </div>
-                        </div>
-                        
-                        <label for="video-duration-type">Duration Parameter:</label>
-                        <select id="video-duration-type">
-                            <option value="duration" selected>duration</option>
-                            <option value="seconds">seconds</option>
-                        </select>
-                        
-                        <label for="video-duration">Duration Value:</label>
-                        <input type="number" id="video-duration" min="1" max="60" value="5" placeholder="Duration value">
-                    </div>
-                </fieldset>
-            </details>
-        </section>
-
-        <button id="send-button">Generate</button>
-        <button id="stop-button" style="display: none; background-color: #dc3545; color: white;">Stop Generating</button>
-
-        <div id="output-area">
-            <p id="output-text"></p>
-            <img id="output-image" src="" alt="Generated Image" style="display: none;">
-            <audio id="output-audio" controls preload="metadata" style="display:none;"></audio>
-            <video id="output-video" controls preload="metadata" style="display:none;">
-                Your browser does not support the video tag.
-            </video>
-            <div class="download-buttons-container">
-                <a id="download-image-btn" href="" download style="display:none;">Download Image</a>
-                <a id="download-audio" href="" download style="display:none;">Download Audio</a>
-                <a id="download-video-btn" href="" download style="display:none;">Download Video</a>
-            </div>
+                </div>
+            </main>
         </div>
+    </div>
 
-        <div id="stats-area"></div>
+    <!-- Toast Container -->
+    <div class="toast-container" id="toast-container"></div>
 
-        <div id="payload-container" style="display: none;">
-            <div class="payload-buttons-container">
-                <button id="toggle-payload-btn" class="payload-toggle-btn">Show Request</button>
-                <button id="toggle-response-btn" class="payload-toggle-btn">Show Response</button>
-            </div>
-            <pre id="payload-display-area" class="payload-display" style="display: none;"></pre>
-            <pre id="response-display-area" class="payload-display" style="display: none;"></pre>
-        </div>
-    </main>
+    <!-- Loading Overlay -->
+    <div class="loading-overlay" id="loading-overlay">
+        <div class="spinner spinner-lg"></div>
+        <span class="loading-text">Processing...</span>
+    </div>
 
-    <footer>
-        <div class="footer-content">
-            <a href="https://github.com/Aculnaj/api-tester" target="_blank" rel="noopener noreferrer" class="github-link">
-                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
-                    <path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.012 8.012 0 0 0 16 8c0-4.42-3.58-8-8-8z"/>
-                </svg>
-                GitHub Repository
-            </a>
-        </div>
-    </footer>
-
-    <script src="script.js"></script>
+    <!-- JavaScript Files -->
+    <script src="js/utils.js"></script>
+    <script src="js/storage.js"></script>
+    <script src="js/ui/theme.js"></script>
+    <script src="js/ui/tabs.js"></script>
+    <script src="js/ui/sidebar.js"></script>
+    <script src="js/ui/forms.js"></script>
+    <script src="js/ui/toast.js"></script>
+    <script src="js/api/providers.js"></script>
+    <script src="js/api/text.js"></script>
+    <script src="js/api/image.js"></script>
+    <script src="js/api/audio.js"></script>
+    <script src="js/api/video.js"></script>
+    <script src="js/app.js"></script>
 </body>
 </html>
