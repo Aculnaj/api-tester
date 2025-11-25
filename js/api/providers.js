@@ -12,7 +12,7 @@ const Providers = {
             models: [],
             supportsStreaming: true,
             supportsModels: true,
-            supportedModes: ['text', 'image', 'audio']
+            supportedModes: ['text', 'image', 'audio', 'video']
         },
         openai_compatible: {
             name: 'OpenAI Compatible',
@@ -26,8 +26,9 @@ const Providers = {
             name: 'OpenAI',
             baseUrl: 'https://api.openai.com/v1',
             models: [
-                'gpt-4o', 'gpt-4o-mini', 'gpt-4-turbo', 'gpt-4', 
-                'gpt-3.5-turbo', 'o1', 'o1-mini', 'o1-preview'
+                'gpt-4o', 'gpt-4o-mini', 'gpt-4.1',
+                'gpt-5', 'gpt-5-mini', 'gpt-5-nano', 'gpt-5-chat', 'gpt-5.1', 'gpt-5.1-chat',
+                'o3', 'o4-mini', 'tts-1', 'whisper-1', 'gpt-4o-mini-tts', 'gpt-4o-mini-transcribe', 'gpt-4o-transcribe'
             ],
             supportsStreaming: true,
             supportsModels: true,
@@ -39,7 +40,7 @@ const Providers = {
             models: [],
             supportsStreaming: true,
             supportsModels: true,
-            supportedModes: ['text', 'image', 'audio']
+            supportedModes: ['text'] // Text2image will be added later
         },
         gemini: {
             name: 'Gemini',
@@ -47,7 +48,7 @@ const Providers = {
             models: ['gemini-2.5-pro', 'gemini-2.5-flash', 'gemini-2.0-flash'],
             supportsStreaming: true,
             supportsModels: true,
-            supportedModes: ['text', 'image', 'audio']
+            supportedModes: ['text', 'image', 'audio', 'video'] // VEO will be added later
         },
         anthropic: {
             name: 'Anthropic',
@@ -57,7 +58,7 @@ const Providers = {
                 'claude-3-5-haiku-20241022', 'claude-3-opus-20240229'
             ],
             supportsStreaming: true,
-            supportsModels: false,
+            supportsModels: true,
             supportedModes: ['text']
         },
         deepseek: {
@@ -71,7 +72,7 @@ const Providers = {
         xai: {
             name: 'xAI',
             baseUrl: 'https://api.x.ai/v1',
-            models: ['grok-4.1-fast', 'grok-3', 'grok-3-fast'],
+            models: ['grok-4.1-fast', 'grok-4', 'grok-4-fast', 'grok-code-fast-1'],
             supportsStreaming: true,
             supportsModels: true,
             supportedModes: ['text', 'image', 'audio']
@@ -82,7 +83,7 @@ const Providers = {
             models: ['command-a-03-2025', 'command-r-plus', 'command-r'],
             supportsStreaming: true,
             supportsModels: true,
-            supportedModes: ['text', 'image', 'audio']
+            supportedModes: ['text']
         },
         groq: {
             name: 'Groq',
@@ -106,7 +107,7 @@ const Providers = {
             models: ['mistral-large-latest', 'mistral-small-latest', 'codestral-latest'],
             supportsStreaming: true,
             supportsModels: true,
-            supportedModes: ['text', 'image', 'audio']
+            supportedModes: ['text']
         },
         fireworks: {
             name: 'Fireworks',
@@ -130,7 +131,7 @@ const Providers = {
             models: ['meta-llama/llama-3.3-70b-instruct'],
             supportsStreaming: true,
             supportsModels: true,
-            supportedModes: ['text', 'image', 'audio']
+            supportedModes: ['text', 'image', 'audio', 'video'] //Video will be added later https://api.novita.ai/v3/async/...
         },
         scaleway: {
             name: 'Scaleway',
@@ -138,7 +139,7 @@ const Providers = {
             models: ['llama-3.3-70b-instruct'],
             supportsStreaming: true,
             supportsModels: true,
-            supportedModes: ['text', 'image', 'audio']
+            supportedModes: ['text', 'audio']
         },
         nebius: {
             name: 'Nebius',
@@ -146,7 +147,7 @@ const Providers = {
             models: ['meta-llama/Llama-3.3-70B-Instruct'],
             supportsStreaming: true,
             supportsModels: true,
-            supportedModes: ['text', 'image', 'audio']
+            supportedModes: ['text', 'image']
         },
         baseten: {
             name: 'Baseten',
@@ -162,15 +163,15 @@ const Providers = {
             models: [],
             supportsStreaming: true,
             supportsModels: true,
-            supportedModes: ['text', 'image', 'audio']
+            supportedModes: ['text', 'image', 'audio', 'video'] // Video will be added later (https://api.replicate.com/v1/models/google/veo-3.1/predictions)
         },
         elevenlabs: {
             name: 'ElevenLabs',
             baseUrl: 'https://api.elevenlabs.io/v1',
             models: ['eleven_multilingual_v2', 'eleven_turbo_v2_5'],
             supportsStreaming: false,
-            supportsModels: false,
-            supportedModes: ['audio']
+            supportsModels: true,
+            supportedModes: ['audio'] // Audio will be fixed later
         }
     },
 

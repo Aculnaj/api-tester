@@ -335,11 +335,11 @@ const Forms = {
         const customModelInput = document.getElementById('custom-model-input');
         
         return {
-            provider: document.getElementById('provider-select')?.value || 'openai_compatible',
-            baseUrl: document.getElementById('base-url-input')?.value || '',
+            provider: document.getElementById('provider-select')?.value || 'aetherapi',
+            baseUrl: document.getElementById('base-url-input')?.value || 'https://api.aetherapi.dev/v1',
             apiKey: document.getElementById('api-key-input')?.value || '',
             model: modelSelect?.value || 'custom',
-            customModel: customModelInput?.value || ''
+            customModel: customModelInput?.value || 'gpt-4o'
         };
     },
 

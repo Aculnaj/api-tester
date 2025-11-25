@@ -686,7 +686,7 @@ const App = {
     handleClearAllData() {
         if (confirm('Are you sure you want to clear all saved data? This cannot be undone.')) {
             Storage.clearAll();
-            Forms.setProviderSettings({ provider: 'openai_compatible', baseUrl: '', apiKey: '', model: 'custom', customModel: '' });
+            Forms.setProviderSettings({ provider: 'aetherapi', baseUrl: 'https://api.aetherapi.dev/v1', apiKey: '', model: 'gpt-4o', customModel: 'gpt-4o' });
             this.renderSavedConfigs();
             Forms.clearOutput();
             Toast.success('All data cleared');
