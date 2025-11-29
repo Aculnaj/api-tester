@@ -248,16 +248,16 @@ const Storage = {
      */
     exportConfigs() {
         const configs = this.getSavedConfigs();
-        // Remove sensitive data (API keys) from export
-        const sanitizedConfigs = configs.map(config => ({
+        // Include all config data including API keys
+        const exportedConfigs = configs.map(config => ({
             name: config.name,
             provider: config.provider,
             baseUrl: config.baseUrl,
+            apiKey: config.apiKey || '',
             model: config.model,
             customModel: config.customModel
-            // API key is intentionally excluded
         }));
-        return Utils.stringifyJSON(sanitizedConfigs);
+        return Utils.stringifyJSON(exportedConfigs);
     },
 
     // ==================== Last Active Tab ====================

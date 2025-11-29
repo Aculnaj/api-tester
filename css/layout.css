@@ -83,12 +83,16 @@
 .sidebar {
     width: var(--sidebar-width);
     height: calc(100vh - var(--header-height));
+    position: fixed;
+    top: var(--header-height);
+    left: 0;
     display: flex;
     flex-direction: column;
     background-color: var(--color-bg-secondary);
     border-right: 1px solid var(--color-border);
     overflow: hidden;
     flex-shrink: 0;
+    z-index: var(--z-fixed);
     transition: width var(--transition-slow), transform var(--transition-slow);
 }
 
@@ -140,6 +144,7 @@
     flex-direction: column;
     overflow: hidden;
     background-color: var(--color-bg-primary);
+    margin-left: var(--sidebar-width);
 }
 
 /* ========== Content Area ========== */
@@ -302,16 +307,16 @@
 /* ========== Responsive Layout ========== */
 @media (max-width: 1024px) {
     .sidebar {
-        position: fixed;
-        left: 0;
-        top: var(--header-height);
-        z-index: var(--z-fixed);
         transform: translateX(-100%);
         box-shadow: var(--shadow-xl);
     }
     
     .sidebar.is-open {
         transform: translateX(0);
+    }
+    
+    .main-content {
+        margin-left: 0;
     }
     
     .sidebar-overlay {

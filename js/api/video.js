@@ -26,6 +26,11 @@ const VideoAPI = {
             throw new Error('Please enter an API key');
         }
 
+        // Check if using Gemini for video generation
+        if (providerSettings.provider === 'gemini') {
+            return this.generateGeminiVideo(providerSettings, formValues);
+        }
+
         this.isGenerating = true;
         this.abortController = new AbortController();
 
@@ -119,6 +124,196 @@ const VideoAPI = {
     },
 
     /**
+     * Generate video using Gemini VEO API
+     * @param {Object} providerSettings - Provider settings
+     * @param {Object} formValues - Form values
+     * @returns {Promise<Object>} Generation result
+     */
+    async generateGeminiVideo(providerSettings, formValues) {
+        this.isGenerating = true;
+        this.abortController = new AbortController();
+
+        const startTime = performance.now();
+        const baseUrl = 'https://generativelanguage.googleapis.com/v1beta';
+        
+        // Always use the model selected by the user
+        const veoModel = Providers.getModelName(providerSettings);
+        
+        if (!veoModel) {
+            throw new Error('Please select a model for video generation');
+        }
+
+        // Build request body for Gemini VEO
+        const requestBody = {
+            instances: [{
+                prompt: formValues.prompt.trim()
+            }],
+            parameters: {
+                aspectRatio: '16:9'
+            }
+        };
+
+        const headers = {
+            'Content-Type': 'application/json',
+            'x-goog-api-key': providerSettings.apiKey
+        };
+
+        try {
+            this.showLoading('Initiating video generation with Gemini VEO...');
+
+            // Start video generation (predictLongRunning)
+            const url = `${baseUrl}/models/${veoModel}:predictLongRunning`;
+            const response = await fetch(url, {
+                method: 'POST',
+                headers,
+                body: JSON.stringify(requestBody),
+                signal: this.abortController.signal
+            });
+
+            if (!response.ok) {
+                const errorData = await response.json().catch(() => ({}));
+                const error = new Error(errorData.error?.message || `API Error: ${response.status}`);
+                error.status = response.status;
+                error.statusText = response.statusText;
+                throw error;
+            }
+
+            const data = await response.json();
+            const operationName = data.name;
+
+            if (!operationName) {
+                throw new Error('No operation name returned from API');
+            }
+
+            // Poll for completion
+            const result = await this.pollGeminiOperation(baseUrl, operationName, providerSettings.apiKey);
+            
+            const endTime = performance.now();
+            this.isGenerating = false;
+
+            return {
+                success: true,
+                videoUrl: result.videoUrl,
+                stats: {
+                    totalTime: ((endTime - startTime) / 1000).toFixed(2)
+                },
+                request: requestBody,
+                response: result.data
+            };
+
+        } catch (error) {
+            this.isGenerating = false;
+            this.stopPolling();
+            
+            if (error.name === 'AbortError') {
+                return { success: false, cancelled: true };
+            }
+            
+            throw error;
+        }
+    },
+
+    /**
+     * Poll Gemini operation for completion
+     * @param {string} baseUrl - Base URL
+     * @param {string} operationName - Operation name
+     * @param {string} apiKey - API key
+     * @returns {Promise<Object>} Result with video URL
+     */
+    async pollGeminiOperation(baseUrl, operationName, apiKey) {
+        const maxAttempts = 120; // 20 minutes with 10 second intervals
+        const pollInterval = 10000;
+        let attempts = 0;
+
+        return new Promise((resolve, reject) => {
+            this.pollingInterval = setInterval(async () => {
+                if (!this.isGenerating) {
+                    this.stopPolling();
+                    reject(new Error('Generation cancelled'));
+                    return;
+                }
+
+                attempts++;
+                
+                if (attempts > maxAttempts) {
+                    this.stopPolling();
+                    reject(new Error('Video generation timed out'));
+                    return;
+                }
+
+                try {
+                    // Update progress
+                    this.updateProgress(attempts, maxAttempts, 10);
+
+                    // Check operation status
+                    const statusUrl = `${baseUrl}/${operationName}`;
+                    const response = await fetch(statusUrl, {
+                        method: 'GET',
+                        headers: {
+                            'x-goog-api-key': apiKey
+                        }
+                    });
+
+                    if (!response.ok) {
+                        throw new Error(`Status check failed: ${response.status}`);
+                    }
+
+                    const data = await response.json();
+
+                    if (data.done === true) {
+                        this.stopPolling();
+                        
+                        // Check for error
+                        if (data.error) {
+                            reject(new Error(data.error.message || 'Video generation failed'));
+                            return;
+                        }
+
+                        // Extract video URL from response
+                        const videoUri = data.response?.generateVideoResponse?.generatedSamples?.[0]?.video?.uri;
+                        
+                        if (!videoUri) {
+                            reject(new Error('No video URL in response'));
+                            return;
+                        }
+
+                        // Download the video
+                        const videoUrl = await this.downloadGeminiVideo(videoUri, apiKey);
+                        this.displayVideo(videoUrl);
+                        resolve({ videoUrl, data });
+                    }
+                    // Continue polling if not done
+
+                } catch (error) {
+                    // Don't stop polling on network errors, just log
+                    console.warn('Polling error:', error);
+                }
+            }, pollInterval);
+        });
+    },
+
+    /**
+     * Download video from Gemini URI
+     * @param {string} videoUri - Video URI
+     * @param {string} apiKey - API key
+     * @returns {Promise<string>} Blob URL
+     */
+    async downloadGeminiVideo(videoUri, apiKey) {
+        const response = await fetch(videoUri, {
+            headers: {
+                'x-goog-api-key': apiKey
+            }
+        });
+
+        if (!response.ok) {
+            throw new Error(`Failed to download video: ${response.status}`);
+        }
+
+        const blob = await response.blob();
+        return URL.createObjectURL(blob);
+    },
+
+    /**
      * Poll for video generation completion
      * @param {string} baseUrl - Base URL
      * @param {string} jobId - Job ID
@@ -149,7 +344,7 @@ const VideoAPI = {
 
                 try {
                     // Update progress
-                    this.updateProgress(attempts, maxAttempts);
+                    this.updateProgress(attempts, maxAttempts, 5);
 
                     // Check status
                     const statusUrl = `${baseUrl}/videos/${jobId}`;
@@ -220,8 +415,9 @@ const VideoAPI = {
      * Update progress display
      * @param {number} current - Current attempt
      * @param {number} max - Max attempts
+     * @param {number} intervalSeconds - Interval in seconds
      */
-    updateProgress(current, max) {
+    updateProgress(current, max, intervalSeconds = 5) {
         const outputArea = document.getElementById('output-area');
         if (!outputArea) return;
 
@@ -229,7 +425,7 @@ const VideoAPI = {
         const progressBar = outputArea.querySelector('.progress-bar');
 
         if (statusEl) {
-            const elapsed = current * 5;
+            const elapsed = current * intervalSeconds;
             statusEl.textContent = `Generating video... (${elapsed}s elapsed)`;
         }
 

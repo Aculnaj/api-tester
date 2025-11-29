@@ -542,11 +542,36 @@ const App = {
             const settings = Forms.getProviderSettings();
             const models = await Providers.fetchModels(settings);
             Providers.updateModelSelect(models);
-            Toast.success(`Loaded ${models.length} models`);
+            
+            if (models.length === 0) {
+                // No models returned, show custom input and set model to custom
+                this.showCustomModelInput();
+                Toast.warning('No models found. You can enter a custom model name.');
+            } else {
+                Toast.success(`Loaded ${models.length} models`);
+            }
         } catch (error) {
-            Toast.error('Failed to fetch models');
+            console.error('Failed to fetch models:', error);
+            // Show custom model input on error so user can still enter model name
+            this.showCustomModelInput();
+            Toast.error(`Failed to fetch models: ${error.message}`);
         } finally {
             if (refreshBtn) refreshBtn.classList.remove('is-loading');
+        }
+    },
+
+    /**
+     * Show custom model input field
+     */
+    showCustomModelInput() {
+        const modelSelect = document.getElementById('model-select');
+        const customModelInput = document.getElementById('custom-model-input');
+        
+        if (modelSelect) {
+            modelSelect.value = 'custom';
+        }
+        if (customModelInput) {
+            customModelInput.classList.remove('hidden');
         }
     },
 
@@ -631,6 +656,16 @@ const App = {
         }
         Forms.setProviderSettings(config);
         this.saveProviderSettings();
+        
+        // Update tabs for the restored provider
+        if (config.provider) {
+            this.updateTabsForProvider(config.provider);
+            this.updateGetKeyLinkVisibility(config.provider);
+        }
+        
+        // Refresh model list for the restored provider
+        this.handleRefreshModels();
+        
         Toast.success(`Configuration "${config.name}" restored`);
     },
 

@@ -240,6 +240,7 @@ const Providers = {
      * Fetch available models from provider
      * @param {Object} settings - Provider settings
      * @returns {Promise<Array>} Array of model names
+     * @throws {Error} If fetching models fails
      */
     async fetchModels(settings) {
         const { provider, baseUrl, apiKey } = settings;
@@ -251,31 +252,27 @@ const Providers = {
 
         const url = `${this.getBaseUrl(provider, baseUrl)}/models`;
         
-        try {
-            const response = await fetch(url, {
-                method: 'GET',
-                headers: this.getHeaders(provider, apiKey)
-            });
+        const response = await fetch(url, {
+            method: 'GET',
+            headers: this.getHeaders(provider, apiKey)
+        });
 
-            if (!response.ok) {
-                throw new Error(`Failed to fetch models: ${response.status}`);
-            }
-
-            const data = await response.json();
-            
-            // Extract model IDs from response
-            if (data.data && Array.isArray(data.data)) {
-                const models = data.data.map(m => m.id).sort();
-                // Save model list to storage
-                Storage.setModelList(models);
-                return models;
-            }
-            
-            return config.models || [];
-        } catch (error) {
-            console.warn('Failed to fetch models:', error);
-            return config.models || [];
+        if (!response.ok) {
+            throw new Error(`Failed to fetch models: ${response.status} ${response.statusText}`);
         }
+
+        const data = await response.json();
+        
+        // Extract model IDs from response
+        if (data.data && Array.isArray(data.data)) {
+            const models = data.data.map(m => m.id).sort();
+            // Save model list to storage
+            Storage.setModelList(models);
+            return models;
+        }
+        
+        // If response doesn't have expected format, return default models or empty array
+        return config.models || [];
     },
 
     /**

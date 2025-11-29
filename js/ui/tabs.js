@@ -86,6 +86,14 @@ const Tabs = {
      */
     isActive(tabName) {
         return this.activeTab === tabName;
+    },
+
+    /**
+     * Switch to a specific tab
+     * @param {string} tabName - Tab name to switch to
+     */
+    switchTab(tabName) {
+        this.activateTab(tabName);
     }
 };
 
