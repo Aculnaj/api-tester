@@ -1,0 +1,705 @@
+/* ============================================
+   API Tester v2 - Form Styles
+   Input, Select, Textarea, Toggle, Slider
+   ============================================ */
+
+/* ========== Form Group ========== */
+.form-group {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-2);
+    margin-bottom: var(--spacing-4);
+}
+
+.form-group:last-child {
+    margin-bottom: 0;
+}
+
+.form-row {
+    display: flex;
+    gap: var(--spacing-3);
+}
+
+.form-row .form-group {
+    flex: 1;
+    margin-bottom: 0;
+}
+
+/* ========== Form Label ========== */
+.form-label {
+    font-size: var(--font-size-sm);
+    font-weight: var(--font-weight-medium);
+    color: var(--color-text-secondary);
+}
+
+.form-label-required::after {
+    content: '*';
+    color: var(--color-error);
+    margin-left: var(--spacing-1);
+}
+
+/* ========== Form Input ========== */
+.form-input {
+    width: 100%;
+    height: var(--input-height);
+    padding: 0 var(--spacing-3);
+    font-size: var(--font-size-sm);
+    color: var(--color-text-primary);
+    background-color: var(--color-bg-tertiary);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-md);
+    transition: all var(--transition-fast);
+}
+
+.form-input:hover {
+    border-color: var(--color-border-hover);
+}
+
+.form-input:focus {
+    outline: none;
+    border-color: var(--color-accent);
+    box-shadow: 0 0 0 3px var(--color-accent-muted);
+}
+
+.form-input::placeholder {
+    color: var(--color-text-muted);
+}
+
+.form-input:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    background-color: var(--color-glass);
+}
+
+/* Input Sizes */
+.form-input-sm {
+    height: var(--input-height-sm);
+    padding: 0 var(--spacing-2);
+    font-size: var(--font-size-xs);
+}
+
+.form-input-lg {
+    height: var(--input-height-lg);
+    padding: 0 var(--spacing-4);
+    font-size: var(--font-size-base);
+}
+
+/* Input with Icon */
+.input-with-icon {
+    position: relative;
+}
+
+.input-with-icon .form-input {
+    padding-left: var(--spacing-10);
+}
+
+.input-with-icon .input-icon {
+    position: absolute;
+    left: var(--spacing-3);
+    top: 50%;
+    transform: translateY(-50%);
+    width: 18px;
+    height: 18px;
+    color: var(--color-text-muted);
+    pointer-events: none;
+}
+
+.input-with-icon-right .form-input {
+    padding-left: var(--spacing-3);
+    padding-right: var(--spacing-10);
+}
+
+.input-with-icon-right .input-icon {
+    left: auto;
+    right: var(--spacing-3);
+}
+
+/* Input with Button */
+.input-with-button {
+    display: flex;
+    gap: var(--spacing-2);
+}
+
+.input-with-button .form-input {
+    flex: 1;
+}
+
+/* Password Input */
+.password-input-wrapper {
+    position: relative;
+}
+
+.password-input-wrapper .form-input {
+    padding-right: var(--spacing-10);
+}
+
+.password-toggle {
+    position: absolute;
+    right: var(--spacing-2);
+    top: 50%;
+    transform: translateY(-50%);
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: transparent;
+    border: none;
+    border-radius: var(--radius-sm);
+    color: var(--color-text-muted);
+    cursor: pointer;
+    transition: all var(--transition-fast);
+}
+
+.password-toggle:hover {
+    color: var(--color-text-primary);
+    background-color: var(--color-glass-hover);
+}
+
+.password-toggle svg {
+    width: 16px;
+    height: 16px;
+}
+
+/* ========== Form Select ========== */
+.form-select {
+    width: 100%;
+    height: var(--input-height);
+    padding: 0 var(--spacing-10) 0 var(--spacing-3);
+    font-size: var(--font-size-sm);
+    color: var(--color-text-primary);
+    background-color: var(--color-bg-tertiary);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-md);
+    cursor: pointer;
+    transition: all var(--transition-fast);
+    appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%23a0a0b0' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right var(--spacing-3) center;
+    background-size: 16px;
+}
+
+.form-select:hover {
+    border-color: var(--color-border-hover);
+}
+
+.form-select:focus {
+    outline: none;
+    border-color: var(--color-accent);
+    box-shadow: 0 0 0 3px var(--color-accent-muted);
+}
+
+.form-select:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.form-select option {
+    background-color: var(--color-bg-secondary);
+    color: var(--color-text-primary);
+}
+
+/* ========== Form Textarea ========== */
+.form-textarea {
+    width: 100%;
+    min-height: 120px;
+    padding: var(--spacing-3);
+    font-size: var(--font-size-sm);
+    font-family: inherit;
+    color: var(--color-text-primary);
+    background-color: var(--color-bg-tertiary);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-md);
+    resize: vertical;
+    transition: all var(--transition-fast);
+    line-height: var(--line-height-normal);
+}
+
+.form-textarea:hover {
+    border-color: var(--color-border-hover);
+}
+
+.form-textarea:focus {
+    outline: none;
+    border-color: var(--color-accent);
+    box-shadow: 0 0 0 3px var(--color-accent-muted);
+}
+
+.form-textarea::placeholder {
+    color: var(--color-text-muted);
+}
+
+.form-textarea:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+/* Textarea with monospace font */
+.form-textarea-mono {
+    font-family: var(--font-family-mono);
+    font-size: var(--font-size-xs);
+}
+
+/* ========== Toggle Switch ========== */
+.toggle {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--spacing-2);
+    cursor: pointer;
+}
+
+.toggle-input {
+    position: absolute;
+    opacity: 0;
+    width: 0;
+    height: 0;
+}
+
+.toggle-switch {
+    position: relative;
+    width: 44px;
+    height: 24px;
+    background-color: var(--color-glass-active);
+    border-radius: var(--radius-full);
+    transition: all var(--transition-fast);
+    flex-shrink: 0;
+}
+
+.toggle-switch::after {
+    content: '';
+    position: absolute;
+    top: 2px;
+    left: 2px;
+    width: 20px;
+    height: 20px;
+    background-color: var(--color-text-primary);
+    border-radius: var(--radius-full);
+    transition: all var(--transition-fast);
+    box-shadow: var(--shadow-sm);
+}
+
+.toggle-input:checked + .toggle-switch {
+    background-color: var(--color-accent);
+}
+
+.toggle-input:checked + .toggle-switch::after {
+    transform: translateX(20px);
+    background-color: white;
+}
+
+.toggle-input:focus-visible + .toggle-switch {
+    box-shadow: 0 0 0 3px var(--color-accent-muted);
+}
+
+.toggle-input:disabled + .toggle-switch {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.toggle-label {
+    font-size: var(--font-size-sm);
+    color: var(--color-text-primary);
+}
+
+/* Toggle with description */
+.toggle-with-description {
+    align-items: flex-start;
+}
+
+.toggle-content {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-1);
+}
+
+.toggle-description {
+    font-size: var(--font-size-xs);
+    color: var(--color-text-secondary);
+}
+
+/* ========== Toggle Option (Card Style) ========== */
+.toggle-option {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: var(--spacing-3) var(--spacing-4);
+    background-color: var(--color-glass);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-md);
+    transition: all var(--transition-fast);
+}
+
+.toggle-option:hover {
+    background-color: var(--color-glass-hover);
+    border-color: var(--color-border-hover);
+}
+
+.toggle-option.is-active {
+    background-color: var(--color-accent-muted);
+    border-color: var(--color-accent);
+}
+
+.toggle-option-content {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-1);
+}
+
+.toggle-option-label {
+    font-size: var(--font-size-sm);
+    font-weight: var(--font-weight-medium);
+    color: var(--color-text-primary);
+}
+
+.toggle-option-description {
+    font-size: var(--font-size-xs);
+    color: var(--color-text-secondary);
+}
+
+/* ========== Range Slider ========== */
+.form-range {
+    width: 100%;
+    height: 6px;
+    background-color: var(--color-glass-active);
+    border-radius: var(--radius-full);
+    appearance: none;
+    cursor: pointer;
+}
+
+.form-range::-webkit-slider-thumb {
+    appearance: none;
+    width: 18px;
+    height: 18px;
+    background-color: var(--color-accent);
+    border-radius: var(--radius-full);
+    cursor: pointer;
+    transition: all var(--transition-fast);
+    box-shadow: var(--shadow-md);
+}
+
+.form-range::-webkit-slider-thumb:hover {
+    transform: scale(1.1);
+    box-shadow: var(--shadow-glow);
+}
+
+.form-range::-moz-range-thumb {
+    width: 18px;
+    height: 18px;
+    background-color: var(--color-accent);
+    border: none;
+    border-radius: var(--radius-full);
+    cursor: pointer;
+    transition: all var(--transition-fast);
+}
+
+.form-range:focus {
+    outline: none;
+}
+
+.form-range:focus::-webkit-slider-thumb {
+    box-shadow: 0 0 0 3px var(--color-accent-muted);
+}
+
+.form-range:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+/* Range with value display */
+.range-with-value {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-2);
+}
+
+.range-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.range-value {
+    font-size: var(--font-size-sm);
+    font-weight: var(--font-weight-semibold);
+    color: var(--color-accent);
+    font-family: var(--font-family-mono);
+    min-width: 48px;
+    text-align: right;
+}
+
+/* ========== Checkbox ========== */
+.checkbox {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--spacing-2);
+    cursor: pointer;
+}
+
+.checkbox-input {
+    position: absolute;
+    opacity: 0;
+    width: 0;
+    height: 0;
+}
+
+.checkbox-box {
+    width: 18px;
+    height: 18px;
+    background-color: var(--color-bg-tertiary);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-sm);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all var(--transition-fast);
+    flex-shrink: 0;
+}
+
+.checkbox-box svg {
+    width: 12px;
+    height: 12px;
+    color: white;
+    opacity: 0;
+    transform: scale(0.5);
+    transition: all var(--transition-fast);
+}
+
+.checkbox-input:checked + .checkbox-box {
+    background-color: var(--color-accent);
+    border-color: var(--color-accent);
+}
+
+.checkbox-input:checked + .checkbox-box svg {
+    opacity: 1;
+    transform: scale(1);
+}
+
+.checkbox-input:focus-visible + .checkbox-box {
+    box-shadow: 0 0 0 3px var(--color-accent-muted);
+}
+
+.checkbox-label {
+    font-size: var(--font-size-sm);
+    color: var(--color-text-primary);
+}
+
+/* ========== Radio Button ========== */
+.radio {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--spacing-2);
+    cursor: pointer;
+}
+
+.radio-input {
+    position: absolute;
+    opacity: 0;
+    width: 0;
+    height: 0;
+}
+
+.radio-circle {
+    width: 18px;
+    height: 18px;
+    background-color: var(--color-bg-tertiary);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-full);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all var(--transition-fast);
+    flex-shrink: 0;
+}
+
+.radio-circle::after {
+    content: '';
+    width: 8px;
+    height: 8px;
+    background-color: white;
+    border-radius: var(--radius-full);
+    opacity: 0;
+    transform: scale(0);
+    transition: all var(--transition-fast);
+}
+
+.radio-input:checked + .radio-circle {
+    background-color: var(--color-accent);
+    border-color: var(--color-accent);
+}
+
+.radio-input:checked + .radio-circle::after {
+    opacity: 1;
+    transform: scale(1);
+}
+
+.radio-input:focus-visible + .radio-circle {
+    box-shadow: 0 0 0 3px var(--color-accent-muted);
+}
+
+.radio-label {
+    font-size: var(--font-size-sm);
+    color: var(--color-text-primary);
+}
+
+/* Radio Group */
+.radio-group {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-2);
+}
+
+.radio-group-horizontal {
+    flex-direction: row;
+    gap: var(--spacing-4);
+}
+
+/* ========== File Input ========== */
+.file-input-wrapper {
+    position: relative;
+}
+
+.file-input {
+    position: absolute;
+    opacity: 0;
+    width: 100%;
+    height: 100%;
+    cursor: pointer;
+    z-index: 1;
+}
+
+.file-input-label {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: var(--spacing-3);
+    padding: var(--spacing-8);
+    background-color: var(--color-glass);
+    border: 2px dashed var(--color-border);
+    border-radius: var(--radius-lg);
+    text-align: center;
+    transition: all var(--transition-fast);
+    cursor: pointer;
+}
+
+.file-input-label:hover,
+.file-input-wrapper.is-dragover .file-input-label {
+    background-color: var(--color-glass-hover);
+    border-color: var(--color-accent);
+}
+
+.file-input-icon {
+    width: 48px;
+    height: 48px;
+    color: var(--color-text-muted);
+}
+
+.file-input-text {
+    font-size: var(--font-size-sm);
+    color: var(--color-text-primary);
+    font-weight: var(--font-weight-medium);
+}
+
+.file-input-hint {
+    font-size: var(--font-size-xs);
+    color: var(--color-text-secondary);
+}
+
+.file-input-selected {
+    border-style: solid;
+    border-color: var(--color-accent);
+    background-color: var(--color-accent-muted);
+}
+
+.file-input-selected .file-input-icon {
+    color: var(--color-accent);
+}
+
+/* ========== Form Helper Text ========== */
+.form-helper,
+.form-hint {
+    font-size: var(--font-size-xs);
+    color: var(--color-text-secondary);
+    margin-top: var(--spacing-1);
+}
+
+.form-hint {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-1);
+}
+
+.form-error {
+    font-size: var(--font-size-xs);
+    color: var(--color-error);
+    margin-top: var(--spacing-1);
+}
+
+/* Input error state */
+.form-input.is-error,
+.form-select.is-error,
+.form-textarea.is-error {
+    border-color: var(--color-error);
+}
+
+.form-input.is-error:focus,
+.form-select.is-error:focus,
+.form-textarea.is-error:focus {
+    box-shadow: 0 0 0 3px var(--color-error-muted);
+}
+
+/* ========== Form Section ========== */
+.form-section {
+    margin-bottom: var(--spacing-6);
+}
+
+.form-section-title {
+    font-size: var(--font-size-sm);
+    font-weight: var(--font-weight-semibold);
+    color: var(--color-text-primary);
+    margin-bottom: var(--spacing-3);
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-2);
+}
+
+.form-section-title svg {
+    width: 16px;
+    height: 16px;
+    color: var(--color-text-secondary);
+}
+
+/* ========== CORS Proxy Toggle ========== */
+.cors-proxy-field {
+    margin-top: var(--spacing-2);
+}
+
+.cors-proxy-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--spacing-3);
+}
+
+.cors-proxy-hint {
+    display: block;
+    font-size: var(--font-size-xs);
+    color: var(--color-text-muted);
+    margin-top: var(--spacing-1);
+}
+
+/* Small toggle variant */
+.toggle-sm .toggle-switch {
+    width: 36px;
+    height: 20px;
+}
+
+.toggle-sm .toggle-switch::after {
+    width: 16px;
+    height: 16px;
+}
+
+.toggle-sm .toggle-input:checked + .toggle-switch::after {
+    transform: translateX(16px);
+}

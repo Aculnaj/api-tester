@@ -1,0 +1,384 @@
+/* ============================================
+   API Tester v2 - Layout Styles
+   Main Application Layout Structure
+   ============================================ */
+
+/* ========== App Container ========== */
+.app {
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+    background-color: var(--color-bg-primary);
+}
+
+/* ========== Header ========== */
+.header {
+    position: sticky;
+    top: 0;
+    z-index: var(--z-sticky);
+    height: var(--header-height);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 var(--spacing-6);
+    background-color: var(--color-bg-secondary);
+    border-bottom: 1px solid var(--color-border);
+    backdrop-filter: blur(var(--blur-md));
+    -webkit-backdrop-filter: blur(var(--blur-md));
+}
+
+.header-left {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-4);
+}
+
+.header-logo {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-3);
+    font-size: var(--font-size-lg);
+    font-weight: var(--font-weight-semibold);
+    color: var(--color-text-primary);
+}
+
+.header-logo-icon {
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: linear-gradient(135deg, var(--color-accent), var(--color-accent-hover));
+    border-radius: var(--radius-md);
+    color: white;
+}
+
+.header-logo-icon svg {
+    width: 18px;
+    height: 18px;
+}
+
+.header-version {
+    font-size: var(--font-size-xs);
+    color: var(--color-text-tertiary);
+    background-color: var(--color-glass);
+    padding: var(--spacing-1) var(--spacing-2);
+    border-radius: var(--radius-sm);
+}
+
+.header-right {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-2);
+}
+
+/* ========== Main Layout ========== */
+.main-layout {
+    display: flex;
+    flex: 1;
+    overflow: hidden;
+}
+
+/* ========== Sidebar ========== */
+.sidebar {
+    width: var(--sidebar-width);
+    height: calc(100vh - var(--header-height));
+    position: fixed;
+    top: var(--header-height);
+    left: 0;
+    display: flex;
+    flex-direction: column;
+    background-color: var(--color-bg-secondary);
+    border-right: 1px solid var(--color-border);
+    overflow: hidden;
+    flex-shrink: 0;
+    z-index: var(--z-fixed);
+    transition: width var(--transition-slow), transform var(--transition-slow);
+}
+
+.sidebar-content {
+    flex: 1;
+    overflow-y: auto;
+    padding: var(--spacing-4);
+}
+
+.sidebar-section {
+    margin-bottom: var(--spacing-6);
+}
+
+.sidebar-section:last-child {
+    margin-bottom: 0;
+}
+
+.sidebar-section-title {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-2);
+    font-size: var(--font-size-xs);
+    font-weight: var(--font-weight-semibold);
+    color: var(--color-text-tertiary);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin-bottom: var(--spacing-3);
+    padding: 0 var(--spacing-2);
+}
+
+.sidebar-section-title svg {
+    width: 14px;
+    height: 14px;
+    opacity: 0.7;
+}
+
+.sidebar-footer {
+    padding: var(--spacing-4);
+    border-top: 1px solid var(--color-border);
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-2);
+}
+
+/* ========== Main Content ========== */
+.main-content {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    background-color: var(--color-bg-primary);
+    margin-left: var(--sidebar-width);
+}
+
+/* ========== Content Area ========== */
+.content-area {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    padding: var(--spacing-6);
+    overflow-y: auto;
+    gap: var(--spacing-6);
+}
+
+/* ========== Panels ========== */
+.panel {
+    background-color: var(--color-bg-secondary);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-xl);
+    overflow: hidden;
+}
+
+.panel-glass {
+    background-color: var(--color-glass);
+    backdrop-filter: blur(var(--blur-md));
+    -webkit-backdrop-filter: blur(var(--blur-md));
+    border: 1px solid var(--color-glass-border);
+}
+
+.panel-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: var(--spacing-4) var(--spacing-5);
+    border-bottom: 1px solid var(--color-border);
+    background-color: var(--color-glass);
+}
+
+.panel-title {
+    font-size: var(--font-size-base);
+    font-weight: var(--font-weight-semibold);
+    color: var(--color-text-primary);
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-2);
+}
+
+.panel-title svg {
+    width: 18px;
+    height: 18px;
+    color: var(--color-text-secondary);
+}
+
+.panel-actions {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-2);
+}
+
+.panel-body {
+    padding: var(--spacing-5);
+}
+
+.panel-body-compact {
+    padding: var(--spacing-4);
+}
+
+.panel-footer {
+    padding: var(--spacing-4) var(--spacing-5);
+    border-top: 1px solid var(--color-border);
+    background-color: var(--color-glass);
+}
+
+/* ========== Request Panel ========== */
+.request-panel {
+    display: flex;
+    flex-direction: column;
+}
+
+/* ========== Response Panel ========== */
+.response-panel {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    min-height: 300px;
+}
+
+.response-panel .panel-body {
+    flex: 1;
+    overflow-y: auto;
+}
+
+/* ========== Split Layout ========== */
+.split-layout {
+    display: flex;
+    gap: var(--spacing-6);
+    flex: 1;
+}
+
+.split-layout-vertical {
+    flex-direction: column;
+}
+
+.split-pane {
+    flex: 1;
+    min-width: 0;
+    min-height: 0;
+}
+
+/* ========== Card Grid ========== */
+.card-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: var(--spacing-4);
+}
+
+/* ========== Divider ========== */
+.divider {
+    height: 1px;
+    background-color: var(--color-border);
+    margin: var(--spacing-4) 0;
+}
+
+.divider-vertical {
+    width: 1px;
+    height: auto;
+    margin: 0 var(--spacing-4);
+}
+
+/* ========== Empty State ========== */
+.empty-state {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: var(--spacing-12);
+    text-align: center;
+    color: var(--color-text-secondary);
+}
+
+.empty-state-icon {
+    width: 64px;
+    height: 64px;
+    margin-bottom: var(--spacing-4);
+    color: var(--color-text-muted);
+    opacity: 0.5;
+}
+
+.empty-state-title {
+    font-size: var(--font-size-lg);
+    font-weight: var(--font-weight-medium);
+    color: var(--color-text-primary);
+    margin-bottom: var(--spacing-2);
+}
+
+.empty-state-description {
+    font-size: var(--font-size-sm);
+    color: var(--color-text-secondary);
+    max-width: 300px;
+}
+
+/* ========== Responsive Layout ========== */
+@media (max-width: 1024px) {
+    .sidebar {
+        transform: translateX(-100%);
+        box-shadow: var(--shadow-xl);
+    }
+    
+    .sidebar.is-open {
+        transform: translateX(0);
+    }
+    
+    .main-content {
+        margin-left: 0;
+    }
+    
+    .sidebar-overlay {
+        display: none;
+        position: fixed;
+        inset: 0;
+        top: var(--header-height);
+        background-color: rgba(0, 0, 0, 0.5);
+        z-index: calc(var(--z-fixed) - 1);
+    }
+    
+    .sidebar-overlay.is-visible {
+        display: block;
+    }
+    
+    .content-area {
+        padding: var(--spacing-4);
+    }
+}
+
+@media (max-width: 768px) {
+    .header {
+        padding: 0 var(--spacing-4);
+    }
+    
+    .header-logo span {
+        display: none;
+    }
+    
+    .split-layout {
+        flex-direction: column;
+    }
+    
+    .content-area {
+        padding: var(--spacing-3);
+        gap: var(--spacing-4);
+    }
+    
+    .panel-body {
+        padding: var(--spacing-4);
+    }
+}
+
+@media (max-width: 480px) {
+    :root {
+        --header-height: 56px;
+    }
+    
+    .header {
+        padding: 0 var(--spacing-3);
+    }
+    
+    .content-area {
+        padding: var(--spacing-2);
+        gap: var(--spacing-3);
+    }
+    
+    .panel-header {
+        padding: var(--spacing-3) var(--spacing-4);
+    }
+    
+    .panel-body {
+        padding: var(--spacing-3);
+    }
+}

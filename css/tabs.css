@@ -1,0 +1,332 @@
+/* ============================================
+   API Tester v2 - Tabs Styles
+   Tab Navigation for Generation Types
+   ============================================ */
+
+/* ========== Tab Container ========== */
+.tabs {
+    display: flex;
+    flex-direction: column;
+}
+
+/* ========== Tab List ========== */
+.tab-list {
+    display: flex;
+    gap: var(--spacing-1);
+    padding: var(--spacing-2);
+    background-color: var(--color-glass);
+    border-radius: var(--radius-lg);
+    border: 1px solid var(--color-border);
+}
+
+.tab-list-pills {
+    background: transparent;
+    border: none;
+    padding: 0;
+    gap: var(--spacing-2);
+}
+
+.tab-list-underline {
+    background: transparent;
+    border: none;
+    border-bottom: 1px solid var(--color-border);
+    border-radius: 0;
+    padding: 0;
+    gap: 0;
+}
+
+/* ========== Tab Button ========== */
+.tab-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: var(--spacing-2);
+    padding: var(--spacing-2) var(--spacing-4);
+    font-size: var(--font-size-sm);
+    font-weight: var(--font-weight-medium);
+    color: var(--color-text-secondary);
+    background: transparent;
+    border: none;
+    border-radius: var(--radius-md);
+    cursor: pointer;
+    transition: all var(--transition-fast);
+    white-space: nowrap;
+    position: relative;
+}
+
+.tab-btn:hover {
+    color: var(--color-text-primary);
+    background-color: var(--color-glass-hover);
+}
+
+.tab-btn.is-active {
+    color: var(--color-text-primary);
+    background-color: var(--color-bg-secondary);
+    box-shadow: var(--shadow-sm);
+}
+
+.tab-btn svg {
+    width: 16px;
+    height: 16px;
+    flex-shrink: 0;
+}
+
+.tab-btn-icon {
+    width: 18px;
+    height: 18px;
+}
+
+/* ========== Tab Pills Variant ========== */
+.tab-list-pills .tab-btn {
+    padding: var(--spacing-2) var(--spacing-4);
+    border-radius: var(--radius-full);
+    background-color: var(--color-glass);
+    border: 1px solid var(--color-border);
+}
+
+.tab-list-pills .tab-btn:hover {
+    background-color: var(--color-glass-hover);
+    border-color: var(--color-border-hover);
+}
+
+.tab-list-pills .tab-btn.is-active {
+    background-color: var(--color-accent);
+    border-color: var(--color-accent);
+    color: white;
+    box-shadow: var(--shadow-glow);
+}
+
+/* ========== Tab Underline Variant ========== */
+.tab-list-underline .tab-btn {
+    padding: var(--spacing-3) var(--spacing-4);
+    border-radius: 0;
+    background: transparent;
+}
+
+.tab-list-underline .tab-btn::after {
+    content: '';
+    position: absolute;
+    bottom: -1px;
+    left: 0;
+    right: 0;
+    height: 2px;
+    background-color: transparent;
+    transition: background-color var(--transition-fast);
+}
+
+.tab-list-underline .tab-btn:hover {
+    background: transparent;
+}
+
+.tab-list-underline .tab-btn:hover::after {
+    background-color: var(--color-border-hover);
+}
+
+.tab-list-underline .tab-btn.is-active {
+    color: var(--color-accent);
+    background: transparent;
+    box-shadow: none;
+}
+
+.tab-list-underline .tab-btn.is-active::after {
+    background-color: var(--color-accent);
+}
+
+/* ========== Tab Badge ========== */
+.tab-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 18px;
+    height: 18px;
+    padding: 0 var(--spacing-1);
+    font-size: var(--font-size-xs);
+    font-weight: var(--font-weight-semibold);
+    background-color: var(--color-glass);
+    border-radius: var(--radius-full);
+    color: var(--color-text-secondary);
+}
+
+.tab-btn.is-active .tab-badge {
+    background-color: var(--color-accent-muted);
+    color: var(--color-accent);
+}
+
+.tab-list-pills .tab-btn.is-active .tab-badge {
+    background-color: rgba(255, 255, 255, 0.2);
+    color: white;
+}
+
+/* ========== Tab Panels ========== */
+.tab-panels {
+    margin-top: var(--spacing-4);
+}
+
+.tab-panel {
+    display: none;
+    animation: tab-fade-in var(--transition-base) ease-out;
+}
+
+.tab-panel.is-active {
+    display: block;
+}
+
+@keyframes tab-fade-in {
+    from {
+        opacity: 0;
+        transform: translateY(8px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* ========== Generation Type Tabs (Specific) ========== */
+.generation-tabs {
+    margin-bottom: var(--spacing-4);
+}
+
+.generation-tabs .tab-list {
+    background-color: var(--color-bg-secondary);
+    padding: var(--spacing-1);
+}
+
+.generation-tabs .tab-btn {
+    flex: 1;
+    justify-content: center;
+}
+
+.generation-tabs .tab-btn svg {
+    width: 18px;
+    height: 18px;
+}
+
+/* Tab icons with specific colors when active */
+.generation-tabs .tab-btn[data-tab="text"].is-active {
+    background: linear-gradient(135deg, rgba(99, 102, 241, 0.15), rgba(99, 102, 241, 0.05));
+    border: 1px solid rgba(99, 102, 241, 0.2);
+}
+
+.generation-tabs .tab-btn[data-tab="text"].is-active svg {
+    color: var(--color-accent);
+}
+
+.generation-tabs .tab-btn[data-tab="image"].is-active {
+    background: linear-gradient(135deg, rgba(236, 72, 153, 0.15), rgba(236, 72, 153, 0.05));
+    border: 1px solid rgba(236, 72, 153, 0.2);
+}
+
+.generation-tabs .tab-btn[data-tab="image"].is-active svg {
+    color: #ec4899;
+}
+
+.generation-tabs .tab-btn[data-tab="audio"].is-active {
+    background: linear-gradient(135deg, rgba(34, 197, 94, 0.15), rgba(34, 197, 94, 0.05));
+    border: 1px solid rgba(34, 197, 94, 0.2);
+}
+
+.generation-tabs .tab-btn[data-tab="audio"].is-active svg {
+    color: var(--color-success);
+}
+
+.generation-tabs .tab-btn[data-tab="video"].is-active {
+    background: linear-gradient(135deg, rgba(245, 158, 11, 0.15), rgba(245, 158, 11, 0.05));
+    border: 1px solid rgba(245, 158, 11, 0.2);
+}
+
+.generation-tabs .tab-btn[data-tab="video"].is-active svg {
+    color: var(--color-warning);
+}
+
+/* ========== Disabled Tabs ========== */
+.tab-btn:disabled,
+.tab-btn.is-disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+    pointer-events: none;
+}
+
+.tab-btn:disabled:hover,
+.tab-btn.is-disabled:hover {
+    background: transparent;
+    color: var(--color-text-secondary);
+}
+
+.generation-tabs .tab-btn:disabled,
+.generation-tabs .tab-btn.is-disabled {
+    background: transparent;
+    border: 1px solid transparent;
+}
+
+/* ========== Vertical Tabs ========== */
+.tabs-vertical {
+    flex-direction: row;
+    gap: var(--spacing-4);
+}
+
+.tabs-vertical .tab-list {
+    flex-direction: column;
+    width: 200px;
+    flex-shrink: 0;
+}
+
+.tabs-vertical .tab-btn {
+    justify-content: flex-start;
+}
+
+.tabs-vertical .tab-panels {
+    flex: 1;
+    margin-top: 0;
+}
+
+/* ========== Responsive ========== */
+@media (max-width: 768px) {
+    .tab-list {
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+        scrollbar-width: none;
+        -ms-overflow-style: none;
+    }
+    
+    .tab-list::-webkit-scrollbar {
+        display: none;
+    }
+    
+    .tab-btn {
+        padding: var(--spacing-2) var(--spacing-3);
+        font-size: var(--font-size-xs);
+    }
+    
+    .tab-btn span:not(.tab-badge) {
+        display: none;
+    }
+    
+    .tab-btn svg {
+        width: 20px;
+        height: 20px;
+    }
+    
+    .generation-tabs .tab-btn {
+        padding: var(--spacing-3);
+    }
+    
+    .tabs-vertical {
+        flex-direction: column;
+    }
+    
+    .tabs-vertical .tab-list {
+        width: 100%;
+        flex-direction: row;
+    }
+}
+
+@media (max-width: 480px) {
+    .generation-tabs .tab-list {
+        gap: var(--spacing-1);
+    }
+    
+    .generation-tabs .tab-btn {
+        padding: var(--spacing-2);
+    }
+}

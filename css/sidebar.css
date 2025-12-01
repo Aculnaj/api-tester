@@ -1,0 +1,422 @@
+/* ============================================
+   API Tester v2 - Sidebar Styles
+   Sidebar Navigation and Components
+   ============================================ */
+
+/* ========== Sidebar Base ========== */
+.sidebar {
+    width: var(--sidebar-width);
+    height: calc(100vh - var(--header-height));
+    display: flex;
+    flex-direction: column;
+    background-color: var(--color-bg-secondary);
+    border-right: 1px solid var(--color-border);
+    overflow: hidden;
+    flex-shrink: 0;
+    transition: width var(--transition-slow), transform var(--transition-slow);
+}
+
+/* ========== Sidebar Content ========== */
+.sidebar-content {
+    flex: 1;
+    overflow-y: auto;
+    padding: var(--spacing-4);
+}
+
+/* ========== Sidebar Sections ========== */
+.sidebar-section {
+    margin-bottom: var(--spacing-6);
+}
+
+.sidebar-section:last-child {
+    margin-bottom: 0;
+}
+
+.sidebar-section-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: var(--spacing-3);
+    padding: 0 var(--spacing-2);
+}
+
+.sidebar-section-title {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-2);
+    font-size: var(--font-size-xs);
+    font-weight: var(--font-weight-semibold);
+    color: var(--color-text-tertiary);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.sidebar-section-title svg {
+    width: 14px;
+    height: 14px;
+    opacity: 0.7;
+}
+
+.sidebar-section-action {
+    width: 24px;
+    height: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: var(--radius-sm);
+    color: var(--color-text-tertiary);
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    transition: background-color var(--transition-fast), color var(--transition-fast);
+}
+
+.sidebar-section-action:hover {
+    background-color: var(--color-glass-hover);
+    color: var(--color-text-primary);
+}
+
+.sidebar-section-action svg {
+    width: 14px;
+    height: 14px;
+}
+
+/* ========== Provider Settings ========== */
+.provider-settings {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-3);
+}
+
+.provider-field {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-2);
+}
+
+.provider-field-label {
+    font-size: var(--font-size-xs);
+    font-weight: var(--font-weight-medium);
+    color: var(--color-text-secondary);
+}
+
+.provider-field-label-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--spacing-2);
+}
+
+.get-key-link {
+    font-size: var(--font-size-xs);
+    font-weight: var(--font-weight-medium);
+    color: var(--color-accent);
+    text-decoration: none;
+    transition: color var(--transition-fast), opacity var(--transition-fast);
+}
+
+.get-key-link:hover {
+    color: var(--color-accent-hover);
+    text-decoration: underline;
+}
+
+.get-key-link.hidden {
+    display: none;
+}
+
+.provider-field-row {
+    display: flex;
+    gap: var(--spacing-2);
+}
+
+.provider-field-row .form-input,
+.provider-field-row .form-select {
+    flex: 1;
+}
+
+/* ========== Model Selection ========== */
+.model-selection {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-2);
+}
+
+.model-select-wrapper {
+    display: flex;
+    gap: var(--spacing-2);
+}
+
+.model-select-wrapper .form-select {
+    flex: 1;
+}
+
+.model-refresh-btn {
+    width: var(--input-height);
+    height: var(--input-height);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: var(--color-glass);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-md);
+    color: var(--color-text-secondary);
+    cursor: pointer;
+    transition: all var(--transition-fast);
+    flex-shrink: 0;
+}
+
+.model-refresh-btn:hover {
+    background-color: var(--color-glass-hover);
+    border-color: var(--color-border-hover);
+    color: var(--color-text-primary);
+}
+
+.model-refresh-btn.is-loading svg {
+    animation: spin 1s linear infinite;
+}
+
+.model-refresh-btn svg {
+    width: 16px;
+    height: 16px;
+}
+
+/* ========== Saved Configurations ========== */
+.saved-configs {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-2);
+}
+
+.saved-configs-empty {
+    padding: var(--spacing-4);
+    text-align: center;
+    color: var(--color-text-tertiary);
+    font-size: var(--font-size-sm);
+    background-color: var(--color-glass);
+    border-radius: var(--radius-md);
+    border: 1px dashed var(--color-border);
+}
+
+.config-item {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-2);
+    padding: var(--spacing-3);
+    background-color: var(--color-glass);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-md);
+    transition: all var(--transition-fast);
+}
+
+.config-item:hover {
+    background-color: var(--color-glass-hover);
+    border-color: var(--color-border-hover);
+}
+
+.config-item-icon {
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: var(--color-accent-muted);
+    border-radius: var(--radius-sm);
+    color: var(--color-accent);
+    flex-shrink: 0;
+}
+
+.config-item-icon svg {
+    width: 16px;
+    height: 16px;
+}
+
+.config-item-info {
+    flex: 1;
+    min-width: 0;
+}
+
+.config-item-name {
+    font-size: var(--font-size-sm);
+    font-weight: var(--font-weight-medium);
+    color: var(--color-text-primary);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.config-item-provider {
+    font-size: var(--font-size-xs);
+    color: var(--color-text-tertiary);
+}
+
+.config-item-actions {
+    display: flex;
+    gap: var(--spacing-1);
+    opacity: 0;
+    transition: opacity var(--transition-fast);
+}
+
+.config-item:hover .config-item-actions {
+    opacity: 1;
+}
+
+.config-action-btn {
+    width: 28px;
+    height: 28px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: transparent;
+    border: none;
+    border-radius: var(--radius-sm);
+    color: var(--color-text-secondary);
+    cursor: pointer;
+    transition: all var(--transition-fast);
+}
+
+.config-action-btn:hover {
+    background-color: var(--color-glass-active);
+    color: var(--color-text-primary);
+}
+
+.config-action-btn.delete:hover {
+    background-color: var(--color-error-muted);
+    color: var(--color-error);
+}
+
+.config-action-btn svg {
+    width: 14px;
+    height: 14px;
+}
+
+/* ========== Save Config Form ========== */
+.save-config-form {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-2);
+    padding: var(--spacing-3);
+    background-color: var(--color-glass);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-md);
+}
+
+.save-config-row {
+    display: flex;
+    gap: var(--spacing-2);
+}
+
+.save-config-row .form-input {
+    flex: 1;
+}
+
+/* ========== Sidebar Footer ========== */
+.sidebar-footer {
+    padding: var(--spacing-4);
+    border-top: 1px solid var(--color-border);
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-2);
+}
+
+.sidebar-footer-buttons {
+    display: flex;
+    gap: var(--spacing-2);
+}
+
+.sidebar-footer-buttons .btn {
+    flex: 1;
+}
+
+/* ========== Config Import/Export ========== */
+.config-actions {
+    display: flex;
+    gap: var(--spacing-2);
+    margin-top: var(--spacing-2);
+}
+
+.config-actions .btn {
+    flex: 1;
+    font-size: var(--font-size-xs);
+}
+
+/* Hidden file input for import */
+.config-import-input {
+    display: none;
+}
+
+/* ========== Mobile Sidebar Toggle ========== */
+.sidebar-toggle {
+    display: none;
+    width: 40px;
+    height: 40px;
+    align-items: center;
+    justify-content: center;
+    background: transparent;
+    border: none;
+    border-radius: var(--radius-md);
+    color: var(--color-text-primary);
+    cursor: pointer;
+    transition: background-color var(--transition-fast);
+}
+
+.sidebar-toggle:hover {
+    background-color: var(--color-glass-hover);
+}
+
+.sidebar-toggle svg {
+    width: 20px;
+    height: 20px;
+}
+
+/* ========== Sidebar Overlay (Mobile) ========== */
+.sidebar-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    top: var(--header-height);
+    background-color: rgba(0, 0, 0, 0.5);
+    z-index: calc(var(--z-fixed) - 1);
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity var(--transition-base), visibility var(--transition-base);
+}
+
+.sidebar-overlay.is-visible {
+    opacity: 1;
+    visibility: visible;
+}
+
+/* ========== Responsive ========== */
+@media (max-width: 1024px) {
+    .sidebar-toggle {
+        display: flex;
+    }
+    
+    .sidebar {
+        position: fixed;
+        left: 0;
+        top: var(--header-height);
+        z-index: var(--z-fixed);
+        transform: translateX(-100%);
+        box-shadow: var(--shadow-xl);
+    }
+    
+    .sidebar.is-open {
+        transform: translateX(0);
+    }
+    
+    .sidebar-overlay {
+        display: block;
+    }
+}
+
+@media (max-width: 480px) {
+    .sidebar {
+        width: 100%;
+        max-width: 320px;
+    }
+    
+    .config-item-actions {
+        opacity: 1;
+    }
+}
