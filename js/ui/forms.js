@@ -333,13 +333,15 @@ const Forms = {
     getProviderSettings() {
         const modelSelect = document.getElementById('model-select');
         const customModelInput = document.getElementById('custom-model-input');
+        const corsProxyToggle = document.getElementById('cors-proxy-toggle');
         
         return {
             provider: document.getElementById('provider-select')?.value || 'aetherapi',
             baseUrl: document.getElementById('base-url-input')?.value || 'https://api.aetherapi.dev/v1',
             apiKey: document.getElementById('api-key-input')?.value || '',
             model: modelSelect?.value || 'custom',
-            customModel: customModelInput?.value || 'gpt-4o'
+            customModel: customModelInput?.value || 'gpt-4o',
+            corsProxyEnabled: corsProxyToggle?.checked || false
         };
     },
 
@@ -382,6 +384,14 @@ const Forms = {
             if (customModelInput) {
                 customModelInput.value = settings.customModel;
                 customModelInput.classList.toggle('hidden', settings.model !== 'custom');
+            }
+        }
+        
+        // Set CORS proxy toggle
+        if (settings.corsProxyEnabled !== undefined) {
+            const corsProxyToggle = document.getElementById('cors-proxy-toggle');
+            if (corsProxyToggle) {
+                corsProxyToggle.checked = settings.corsProxyEnabled;
             }
         }
         

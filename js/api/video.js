@@ -41,7 +41,7 @@ const VideoAPI = {
         };
 
         // Get URL and headers
-        const baseUrl = Providers.getBaseUrl(providerSettings.provider, providerSettings.baseUrl);
+        const baseUrl = Providers.getBaseUrl(providerSettings.provider, providerSettings.baseUrl, providerSettings.corsProxyEnabled);
         const endpoint = formValues.endpoint || '/videos/generations';
         const url = `${baseUrl}${endpoint}`;
         const headers = Providers.getHeaders(providerSettings.provider, providerSettings.apiKey);

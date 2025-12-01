@@ -4,12 +4,57 @@
  */
 
 const Providers = {
+    // CORS Proxy URL
+    CORS_PROXY_URL: 'https://corsproxy.el1druz0.workers.dev/',
+    
     // Provider configurations
     configs: {
         aetherapi: {
             name: 'AetherAPI',
             baseUrl: 'https://api.aetherapi.dev/v1',
-            models: [],
+            models: [
+                // Anthropic
+                'claude-3-5-sonnet-20241022', 'claude-3-7-sonnet-20250219', 'claude-sonnet-4-20250514',
+                'claude-sonnet-4-5-20250929', 'claude-opus-4-5-20251101', 'claude-3-5-haiku-20241022',
+                'claude-haiku-4-5-20251001', 'claude-opus-4-1-20250805', 'claude-opus-4-20250514',
+                // DeepSeek
+                'deepseek-reasoner', 'deepseek-chat',
+                // Google Gemini
+                'gemini-2.5-flash-image', 'gemini-3-pro-image-preview', 'gemini-3-pro-preview',
+                'gemini-2.0-flash', 'gemini-2.5-flash', 'gemini-2.5-flash-lite', 'gemini-2.5-pro',
+                // Z.AI
+                'glm-4.5', 'glm-4.6',
+                // OpenAI
+                'gpt-oss-120b', 'gpt-oss-20b', 'gpt-4.1', 'gpt-4.1-mini', 'gpt-4.1-nano',
+                'gpt-4o', 'gpt-4o-mini', 'gpt-4o-mini-search-preview', 'gpt-4o-search-preview',
+                'gpt-5', 'gpt-5-mini', 'gpt-5-nano', 'gpt-5-chat', 'gpt-5-search-api',
+                'gpt-5.1', 'gpt-5.1-chat', 'o3', 'o4-mini', 'gpt-5-pro',
+                // xAI
+                'grok-4.1-fast-reasoning', 'grok-4.1-fast-non-reasoning', 'grok-4', 'grok-code-fast-1',
+                // Moonshotai
+                'kimi-k2', 'kimi-k2-thinking',
+                // MinimaxAI
+                'minimax-m2',
+                // Meta
+                'llama-4-maverick', 'llama-4-scout',
+                // Alibaba
+                'qwen3-max', 'qwen3-coder',
+                // Perplexity
+                'sonar-deep-research',
+                // Free models
+                'gpt-oss-120b-free', 'gpt-oss-20b-free', 'k2-think-free',
+                // Embeddings
+                'text-embedding-3-large', 'text-embedding-3-small', 'gemini-embedding-001',
+                // Image generation
+                'flux.1-kontext-max', 'flux.1-kontext-pro', 'flux.1-krea-dev',
+                'gpt-image-1', 'imagen-3', 'imagen-4',
+                // Audio TTS
+                'gpt-4o-mini-tts', 'tts-1',
+                // Audio STT
+                'gpt-4o-mini-transcribe', 'gpt-4o-transcribe', 'whisper-1',
+                // Video
+                'sora-2', 'sora-2-pro'
+            ],
             supportsStreaming: true,
             supportsModels: true,
             supportedModes: ['text', 'image', 'audio', 'video']
@@ -188,13 +233,26 @@ const Providers = {
      * Get base URL for provider
      * @param {string} providerId - Provider ID
      * @param {string} customBaseUrl - Custom base URL (for openai_compatible)
+     * @param {boolean} corsProxyEnabled - Whether to use CORS proxy (default: false)
      * @returns {string} Base URL
      */
-    getBaseUrl(providerId, customBaseUrl = '') {
+    getBaseUrl(providerId, customBaseUrl = '', corsProxyEnabled = false) {
+        let baseUrl;
+        
         if (providerId === 'openai_compatible') {
-            return customBaseUrl.replace(/\/$/, '');
+            baseUrl = customBaseUrl.replace(/\/$/, '');
+        } else {
+            const config = this.configs[providerId];
+            if (!config) return '';
+            baseUrl = config.baseUrl || '';
         }
-        return this.configs[providerId]?.baseUrl || '';
+        
+        // Apply CORS proxy if enabled
+        if (corsProxyEnabled && baseUrl) {
+            return this.CORS_PROXY_URL + baseUrl;
+        }
+        
+        return baseUrl;
     },
 
     /**
@@ -243,14 +301,14 @@ const Providers = {
      * @throws {Error} If fetching models fails
      */
     async fetchModels(settings) {
-        const { provider, baseUrl, apiKey } = settings;
+        const { provider, baseUrl, apiKey, corsProxyEnabled } = settings;
         const config = this.getConfig(provider);
         
         if (!config.supportsModels) {
             return config.models || [];
         }
 
-        const url = `${this.getBaseUrl(provider, baseUrl)}/models`;
+        const url = `${this.getBaseUrl(provider, baseUrl, corsProxyEnabled)}/models`;
         
         const response = await fetch(url, {
             method: 'GET',

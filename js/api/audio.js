@@ -96,7 +96,7 @@ const AudioAPI = {
         };
 
         // Get URL and headers
-        const baseUrl = Providers.getBaseUrl(providerSettings.provider, providerSettings.baseUrl);
+        const baseUrl = Providers.getBaseUrl(providerSettings.provider, providerSettings.baseUrl, providerSettings.corsProxyEnabled);
         const endpoint = Providers.getTTSEndpoint(providerSettings.provider);
         const url = `${baseUrl}${endpoint}`;
         const headers = Providers.getHeaders(providerSettings.provider, providerSettings.apiKey);
@@ -362,7 +362,7 @@ const AudioAPI = {
         formData.append('model', model);
 
         // Get URL and headers (without Content-Type for FormData)
-        const baseUrl = Providers.getBaseUrl(providerSettings.provider, providerSettings.baseUrl);
+        const baseUrl = Providers.getBaseUrl(providerSettings.provider, providerSettings.baseUrl, providerSettings.corsProxyEnabled);
         const endpoint = Providers.getSTTEndpoint(providerSettings.provider);
         const url = `${baseUrl}${endpoint}`;
         

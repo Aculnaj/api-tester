@@ -127,12 +127,30 @@ const App = {
                 }
                 this.updateTabsForProvider(provider);
                 this.updateGetKeyLinkVisibility(provider);
+                this.updateCorsProxyForProvider(provider);
                 this.saveProviderSettings();
             });
             
             // Initialize tabs and get key link for current provider
             this.updateTabsForProvider(providerSelect.value);
             this.updateGetKeyLinkVisibility(providerSelect.value);
+        }
+    },
+
+    /**
+     * Update CORS proxy toggle based on provider
+     * Automatically enables CORS proxy for providers that require it (e.g., Baseten)
+     * @param {string} provider - Provider ID
+     */
+    updateCorsProxyForProvider(provider) {
+        const corsProxyToggle = document.getElementById('cors-proxy-toggle');
+        if (corsProxyToggle) {
+            // Providers that require CORS proxy
+            const providersRequiringProxy = ['baseten'];
+            
+            if (providersRequiringProxy.includes(provider)) {
+                corsProxyToggle.checked = true;
+            }
         }
     },
 
@@ -183,7 +201,7 @@ const App = {
      */
     setupAutoSave() {
         // Provider settings auto-save
-        const providerInputs = ['provider-select', 'base-url-input', 'api-key-input', 'model-select', 'custom-model-input'];
+        const providerInputs = ['provider-select', 'base-url-input', 'api-key-input', 'model-select', 'custom-model-input', 'cors-proxy-toggle'];
         providerInputs.forEach(id => {
             const el = document.getElementById(id);
             if (el) {

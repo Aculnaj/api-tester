@@ -669,3 +669,37 @@
     height: 16px;
     color: var(--color-text-secondary);
 }
+
+/* ========== CORS Proxy Toggle ========== */
+.cors-proxy-field {
+    margin-top: var(--spacing-2);
+}
+
+.cors-proxy-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--spacing-3);
+}
+
+.cors-proxy-hint {
+    display: block;
+    font-size: var(--font-size-xs);
+    color: var(--color-text-muted);
+    margin-top: var(--spacing-1);
+}
+
+/* Small toggle variant */
+.toggle-sm .toggle-switch {
+    width: 36px;
+    height: 20px;
+}
+
+.toggle-sm .toggle-switch::after {
+    width: 16px;
+    height: 16px;
+}
+
+.toggle-sm .toggle-input:checked + .toggle-switch::after {
+    transform: translateX(16px);
+}
