@@ -293,7 +293,8 @@ const Storage = {
             temperature: 1.0,
             maxTokensEnabled: false,
             maxTokens: 4096,
-            streamingEnabled: true
+            streamingEnabled: true,
+            chatImageUrl: ''
         });
     },
 

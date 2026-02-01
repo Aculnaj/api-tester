@@ -27,7 +27,14 @@ const TextAPI = {
         const { providerSettings, formValues } = options;
         
         // Validate inputs
-        if (!formValues.prompt.trim()) {
+        const promptText = (formValues.prompt || '').trim();
+        const imageUrl = (formValues.chatImageUrl || '').trim();
+
+        // Image cannot be sent alone (prompt is required)
+        if (!promptText) {
+            if (imageUrl) {
+                throw new Error('Please enter a prompt (image cannot be sent alone)');
+            }
             throw new Error('Please enter a prompt');
         }
 
@@ -47,18 +54,27 @@ const TextAPI = {
 
         // Build messages array
         const messages = [];
-        
+
         if (formValues.systemPromptEnabled && formValues.systemPrompt.trim()) {
             messages.push({
                 role: 'system',
                 content: formValues.systemPrompt.trim()
             });
         }
-        
-        messages.push({
-            role: 'user',
-            content: formValues.prompt.trim()
-        });
+
+        // If image is provided, use multi-part content format for chat.completions
+        const userMessage = { role: 'user' };
+
+        if (imageUrl) {
+            userMessage.content = [
+                { type: 'text', text: promptText },
+                { type: 'image_url', image_url: { url: imageUrl } }
+            ];
+        } else {
+            userMessage.content = promptText;
+        }
+
+        messages.push(userMessage);
 
         // Build request body
         const requestBody = Providers.buildChatRequest({
@@ -72,7 +88,7 @@ const TextAPI = {
 
         // Get URL and headers
         const baseUrl = Providers.getBaseUrl(providerSettings.provider, providerSettings.baseUrl, providerSettings.corsProxyEnabled);
-        const endpoint = Providers.getChatEndpoint(providerSettings.provider);
+        const endpoint = Providers.getChatEndpoint(providerSettings.provider, model, formValues.streamingEnabled);
         const url = `${baseUrl}${endpoint}`;
         const headers = Providers.getHeaders(providerSettings.provider, providerSettings.apiKey);
 
@@ -131,6 +147,16 @@ const TextAPI = {
      * @returns {Promise<Object>} Result with content
      */
     async handleStreamingResponse(response, provider) {
+        // Use Gemini-specific handler for Gemini format providers
+        if (Providers.isGeminiFormat(provider)) {
+            return this.handleGeminiStreamingResponse(response);
+        }
+
+        // Use Anthropic-specific handler for Anthropic format providers
+        if (Providers.isAnthropicFormat(provider)) {
+            return this.handleAnthropicStreamingResponse(response);
+        }
+
         const reader = response.body.getReader();
         const decoder = new TextDecoder();
         let content = '';
@@ -175,15 +201,8 @@ const TextAPI = {
                                 this.stats.firstTokenTime = performance.now();
                             }
 
-                            // Extract content based on provider
-                            let chunk = '';
-                            if (provider === 'anthropic') {
-                                if (parsed.type === 'content_block_delta') {
-                                    chunk = parsed.delta?.text || '';
-                                }
-                            } else {
-                                chunk = parsed.choices?.[0]?.delta?.content || '';
-                            }
+                            // Extract content (OpenAI format)
+                            const chunk = parsed.choices?.[0]?.delta?.content || '';
 
                             if (chunk) {
                                 content += chunk;
@@ -239,6 +258,210 @@ const TextAPI = {
     },
 
     /**
+     * Handle Gemini native API streaming response
+     * @param {Response} response - Fetch response
+     * @returns {Promise<Object>} Result with content
+     */
+    async handleGeminiStreamingResponse(response) {
+        const reader = response.body.getReader();
+        const decoder = new TextDecoder();
+        let content = '';
+        let allChunks = [];
+        let buffer = '';
+        let firstChunk = null;
+
+        const outputArea = document.getElementById('output-area');
+        if (outputArea) {
+            outputArea.classList.remove('output-area-empty');
+            outputArea.innerHTML = '<div class="output-text output-text-streaming"></div>';
+        }
+        const textContainer = outputArea?.querySelector('.output-text');
+
+        try {
+            while (true) {
+                const { done, value } = await reader.read();
+                
+                if (done) break;
+
+                buffer += decoder.decode(value, { stream: true });
+                const lines = buffer.split('\n');
+                buffer = lines.pop() || '';
+
+                for (const line of lines) {
+                    if (line.startsWith('data: ')) {
+                        const data = line.slice(6).trim();
+                        
+                        if (data === '[DONE]' || !data) continue;
+
+                        try {
+                            const parsed = JSON.parse(data);
+                            allChunks.push(parsed);
+                            
+                            // Store first chunk for metadata
+                            if (!firstChunk) {
+                                firstChunk = parsed;
+                            }
+
+                            // Record first token time
+                            if (!this.stats.firstTokenTime && content === '') {
+                                this.stats.firstTokenTime = performance.now();
+                            }
+
+                            // Extract content from Gemini format
+                            // Gemini response: { candidates: [{ content: { parts: [{ text: "..." }] } }] }
+                            const chunk = parsed.candidates?.[0]?.content?.parts?.[0]?.text || '';
+
+                            if (chunk) {
+                                content += chunk;
+                                if (textContainer) {
+                                    textContainer.textContent = content;
+                                }
+                            }
+
+                            // Update token counts from Gemini usageMetadata
+                            if (parsed.usageMetadata) {
+                                this.stats.promptTokens = parsed.usageMetadata.promptTokenCount || 0;
+                                this.stats.completionTokens = parsed.usageMetadata.candidatesTokenCount || 0;
+                                this.stats.totalTokens = parsed.usageMetadata.totalTokenCount || 0;
+                            }
+
+                        } catch (e) {
+                            // Skip invalid JSON
+                        }
+                    }
+                }
+            }
+        } finally {
+            reader.releaseLock();
+        }
+
+        // Remove streaming cursor
+        if (textContainer) {
+            textContainer.classList.remove('output-text-streaming');
+        }
+
+        // Build a combined response object in Gemini format
+        const rawResponse = firstChunk ? {
+            candidates: [{
+                content: {
+                    role: 'model',
+                    parts: [{ text: content }]
+                },
+                finishReason: 'STOP'
+            }],
+            usageMetadata: this.stats.totalTokens > 0 ? {
+                promptTokenCount: this.stats.promptTokens,
+                candidatesTokenCount: this.stats.completionTokens,
+                totalTokenCount: this.stats.totalTokens
+            } : undefined
+        } : null;
+
+        return { content, rawResponse };
+    },
+
+    /**
+     * Handle Anthropic native API streaming response
+     * @param {Response} response - Fetch response
+     * @returns {Promise<Object>} Result with content
+     */
+    async handleAnthropicStreamingResponse(response) {
+        const reader = response.body.getReader();
+        const decoder = new TextDecoder();
+        let content = '';
+        let allChunks = [];
+        let buffer = '';
+        let messageData = null;
+
+        const outputArea = document.getElementById('output-area');
+        if (outputArea) {
+            outputArea.classList.remove('output-area-empty');
+            outputArea.innerHTML = '<div class="output-text output-text-streaming"></div>';
+        }
+        const textContainer = outputArea?.querySelector('.output-text');
+
+        try {
+            while (true) {
+                const { done, value } = await reader.read();
+                
+                if (done) break;
+
+                buffer += decoder.decode(value, { stream: true });
+                const lines = buffer.split('\n');
+                buffer = lines.pop() || '';
+
+                for (const line of lines) {
+                    // Anthropic uses "event:" and "data:" lines
+                    if (line.startsWith('data: ')) {
+                        const data = line.slice(6).trim();
+                        
+                        if (!data) continue;
+
+                        try {
+                            const parsed = JSON.parse(data);
+                            allChunks.push(parsed);
+
+                            // Handle different event types
+                            if (parsed.type === 'message_start') {
+                                // Store message metadata
+                                messageData = parsed.message;
+                                if (messageData?.usage) {
+                                    this.stats.promptTokens = messageData.usage.input_tokens || 0;
+                                }
+                            } else if (parsed.type === 'content_block_delta') {
+                                // Record first token time
+                                if (!this.stats.firstTokenTime && content === '') {
+                                    this.stats.firstTokenTime = performance.now();
+                                }
+
+                                // Extract text delta
+                                const chunk = parsed.delta?.text || '';
+                                if (chunk) {
+                                    content += chunk;
+                                    if (textContainer) {
+                                        textContainer.textContent = content;
+                                    }
+                                }
+                            } else if (parsed.type === 'message_delta') {
+                                // Update token counts from final message delta
+                                if (parsed.usage) {
+                                    this.stats.completionTokens = parsed.usage.output_tokens || 0;
+                                    this.stats.totalTokens = this.stats.promptTokens + this.stats.completionTokens;
+                                }
+                            }
+
+                        } catch (e) {
+                            // Skip invalid JSON
+                        }
+                    }
+                }
+            }
+        } finally {
+            reader.releaseLock();
+        }
+
+        // Remove streaming cursor
+        if (textContainer) {
+            textContainer.classList.remove('output-text-streaming');
+        }
+
+        // Build a combined response object in Anthropic format
+        const rawResponse = {
+            id: messageData?.id || '',
+            type: 'message',
+            role: 'assistant',
+            content: [{ type: 'text', text: content }],
+            model: messageData?.model || '',
+            stop_reason: 'end_turn',
+            usage: {
+                input_tokens: this.stats.promptTokens,
+                output_tokens: this.stats.completionTokens
+            }
+        };
+
+        return { content, rawResponse };
+    },
+
+    /**
      * Handle non-streaming response
      * @param {Response} response - Fetch response
      * @param {string} provider - Provider ID
@@ -250,18 +473,39 @@ const TextAPI = {
         this.stats.firstTokenTime = performance.now();
 
         let content = '';
-        if (provider === 'anthropic') {
+        
+        // Handle different response formats
+        if (Providers.isGeminiFormat(provider)) {
+            // Gemini native format: { candidates: [{ content: { parts: [{ text: "..." }] } }] }
+            content = data.candidates?.[0]?.content?.parts?.[0]?.text || '';
+            
+            // Update token counts from Gemini usageMetadata
+            if (data.usageMetadata) {
+                this.stats.promptTokens = data.usageMetadata.promptTokenCount || 0;
+                this.stats.completionTokens = data.usageMetadata.candidatesTokenCount || 0;
+                this.stats.totalTokens = data.usageMetadata.totalTokenCount || 0;
+            }
+        } else if (Providers.isAnthropicFormat(provider)) {
+            // Anthropic native format: { content: [{ type: "text", text: "..." }] }
             content = data.content?.[0]?.text || '';
+            
+            // Update token counts
+            if (data.usage) {
+                this.stats.promptTokens = data.usage.input_tokens || 0;
+                this.stats.completionTokens = data.usage.output_tokens || 0;
+                this.stats.totalTokens = this.stats.promptTokens + this.stats.completionTokens;
+            }
         } else {
+            // OpenAI format
             content = data.choices?.[0]?.message?.content || '';
-        }
-
-        // Update token counts
-        if (data.usage) {
-            this.stats.promptTokens = data.usage.prompt_tokens || data.usage.input_tokens || 0;
-            this.stats.completionTokens = data.usage.completion_tokens || data.usage.output_tokens || 0;
-            this.stats.totalTokens = data.usage.total_tokens || 
-                (this.stats.promptTokens + this.stats.completionTokens);
+            
+            // Update token counts
+            if (data.usage) {
+                this.stats.promptTokens = data.usage.prompt_tokens || 0;
+                this.stats.completionTokens = data.usage.completion_tokens || 0;
+                this.stats.totalTokens = data.usage.total_tokens ||
+                    (this.stats.promptTokens + this.stats.completionTokens);
+            }
         }
 
         // Display content

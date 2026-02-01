@@ -28,14 +28,24 @@ const ImageAPI = {
         this.isGenerating = true;
         this.abortController = new AbortController();
 
+        // Get model name
+        const modelName = providerSettings.model === 'custom'
+            ? providerSettings.customModel
+            : providerSettings.model;
+
         // Build request body based on model type
         const requestBody = this.buildRequestBody(formValues, providerSettings);
 
         // Get URL and headers
         const baseUrl = Providers.getBaseUrl(providerSettings.provider, providerSettings.baseUrl, providerSettings.corsProxyEnabled);
-        const endpoint = Providers.getImageEndpoint(providerSettings.provider);
+        const endpoint = Providers.getImageEndpoint(providerSettings.provider, modelName);
         const url = `${baseUrl}${endpoint}`;
         const headers = Providers.getHeaders(providerSettings.provider, providerSettings.apiKey);
+
+        // Fireworks AI requires Accept header for JSON response
+        if (providerSettings.provider === 'fireworks') {
+            headers['Accept'] = 'application/json';
+        }
 
         const startTime = performance.now();
 
@@ -65,7 +75,7 @@ const ImageAPI = {
             this.isGenerating = false;
 
             // Extract image URL or base64
-            const imageData = this.extractImageData(data);
+            const imageData = this.extractImageData(data, providerSettings.provider);
 
             // Display image
             this.displayImage(imageData);
@@ -102,9 +112,19 @@ const ImageAPI = {
         const { prompt, modelType, size, quality, aspectRatio, steps } = formValues;
         
         // Get model name from provider settings
-        const modelName = providerSettings.model === 'custom' 
-            ? providerSettings.customModel 
+        const modelName = providerSettings.model === 'custom'
+            ? providerSettings.customModel
             : providerSettings.model;
+
+        // Use Gemini/Imagen format for Gemini providers
+        if (Providers.isGeminiFormat(providerSettings.provider)) {
+            return this.buildGeminiImageRequest(prompt, aspectRatio);
+        }
+
+        // Use Fireworks format for Fireworks provider
+        if (providerSettings.provider === 'fireworks') {
+            return this.buildFireworksImageRequest(prompt, aspectRatio, steps);
+        }
 
         const body = {
             prompt: prompt.trim(),
@@ -166,12 +186,87 @@ const ImageAPI = {
     },
 
     /**
+     * Build Gemini/Imagen image generation request body
+     * @param {string} prompt - Image prompt
+     * @param {string} aspectRatio - Aspect ratio (optional)
+     * @returns {Object} Gemini predict request body
+     */
+    buildGeminiImageRequest(prompt, aspectRatio) {
+        const body = {
+            instances: [
+                {
+                    prompt: prompt.trim()
+                }
+            ],
+            parameters: {
+                sampleCount: 1
+            }
+        };
+
+        // Add aspect ratio if provided
+        if (aspectRatio) {
+            body.parameters.aspectRatio = aspectRatio;
+        }
+
+        return body;
+    },
+
+    /**
+     * Build Fireworks AI image generation request body
+     * @param {string} prompt - Image prompt
+     * @param {string} aspectRatio - Aspect ratio (optional)
+     * @param {number} steps - Number of steps (optional)
+     * @returns {Object} Fireworks request body
+     */
+    buildFireworksImageRequest(prompt, aspectRatio, steps) {
+        const body = {
+            prompt: prompt.trim()
+        };
+
+        // Add aspect ratio if provided (Fireworks uses aspect_ratio)
+        if (aspectRatio) {
+            body.aspect_ratio = aspectRatio;
+        }
+
+        // Add steps if provided
+        if (steps && steps > 0) {
+            body.steps = steps;
+        }
+
+        return body;
+    },
+
+    /**
      * Extract image data from response
      * @param {Object} data - API response
+     * @param {string} provider - Provider ID
      * @returns {Object} Image data with url or base64
      */
-    extractImageData(data) {
-        // Handle different response formats
+    extractImageData(data, provider = '') {
+        // Handle Fireworks AI response format
+        // { base64: ["..."], finishReason: "SUCCESS", seed: int }
+        if (data.base64 && Array.isArray(data.base64) && data.base64.length > 0) {
+            return {
+                url: null,
+                base64: data.base64[0],
+                mimeType: 'image/png'
+            };
+        }
+
+        // Handle Gemini/Imagen predict response format
+        // { predictions: [{ bytesBase64Encoded: "...", mimeType: "image/png" }] }
+        if (data.predictions && Array.isArray(data.predictions) && data.predictions.length > 0) {
+            const prediction = data.predictions[0];
+            if (prediction.bytesBase64Encoded) {
+                return {
+                    url: null,
+                    base64: prediction.bytesBase64Encoded,
+                    mimeType: prediction.mimeType || 'image/png'
+                };
+            }
+        }
+
+        // Handle OpenAI format: { data: [{ url: "...", b64_json: "..." }] }
         if (data.data && Array.isArray(data.data) && data.data.length > 0) {
             const imageData = data.data[0];
             return {
@@ -211,7 +306,7 @@ const ImageAPI = {
 
     /**
      * Display generated image
-     * @param {Object} imageData - Image data
+     * @param {Object} imageData - Image data with url, base64, and optional mimeType
      */
     displayImage(imageData) {
         const outputArea = document.getElementById('output-area');
@@ -221,7 +316,9 @@ const ImageAPI = {
         if (imageData.url) {
             imageSrc = imageData.url;
         } else if (imageData.base64) {
-            imageSrc = `data:image/png;base64,${imageData.base64}`;
+            // Use mimeType from response or default to image/png
+            const mimeType = imageData.mimeType || 'image/png';
+            imageSrc = `data:${mimeType};base64,${imageData.base64}`;
         }
 
         if (!imageSrc) {

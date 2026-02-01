@@ -26,8 +26,8 @@ const VideoAPI = {
             throw new Error('Please enter an API key');
         }
 
-        // Check if using Gemini for video generation
-        if (providerSettings.provider === 'gemini') {
+        // Check if using Gemini for video generation (gemini, gemini_compatible, vertex_ai)
+        if (Providers.isGeminiFormat(providerSettings.provider)) {
             return this.generateGeminiVideo(providerSettings, formValues);
         }
 

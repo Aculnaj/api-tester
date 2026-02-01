@@ -179,7 +179,7 @@ const Utils = {
     /**
      * Read file as base64
      * @param {File} file - File to read
-     * @returns {Promise<string>} Base64 encoded content
+     * @returns {Promise<string>} Base64 encoded content (no data: prefix)
      */
     readFileAsBase64(file) {
         return new Promise((resolve, reject) => {
@@ -188,6 +188,20 @@ const Utils = {
                 const base64 = reader.result.split(',')[1];
                 resolve(base64);
             };
+            reader.onerror = () => reject(reader.error);
+            reader.readAsDataURL(file);
+        });
+    },
+
+    /**
+     * Read file as a Data URL (includes data:<mime>;base64, prefix)
+     * @param {File} file - File to read
+     * @returns {Promise<string>} Data URL
+     */
+    readFileAsDataURL(file) {
+        return new Promise((resolve, reject) => {
+            const reader = new FileReader();
+            reader.onload = () => resolve(reader.result);
             reader.onerror = () => reject(reader.error);
             reader.readAsDataURL(file);
         });

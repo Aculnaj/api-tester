@@ -13,6 +13,7 @@ const Forms = {
         this.setupToggleOptions();
         this.setupRangeInputs();
         this.setupFileInputs();
+        this.setupChatImageInputs();
         this.setupAudioTypeToggle();
         this.setupModelSelect();
         this.setupImageModelType();
@@ -229,6 +230,84 @@ const Forms = {
     },
 
     /**
+     * Set up chat image inputs (URL or file -> data URL)
+     */
+    setupChatImageInputs() {
+        const urlInput = document.getElementById('chat-image-url-input');
+        const fileInput = document.getElementById('chat-image-file-input');
+        const clearBtn = document.getElementById('chat-image-clear-btn');
+
+        const preview = document.getElementById('chat-image-preview');
+        const previewImg = document.getElementById('chat-image-preview-img');
+        const previewSource = document.getElementById('chat-image-preview-source');
+
+        if (!urlInput && !fileInput) return;
+
+        const setPreview = (src, sourceLabel) => {
+            if (previewImg) previewImg.src = src || '';
+            if (previewSource) previewSource.textContent = sourceLabel || '';
+            if (preview) preview.classList.toggle('hidden', !src);
+            if (clearBtn) clearBtn.classList.toggle('hidden', !src);
+        };
+
+        const clearAll = () => {
+            if (urlInput) urlInput.value = '';
+            if (fileInput) fileInput.value = '';
+            setPreview('', '');
+        };
+
+        // URL typing/paste
+        if (urlInput) {
+            urlInput.addEventListener('input', () => {
+                const v = (urlInput.value || '').trim();
+                // If user is typing a URL, clear file selection (single source of truth)
+                if (v && fileInput) fileInput.value = '';
+                if (v) setPreview(v, v.startsWith('data:') ? 'data URL' : 'URL');
+                else setPreview('', '');
+            });
+            urlInput.addEventListener('change', () => {
+                const v = (urlInput.value || '').trim();
+                if (v) setPreview(v, v.startsWith('data:') ? 'data URL' : 'URL');
+                else setPreview('', '');
+            });
+        }
+
+        // File selection -> data URL
+        if (fileInput) {
+            fileInput.addEventListener('change', async () => {
+                const file = fileInput.files?.[0] || null;
+                if (!file) {
+                    setPreview('', '');
+                    return;
+                }
+
+                // Clear URL input when file picked
+                if (urlInput) urlInput.value = '';
+
+                try {
+                    const dataUrl = await Utils.readFileAsDataURL(file);
+                    // Store data URL into the URL input for easy extraction later
+                    if (urlInput) urlInput.value = dataUrl;
+                    setPreview(dataUrl, `${file.name} (${Math.round(file.size / 1024)} KB)`);
+                } catch (e) {
+                    console.error('Failed to read image file as data URL', e);
+                    clearAll();
+                }
+            });
+        }
+
+        if (clearBtn) {
+            clearBtn.addEventListener('click', () => clearAll());
+        }
+
+        // Initialize preview (in case values restored later)
+        const initial = (urlInput?.value || '').trim();
+        if (initial) {
+            setPreview(initial, initial.startsWith('data:') ? 'data URL' : 'URL');
+        }
+    },
+
+    /**
      * Get form values for text generation
      * @returns {Object} Form values
      */
@@ -236,7 +315,9 @@ const Forms = {
         const streamingCheckbox = document.getElementById('enable-streaming');
         // Default to true only if checkbox doesn't exist, otherwise use actual checked state
         const streamingEnabled = streamingCheckbox ? streamingCheckbox.checked : true;
-        
+
+        const imageUrl = (document.getElementById('chat-image-url-input')?.value || '').trim();
+
         return {
             prompt: document.getElementById('prompt-input')?.value || '',
             systemPromptEnabled: document.getElementById('enable-system-prompt')?.checked ?? false,
@@ -245,7 +326,8 @@ const Forms = {
             temperature: parseFloat(document.getElementById('temperature-input')?.value) || 1.0,
             maxTokensEnabled: document.getElementById('enable-max-tokens')?.checked ?? false,
             maxTokens: parseInt(document.getElementById('max-tokens-input')?.value) || 4096,
-            streamingEnabled: streamingEnabled
+            streamingEnabled: streamingEnabled,
+            chatImageUrl: imageUrl
         };
     },
 
@@ -405,8 +487,20 @@ const Forms = {
      */
     updateBaseUrlVisibility(provider) {
         const baseUrlContainer = document.getElementById('base-url-container');
+        const baseUrlInput = document.getElementById('base-url-input');
+        
+        // Providers that need custom base URL input
+        const providersWithBaseUrl = ['openai_compatible', 'gemini_compatible', 'anthropic_compatible'];
+        const showBaseUrl = providersWithBaseUrl.includes(provider);
+        
         if (baseUrlContainer) {
-            baseUrlContainer.classList.toggle('hidden', provider !== 'openai_compatible');
+            baseUrlContainer.classList.toggle('hidden', !showBaseUrl);
+        }
+        
+        // Update placeholder based on provider
+        if (baseUrlInput && showBaseUrl) {
+            const config = Providers.getConfig(provider);
+            baseUrlInput.placeholder = config.placeholder || 'https://api.example.com/v1';
         }
     },
 
@@ -419,6 +513,22 @@ const Forms = {
         const promptInput = document.getElementById('prompt-input');
         if (promptInput && options.prompt !== undefined) {
             promptInput.value = options.prompt;
+        }
+
+        // Set chat image URL (optional)
+        const chatImageUrlInput = document.getElementById('chat-image-url-input');
+        if (chatImageUrlInput && options.chatImageUrl !== undefined) {
+            chatImageUrlInput.value = options.chatImageUrl || '';
+            // Update preview for restored value
+            const v = (chatImageUrlInput.value || '').trim();
+            const preview = document.getElementById('chat-image-preview');
+            const previewImg = document.getElementById('chat-image-preview-img');
+            const previewSource = document.getElementById('chat-image-preview-source');
+            const clearBtn = document.getElementById('chat-image-clear-btn');
+            if (previewImg) previewImg.src = v || '';
+            if (previewSource) previewSource.textContent = v ? (v.startsWith('data:') ? 'data URL' : 'URL') : '';
+            if (preview) preview.classList.toggle('hidden', !v);
+            if (clearBtn) clearBtn.classList.toggle('hidden', !v);
         }
 
         // Set system prompt enabled

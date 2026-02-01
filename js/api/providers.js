@@ -62,10 +62,32 @@ const Providers = {
         openai_compatible: {
             name: 'OpenAI Compatible',
             baseUrl: '',
+            placeholder: 'https://api.openai.com/v1',
             models: [],
             supportsStreaming: true,
             supportsModels: true,
-            supportedModes: ['text', 'image', 'audio', 'video']
+            supportedModes: ['text', 'image', 'audio', 'video'],
+            apiFormat: 'openai'
+        },
+        gemini_compatible: {
+            name: 'Gemini Compatible',
+            baseUrl: '',
+            placeholder: 'https://generativelanguage.googleapis.com/v1beta',
+            models: [],
+            supportsStreaming: true,
+            supportsModels: true,
+            supportedModes: ['text', 'image', 'audio', 'video'],
+            apiFormat: 'gemini'
+        },
+        anthropic_compatible: {
+            name: 'Anthropic Compatible',
+            baseUrl: '',
+            placeholder: 'https://api.anthropic.com/v1',
+            models: [],
+            supportsStreaming: true,
+            supportsModels: false,
+            supportedModes: ['text'],
+            apiFormat: 'anthropic'
         },
         openai: {
             name: 'OpenAI',
@@ -89,22 +111,33 @@ const Providers = {
         },
         gemini: {
             name: 'Gemini',
-            baseUrl: 'https://generativelanguage.googleapis.com/v1beta/openai',
+            baseUrl: 'https://generativelanguage.googleapis.com/v1beta',
             models: ['gemini-2.5-pro', 'gemini-2.5-flash', 'gemini-2.0-flash'],
             supportsStreaming: true,
             supportsModels: true,
-            supportedModes: ['text', 'image', 'audio', 'video'] // VEO will be added later
+            supportedModes: ['text', 'image', 'audio', 'video'],
+            apiFormat: 'gemini'
+        },
+        vertex_ai: {
+            name: 'Google Vertex AI',
+            baseUrl: 'https://aiplatform.googleapis.com/v1/publishers/google',
+            models: ['gemini-2.5-pro', 'gemini-2.5-flash', 'gemini-2.0-flash'],
+            supportsStreaming: true,
+            supportsModels: false,
+            supportedModes: ['text', 'image', 'audio', 'video'],
+            apiFormat: 'gemini'
         },
         anthropic: {
             name: 'Anthropic',
             baseUrl: 'https://api.anthropic.com/v1',
             models: [
-                'claude-sonnet-4-5-20250929', 'claude-3-5-sonnet-20241022', 
+                'claude-sonnet-4-5-20250929', 'claude-3-5-sonnet-20241022',
                 'claude-3-5-haiku-20241022', 'claude-3-opus-20240229'
             ],
             supportsStreaming: true,
-            supportsModels: true,
-            supportedModes: ['text']
+            supportsModels: false,
+            supportedModes: ['text'],
+            apiFormat: 'anthropic'
         },
         deepseek: {
             name: 'DeepSeek',
@@ -160,7 +193,9 @@ const Providers = {
             models: ['accounts/fireworks/models/llama-v3p3-70b-instruct'],
             supportsStreaming: true,
             supportsModels: true,
-            supportedModes: ['text', 'image', 'audio']
+            supportedModes: ['text', 'image', 'audio'],
+            imageModels: ['flux-1-schnell-fp8', 'flux-1-dev-fp8', 'stable-diffusion-xl-1024-v1-0'],
+            sttOnly: true // Fireworks only supports STT, not TTS
         },
         together: {
             name: 'Together',
@@ -168,7 +203,9 @@ const Providers = {
             models: ['meta-llama/Llama-3.3-70B-Instruct-Turbo'],
             supportsStreaming: true,
             supportsModels: true,
-            supportedModes: ['text', 'image', 'audio']
+            supportedModes: ['text', 'image', 'audio'],
+            imageModels: ['black-forest-labs/FLUX.1-schnell', 'black-forest-labs/FLUX.1-dev', 'stabilityai/stable-diffusion-xl-base-1.0'],
+            sttOnly: true // Together only supports STT, not TTS
         },
         novitaai: {
             name: 'NovitaAI',
@@ -232,14 +269,15 @@ const Providers = {
     /**
      * Get base URL for provider
      * @param {string} providerId - Provider ID
-     * @param {string} customBaseUrl - Custom base URL (for openai_compatible)
+     * @param {string} customBaseUrl - Custom base URL (for openai_compatible/gemini_compatible)
      * @param {boolean} corsProxyEnabled - Whether to use CORS proxy (default: false)
      * @returns {string} Base URL
      */
     getBaseUrl(providerId, customBaseUrl = '', corsProxyEnabled = false) {
         let baseUrl;
         
-        if (providerId === 'openai_compatible') {
+        // Providers that use custom base URL
+        if (providerId === 'openai_compatible' || providerId === 'gemini_compatible' || providerId === 'anthropic_compatible') {
             baseUrl = customBaseUrl.replace(/\/$/, '');
         } else {
             const config = this.configs[providerId];
@@ -256,6 +294,34 @@ const Providers = {
     },
 
     /**
+     * Get API format for provider
+     * @param {string} providerId - Provider ID
+     * @returns {string} API format ('openai', 'gemini', 'anthropic')
+     */
+    getApiFormat(providerId) {
+        const config = this.getConfig(providerId);
+        return config.apiFormat || 'openai';
+    },
+
+    /**
+     * Check if provider uses Gemini native API format
+     * @param {string} providerId - Provider ID
+     * @returns {boolean} Whether provider uses Gemini format
+     */
+    isGeminiFormat(providerId) {
+        return this.getApiFormat(providerId) === 'gemini';
+    },
+
+    /**
+     * Check if provider uses Anthropic native API format
+     * @param {string} providerId - Provider ID
+     * @returns {boolean} Whether provider uses Anthropic format
+     */
+    isAnthropicFormat(providerId) {
+        return this.getApiFormat(providerId) === 'anthropic';
+    },
+
+    /**
      * Get headers for API request
      * @param {string} providerId - Provider ID
      * @param {string} apiKey - API key
@@ -266,7 +332,13 @@ const Providers = {
             'Content-Type': 'application/json'
         };
 
-        if (providerId === 'anthropic') {
+        const apiFormat = this.getApiFormat(providerId);
+
+        if (apiFormat === 'gemini') {
+            // Gemini native API uses x-goog-api-key header
+            headers['x-goog-api-key'] = apiKey;
+        } else if (apiFormat === 'anthropic') {
+            // Anthropic native API uses x-api-key header
             headers['x-api-key'] = apiKey;
             headers['anthropic-version'] = '2023-06-01';
             headers['anthropic-dangerous-direct-browser-access'] = 'true';
@@ -321,9 +393,21 @@ const Providers = {
 
         const data = await response.json();
         
-        // Extract model IDs from response
-        if (data.data && Array.isArray(data.data)) {
-            const models = data.data.map(m => m.id).sort();
+        let models = [];
+        
+        // Handle Gemini native API format: { models: [{ name: "models/gemini-2.5-flash", ... }] }
+        if (this.isGeminiFormat(provider) && data.models && Array.isArray(data.models)) {
+            // Include all models (generateContent, predict, predictLongRunning, etc.)
+            models = data.models
+                .map(m => m.name.replace(/^models\//, '')) // Remove "models/" prefix
+                .sort();
+        }
+        // Handle OpenAI format: { data: [{ id: "gpt-4o", ... }] }
+        else if (data.data && Array.isArray(data.data)) {
+            models = data.data.map(m => m.id).sort();
+        }
+        
+        if (models.length > 0) {
             // Save model list to storage
             Storage.setModelList(models);
             return models;
@@ -383,6 +467,16 @@ const Providers = {
     buildChatRequest(options) {
         const { provider, model, messages, stream, temperature, maxTokens } = options;
 
+        // Use Gemini format for Gemini-based providers
+        if (this.isGeminiFormat(provider)) {
+            return this.buildGeminiRequest(options);
+        }
+
+        // Use Anthropic format for Anthropic-based providers
+        if (this.isAnthropicFormat(provider)) {
+            return this.buildAnthropicRequest(options);
+        }
+
         const body = {
             model,
             messages
@@ -392,9 +486,7 @@ const Providers = {
         if (stream === true) {
             body.stream = true;
             // Add stream_options for usage info in streaming mode (OpenAI compatible)
-            if (provider !== 'anthropic') {
-                body.stream_options = { include_usage: true };
-            }
+            body.stream_options = { include_usage: true };
         } else {
             body.stream = false;
         }
@@ -404,57 +496,265 @@ const Providers = {
         }
 
         if (maxTokens !== undefined && maxTokens !== null) {
-            if (provider === 'anthropic') {
-                body.max_tokens = maxTokens;
-            } else {
-                body.max_tokens = maxTokens;
-            }
-        }
-
-        // Anthropic requires max_tokens
-        if (provider === 'anthropic' && !body.max_tokens) {
-            body.max_tokens = 4096;
+            body.max_tokens = maxTokens;
         }
 
         return body;
     },
 
     /**
+     * Build Anthropic native API request body
+     * @param {Object} options - Request options
+     * @returns {Object} Request body for Anthropic API
+     */
+    buildAnthropicRequest(options) {
+        const { model, messages, stream, temperature, maxTokens } = options;
+
+        const body = {
+            model,
+            messages: [],
+            max_tokens: maxTokens || 4096 // Anthropic requires max_tokens
+        };
+
+        // Process messages - extract system prompt and convert format
+        for (const msg of messages) {
+            if (msg.role === 'system') {
+                // System is a separate field in Anthropic API
+                body.system = typeof msg.content === 'string'
+                    ? msg.content
+                    : msg.content.map(p => p.text || '').join('\n');
+            } else {
+                // Convert content to Anthropic format
+                body.messages.push({
+                    role: msg.role,
+                    content: this.buildAnthropicContent(msg.content)
+                });
+            }
+        }
+
+        // Set stream parameter
+        if (stream === true) {
+            body.stream = true;
+        }
+
+        if (temperature !== undefined && temperature !== null) {
+            body.temperature = temperature;
+        }
+
+        return body;
+    },
+
+    /**
+     * Build Anthropic content array from message content
+     * @param {string|Array} content - Message content (string or multi-part array)
+     * @returns {Array} Anthropic content array
+     */
+    buildAnthropicContent(content) {
+        // Simple text content - Anthropic accepts string directly
+        if (typeof content === 'string') {
+            return content;
+        }
+
+        // Multi-part content (e.g., text + image)
+        if (Array.isArray(content)) {
+            return content.map(part => {
+                if (part.type === 'text') {
+                    return { type: 'text', text: part.text };
+                }
+                if (part.type === 'image_url') {
+                    // Handle image URL - could be base64 or URL
+                    const url = part.image_url.url;
+                    if (url.startsWith('data:')) {
+                        // Base64 encoded image
+                        const matches = url.match(/^data:([^;]+);base64,(.+)$/);
+                        if (matches) {
+                            return {
+                                type: 'image',
+                                source: {
+                                    type: 'base64',
+                                    media_type: matches[1],
+                                    data: matches[2]
+                                }
+                            };
+                        }
+                    }
+                    // URL-based image
+                    return {
+                        type: 'image',
+                        source: {
+                            type: 'url',
+                            url: url
+                        }
+                    };
+                }
+                return part;
+            });
+        }
+
+        return String(content);
+    },
+
+    /**
+     * Build Gemini native API request body
+     * @param {Object} options - Request options
+     * @returns {Object} Request body for Gemini API
+     */
+    buildGeminiRequest(options) {
+        const { messages, temperature, maxTokens } = options;
+
+        const body = {
+            contents: []
+        };
+
+        // Process messages
+        for (const msg of messages) {
+            if (msg.role === 'system') {
+                // System instruction is a separate field in Gemini API
+                body.systemInstruction = {
+                    parts: [{ text: msg.content }]
+                };
+            } else {
+                // Convert role: assistant -> model for Gemini
+                const role = msg.role === 'assistant' ? 'model' : 'user';
+                body.contents.push({
+                    role,
+                    parts: this.buildGeminiParts(msg.content)
+                });
+            }
+        }
+
+        // Generation config
+        const generationConfig = {};
+        
+        if (temperature !== undefined && temperature !== null) {
+            generationConfig.temperature = temperature;
+        }
+        
+        if (maxTokens !== undefined && maxTokens !== null) {
+            generationConfig.maxOutputTokens = maxTokens;
+        }
+
+        // Only add generationConfig if it has properties
+        if (Object.keys(generationConfig).length > 0) {
+            body.generationConfig = generationConfig;
+        }
+
+        return body;
+    },
+
+    /**
+     * Build Gemini parts array from message content
+     * @param {string|Array} content - Message content (string or multi-part array)
+     * @returns {Array} Gemini parts array
+     */
+    buildGeminiParts(content) {
+        // Simple text content
+        if (typeof content === 'string') {
+            return [{ text: content }];
+        }
+
+        // Multi-part content (e.g., text + image)
+        if (Array.isArray(content)) {
+            return content.map(part => {
+                if (part.type === 'text') {
+                    return { text: part.text };
+                }
+                if (part.type === 'image_url') {
+                    // Handle image URL - could be base64 or URL
+                    const url = part.image_url.url;
+                    if (url.startsWith('data:')) {
+                        // Base64 encoded image
+                        const matches = url.match(/^data:([^;]+);base64,(.+)$/);
+                        if (matches) {
+                            return {
+                                inlineData: {
+                                    mimeType: matches[1],
+                                    data: matches[2]
+                                }
+                            };
+                        }
+                    }
+                    // URL-based image (Gemini supports file URIs)
+                    return {
+                        fileData: {
+                            fileUri: url,
+                            mimeType: 'image/jpeg' // Default, could be detected
+                        }
+                    };
+                }
+                return part;
+            });
+        }
+
+        return [{ text: String(content) }];
+    },
+
+    /**
      * Get chat completions endpoint
      * @param {string} provider - Provider ID
+     * @param {string} model - Model name (needed for Gemini endpoints)
+     * @param {boolean} stream - Whether streaming is enabled
      * @returns {string} Endpoint path
      */
-    getChatEndpoint(provider) {
-        if (provider === 'anthropic') {
+    getChatEndpoint(provider, model = '', stream = false) {
+        // Gemini native API endpoints
+        if (this.isGeminiFormat(provider)) {
+            const action = stream ? 'streamGenerateContent' : 'generateContent';
+            const streamParam = stream ? '?alt=sse' : '';
+            return `/models/${model}:${action}${streamParam}`;
+        }
+        
+        // Anthropic native API endpoints
+        if (this.isAnthropicFormat(provider)) {
             return '/messages';
         }
+        
         return '/chat/completions';
     },
 
     /**
      * Get image generation endpoint
      * @param {string} provider - Provider ID
+     * @param {string} model - Model name (needed for Gemini endpoints)
      * @returns {string} Endpoint path
      */
-    getImageEndpoint(provider) {
+    getImageEndpoint(provider, model = '') {
+        // Gemini/Vertex AI uses predict endpoint for Imagen models
+        if (this.isGeminiFormat(provider)) {
+            return `/models/${model}:predict`;
+        }
+        // Fireworks AI uses workflows endpoint for image generation
+        if (provider === 'fireworks') {
+            return `/workflows/accounts/fireworks/models/accounts/fireworks/models/${model}/text_to_image`;
+        }
         return '/images/generations';
     },
 
     /**
      * Get TTS endpoint
      * @param {string} provider - Provider ID
+     * @param {string} model - Model name (needed for Gemini endpoints)
      * @returns {string} Endpoint path
      */
-    getTTSEndpoint(provider) {
+    getTTSEndpoint(provider, model = '') {
+        // Gemini TTS uses generateContent endpoint
+        if (this.isGeminiFormat(provider)) {
+            return `/models/${model}:generateContent`;
+        }
         return '/audio/speech';
     },
 
     /**
      * Get STT endpoint
      * @param {string} provider - Provider ID
+     * @param {string} model - Model name (needed for Gemini endpoints)
      * @returns {string} Endpoint path
      */
-    getSTTEndpoint(provider) {
+    getSTTEndpoint(provider, model = '') {
+        // Gemini STT uses generateContent endpoint (audio understanding)
+        if (this.isGeminiFormat(provider)) {
+            return `/models/${model}:generateContent`;
+        }
         return '/audio/transcriptions';
     },
 

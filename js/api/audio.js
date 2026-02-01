@@ -76,14 +76,20 @@ const AudioAPI = {
             throw new Error('Please enter an API key');
         }
 
+        // Check if provider only supports STT (not TTS)
+        const config = Providers.getConfig(providerSettings.provider);
+        if (config.sttOnly) {
+            throw new Error(`${config.name} only supports Speech-to-Text (STT). Please use a different provider for Text-to-Speech.`);
+        }
+
         this.isGenerating = true;
         this.abortController = new AbortController();
 
         // Get model from provider settings
         const model = Providers.getModelName(providerSettings) || 'tts-1';
 
-        // Check if using Gemini TTS
-        if (providerSettings.provider === 'gemini' || this.isGeminiTTSModel(model)) {
+        // Check if using Gemini TTS (gemini, gemini_compatible, vertex_ai, or Gemini model)
+        if (Providers.isGeminiFormat(providerSettings.provider) || this.isGeminiTTSModel(model)) {
             return this.generateGeminiTTS(providerSettings, formValues, model);
         }
 
@@ -97,7 +103,7 @@ const AudioAPI = {
 
         // Get URL and headers
         const baseUrl = Providers.getBaseUrl(providerSettings.provider, providerSettings.baseUrl, providerSettings.corsProxyEnabled);
-        const endpoint = Providers.getTTSEndpoint(providerSettings.provider);
+        const endpoint = Providers.getTTSEndpoint(providerSettings.provider, model);
         const url = `${baseUrl}${endpoint}`;
         const headers = Providers.getHeaders(providerSettings.provider, providerSettings.apiKey);
 
@@ -363,11 +369,14 @@ const AudioAPI = {
 
         // Get URL and headers (without Content-Type for FormData)
         const baseUrl = Providers.getBaseUrl(providerSettings.provider, providerSettings.baseUrl, providerSettings.corsProxyEnabled);
-        const endpoint = Providers.getSTTEndpoint(providerSettings.provider);
+        const endpoint = Providers.getSTTEndpoint(providerSettings.provider, model);
         const url = `${baseUrl}${endpoint}`;
         
+        // Build headers based on provider
         const headers = {};
-        if (providerSettings.provider === 'anthropic') {
+        if (Providers.isGeminiFormat(providerSettings.provider)) {
+            headers['x-goog-api-key'] = providerSettings.apiKey;
+        } else if (providerSettings.provider === 'anthropic') {
             headers['x-api-key'] = providerSettings.apiKey;
         } else {
             headers['Authorization'] = `Bearer ${providerSettings.apiKey}`;

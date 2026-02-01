@@ -20,6 +20,19 @@
     gap: var(--spacing-3);
 }
 
+/* Label row with action button (e.g., clear) */
+.form-label-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--spacing-3);
+}
+
+.form-label-subtle {
+    font-size: var(--font-size-xs);
+    color: var(--color-text-muted);
+}
+
 .form-row .form-group {
     flex: 1;
     margin-bottom: 0;
@@ -559,6 +572,22 @@
     position: relative;
 }
 
+/* Compact variant for small file inputs (used in Chat image upload) */
+.file-input-wrapper-compact .file-input-label {
+    padding: var(--spacing-4);
+    gap: var(--spacing-2);
+    border-radius: var(--radius-md);
+}
+
+.file-input-wrapper-compact .file-input-icon {
+    width: 28px;
+    height: 28px;
+}
+
+.file-input-wrapper-compact .file-input-hint {
+    display: none;
+}
+
 .file-input {
     position: absolute;
     opacity: 0;
@@ -628,6 +657,41 @@
     display: flex;
     align-items: center;
     gap: var(--spacing-1);
+}
+
+.mono {
+    font-family: var(--font-family-mono);
+    font-size: var(--font-size-xs);
+}
+
+/* ========== Chat Image Preview ========== */
+.chat-image-preview {
+    display: flex;
+    gap: var(--spacing-3);
+    padding: var(--spacing-3);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-md);
+    background-color: var(--color-glass);
+}
+
+.chat-image-preview-img {
+    width: 64px;
+    height: 64px;
+    object-fit: cover;
+    border-radius: var(--radius-md);
+    border: 1px solid var(--color-border);
+    background-color: var(--color-bg-tertiary);
+}
+
+.chat-image-preview-meta {
+    display: flex;
+    align-items: center;
+}
+
+.chat-image-preview-source {
+    font-size: var(--font-size-xs);
+    color: var(--color-text-secondary);
+    word-break: break-all;
 }
 
 .form-error {

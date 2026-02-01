@@ -213,7 +213,7 @@ const App = {
         });
 
         // Text options auto-save (prompt, system prompt, advanced options)
-        const textInputs = ['prompt-input', 'system-prompt-input'];
+        const textInputs = ['prompt-input', 'system-prompt-input', 'chat-image-url-input'];
         textInputs.forEach(id => {
             const el = document.getElementById(id);
             if (el) {
@@ -239,6 +239,17 @@ const App = {
                 el.addEventListener('change', () => this.saveTextOptions());
             }
         });
+
+        // Chat image file input auto-save (stores data URL into chat-image-url-input)
+        const chatImageFileInput = document.getElementById('chat-image-file-input');
+        if (chatImageFileInput) {
+            chatImageFileInput.addEventListener('change', () => this.saveTextOptions());
+        }
+
+        const chatImageClearBtn = document.getElementById('chat-image-clear-btn');
+        if (chatImageClearBtn) {
+            chatImageClearBtn.addEventListener('click', () => this.saveTextOptions());
+        }
 
         // Image options auto-save (prompt, model type, settings)
         const imagePromptInput = document.getElementById('image-prompt-input');
