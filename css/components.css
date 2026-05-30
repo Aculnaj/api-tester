@@ -5,11 +5,17 @@
 
 /* ========== Card ========== */
 .card {
-    background-color: var(--color-bg-secondary);
+    background:
+        linear-gradient(180deg, rgba(255, 255, 255, 0.025), transparent 44%),
+        var(--color-bg-secondary);
     border: 1px solid var(--color-border);
     border-radius: var(--radius-lg);
     padding: var(--spacing-4);
-    transition: border-color var(--transition-fast), box-shadow var(--transition-fast);
+    box-shadow: var(--shadow-inner);
+    transition:
+        border-color var(--transition-fast),
+        box-shadow var(--transition-fast),
+        transform var(--transition-fast);
 }
 
 .card:hover {
@@ -22,6 +28,7 @@
 
 .card-interactive:hover {
     box-shadow: var(--shadow-md);
+    transform: translateY(-1px);
 }
 
 .card-glass {
@@ -40,7 +47,7 @@
     font-size: var(--font-size-xs);
     font-weight: var(--font-weight-medium);
     border-radius: var(--radius-sm);
-    background-color: var(--color-glass);
+    background-color: rgba(255, 255, 255, 0.04);
     color: var(--color-text-secondary);
 }
 
@@ -138,10 +145,12 @@
     left: 0;
     min-width: 180px;
     padding: var(--spacing-2);
-    background-color: var(--color-bg-elevated);
+    background-color: rgba(25, 30, 41, 0.96);
     border: 1px solid var(--color-border);
     border-radius: var(--radius-lg);
     box-shadow: var(--shadow-xl);
+    backdrop-filter: blur(var(--blur-md));
+    -webkit-backdrop-filter: blur(var(--blur-md));
     z-index: var(--z-dropdown);
     opacity: 0;
     visibility: hidden;
@@ -192,7 +201,7 @@
 .modal-backdrop {
     position: fixed;
     inset: 0;
-    background-color: rgba(0, 0, 0, 0.6);
+    background-color: rgba(9, 11, 16, 0.7);
     backdrop-filter: blur(4px);
     -webkit-backdrop-filter: blur(4px);
     z-index: var(--z-modal-backdrop);
@@ -214,7 +223,7 @@
     width: 90%;
     max-width: 500px;
     max-height: 90vh;
-    background-color: var(--color-bg-secondary);
+    background-color: var(--color-bg-elevated);
     border: 1px solid var(--color-border);
     border-radius: var(--radius-xl);
     box-shadow: var(--shadow-xl);
@@ -294,10 +303,12 @@
     align-items: flex-start;
     gap: var(--spacing-3);
     padding: var(--spacing-4);
-    background-color: var(--color-bg-elevated);
+    background-color: rgba(25, 30, 41, 0.96);
     border: 1px solid var(--color-border);
     border-radius: var(--radius-lg);
     box-shadow: var(--shadow-xl);
+    backdrop-filter: blur(var(--blur-md));
+    -webkit-backdrop-filter: blur(var(--blur-md));
     min-width: 300px;
     max-width: 400px;
     pointer-events: auto;
@@ -418,7 +429,7 @@
 .loading-overlay {
     position: fixed;
     inset: 0;
-    background-color: rgba(0, 0, 0, 0.6);
+    background-color: rgba(9, 11, 16, 0.72);
     backdrop-filter: blur(4px);
     -webkit-backdrop-filter: blur(4px);
     display: flex;
@@ -535,6 +546,8 @@
     border: 1px solid var(--color-border);
     border-radius: var(--radius-lg);
     overflow: hidden;
+    background-color: rgba(255, 255, 255, 0.02);
+    box-shadow: var(--shadow-inner);
 }
 
 .collapsible + .collapsible {
@@ -547,13 +560,15 @@
     align-items: center;
     justify-content: space-between;
     padding: var(--spacing-4);
-    background-color: var(--color-glass);
+    background-color: rgba(255, 255, 255, 0.025);
     border: none;
     font-size: var(--font-size-sm);
     font-weight: var(--font-weight-medium);
     color: var(--color-text-primary);
     cursor: pointer;
-    transition: background-color var(--transition-fast);
+    transition:
+        background-color var(--transition-fast),
+        color var(--transition-fast);
 }
 
 .collapsible-trigger:hover {
@@ -584,6 +599,7 @@
 .collapsible-body {
     padding: var(--spacing-4);
     border-top: 1px solid var(--color-border);
+    background-color: rgba(255, 255, 255, 0.015);
 }
 
 /* ========== Separator ========== */

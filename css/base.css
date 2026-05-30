@@ -26,10 +26,18 @@ body {
     font-weight: var(--font-weight-normal);
     line-height: var(--line-height-normal);
     color: var(--color-text-primary);
-    background-color: var(--color-bg-primary);
+    background:
+        radial-gradient(circle at top right, rgba(91, 141, 239, 0.08), transparent 34rem),
+        linear-gradient(180deg, #0c1017 0%, var(--color-bg-primary) 22rem);
     min-height: 100vh;
     overflow-x: hidden;
-    transition: background-color var(--transition-slow), color var(--transition-slow);
+    transition: background var(--transition-slow), color var(--transition-slow);
+}
+
+[data-theme="light"] body {
+    background:
+        radial-gradient(circle at top right, rgba(91, 141, 239, 0.12), transparent 32rem),
+        linear-gradient(180deg, #ffffff 0%, var(--color-bg-primary) 22rem);
 }
 
 /* ========== Typography ========== */
@@ -91,14 +99,14 @@ code, kbd, pre, samp {
 }
 
 code {
-    background-color: var(--color-glass);
+    background-color: var(--color-accent-soft);
     padding: var(--spacing-1) var(--spacing-2);
     border-radius: var(--radius-sm);
     color: var(--color-accent);
 }
 
 pre {
-    background-color: var(--color-bg-secondary);
+    background-color: var(--color-bg-tertiary);
     padding: var(--spacing-4);
     border-radius: var(--radius-md);
     overflow-x: auto;
@@ -193,8 +201,8 @@ legend {
 }
 
 :focus-visible {
-    outline: 2px solid var(--color-accent);
-    outline-offset: 2px;
+    outline: 2px solid rgba(91, 141, 239, 0.72);
+    outline-offset: 3px;
 }
 
 /* ========== Selection ========== */
