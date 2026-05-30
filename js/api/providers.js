@@ -62,6 +62,7 @@ const Providers = {
         openai_compatible: {
             name: 'OpenAI Compatible',
             baseUrl: '',
+            supportsCustomBaseUrl: true,
             models: [],
             supportsStreaming: true,
             supportsModels: true,
@@ -98,6 +99,7 @@ const Providers = {
         anthropic: {
             name: 'Anthropic',
             baseUrl: 'https://api.anthropic.com/v1',
+            supportsCustomBaseUrl: true,
             models: [
                 'claude-sonnet-4-5-20250929', 'claude-3-5-sonnet-20241022', 
                 'claude-3-5-haiku-20241022', 'claude-3-opus-20240229'
@@ -232,18 +234,19 @@ const Providers = {
     /**
      * Get base URL for provider
      * @param {string} providerId - Provider ID
-     * @param {string} customBaseUrl - Custom base URL (for openai_compatible)
+     * @param {string} customBaseUrl - Custom base URL (for compatible providers)
      * @param {boolean} corsProxyEnabled - Whether to use CORS proxy (default: false)
      * @returns {string} Base URL
      */
     getBaseUrl(providerId, customBaseUrl = '', corsProxyEnabled = false) {
         let baseUrl;
+        const config = this.configs[providerId];
         
-        if (providerId === 'openai_compatible') {
-            baseUrl = customBaseUrl.replace(/\/$/, '');
+        if (!config) return '';
+
+        if (config.supportsCustomBaseUrl && customBaseUrl.trim()) {
+            baseUrl = customBaseUrl.trim().replace(/\/$/, '');
         } else {
-            const config = this.configs[providerId];
-            if (!config) return '';
             baseUrl = config.baseUrl || '';
         }
         

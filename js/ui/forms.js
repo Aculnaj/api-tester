@@ -406,7 +406,8 @@ const Forms = {
     updateBaseUrlVisibility(provider) {
         const baseUrlContainer = document.getElementById('base-url-container');
         if (baseUrlContainer) {
-            baseUrlContainer.classList.toggle('hidden', provider !== 'openai_compatible');
+            const customBaseUrlProviders = ['openai_compatible', 'anthropic'];
+            baseUrlContainer.classList.toggle('hidden', !customBaseUrlProviders.includes(provider));
         }
     },
 
