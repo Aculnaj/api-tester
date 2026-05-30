@@ -78,12 +78,12 @@
 
 /* ========== Scale Animations ========== */
 .scale-in {
-    animation: scale-in var(--transition-base) ease-out;
+    animation: fade-in var(--transition-base) ease-out;
 }
 
 @keyframes scale-in {
-    from { opacity: 0; transform: scale(0.95); }
-    to { opacity: 1; transform: scale(1); }
+    from { opacity: 0; }
+    to { opacity: 1; }
 }
 
 /* ========== Spin Animation ========== */
@@ -106,21 +106,20 @@
     50% { opacity: 0.5; }
 }
 
-/* ========== Accent Breathing Animation ========== */
+/* ========== Subtle Border Animation ========== */
 .accent-breathe {
     animation: accent-breathe 2.4s ease-in-out infinite alternate;
 }
 
 @keyframes accent-breathe {
-    from { box-shadow: var(--shadow-inner), 0 10px 28px -26px rgba(91, 141, 239, 0.45); }
-    to { box-shadow: var(--shadow-inner), 0 14px 34px -24px rgba(91, 141, 239, 0.72); }
+    from { border-color: var(--color-border); }
+    to { border-color: var(--color-border-hover); }
 }
 
 /* ========== Skeleton Loading ========== */
 .skeleton-loading {
-    background: linear-gradient(90deg, var(--color-glass) 25%, var(--color-glass-hover) 50%, var(--color-glass) 75%);
-    background-size: 200% 100%;
-    animation: skeleton-loading 1.5s ease-in-out infinite;
+    background: var(--color-bg-tertiary);
+    animation: pulse 1.5s ease-in-out infinite;
 }
 
 @keyframes skeleton-loading {
@@ -134,7 +133,6 @@
 }
 
 .hover-lift:hover {
-    transform: translateY(-2px);
     box-shadow: var(--shadow-lg);
 }
 
@@ -143,7 +141,7 @@
 }
 
 .hover-scale:hover {
-    transform: scale(1.02);
+    opacity: 0.9;
 }
 
 /* ========== Loading Dots ========== */
