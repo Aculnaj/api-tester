@@ -12,11 +12,10 @@
 
 /* ========== Output Area ========== */
 .output-area {
-    background-color: rgba(255, 255, 255, 0.03);
+    background-color: var(--color-bg-tertiary);
     border: 1px solid var(--color-border);
     border-radius: var(--radius-lg);
     overflow: hidden;
-    box-shadow: var(--shadow-inner);
 }
 
 .output-area-empty {
@@ -78,7 +77,7 @@
     align-items: center;
     gap: var(--spacing-2);
     padding: var(--spacing-3) var(--spacing-4);
-    background-color: rgba(255, 255, 255, 0.025);
+    background-color: var(--color-bg-tertiary);
     border-bottom: 1px solid var(--color-border);
 }
 
@@ -111,7 +110,7 @@
     max-width: 100%;
     max-height: 500px;
     border-radius: var(--radius-lg);
-    box-shadow: var(--shadow-xl);
+    box-shadow: var(--shadow-md);
     object-fit: contain;
 }
 
@@ -121,7 +120,7 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    background-color: rgba(255, 255, 255, 0.03);
+    background-color: var(--color-bg-tertiary);
     border-radius: var(--radius-lg);
 }
 
@@ -142,10 +141,9 @@
     align-items: center;
     gap: var(--spacing-3);
     padding: var(--spacing-4);
-    background-color: rgba(255, 255, 255, 0.03);
+    background-color: var(--color-bg-tertiary);
     border-radius: var(--radius-lg);
     border: 1px solid var(--color-border);
-    box-shadow: var(--shadow-inner);
 }
 
 .audio-player-btn {
@@ -165,7 +163,6 @@
 
 .audio-player-btn:hover {
     background-color: var(--color-accent);
-    transform: scale(1.05);
 }
 
 .audio-player-btn svg {
@@ -224,7 +221,7 @@
     align-items: center;
     justify-content: center;
     gap: var(--spacing-3);
-    background-color: rgba(255, 255, 255, 0.03);
+    background-color: var(--color-bg-tertiary);
     border-radius: var(--radius-lg);
 }
 
@@ -244,7 +241,7 @@
     gap: var(--spacing-3);
     padding: var(--spacing-4);
     border-top: 1px solid var(--color-border);
-    background-color: rgba(255, 255, 255, 0.025);
+    background-color: var(--color-bg-tertiary);
 }
 
 .download-btn {
@@ -278,10 +275,9 @@
     grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
     gap: var(--spacing-3);
     padding: var(--spacing-4);
-    background-color: rgba(255, 255, 255, 0.03);
+    background-color: var(--color-bg-tertiary);
     border: 1px solid var(--color-border);
     border-radius: var(--radius-lg);
-    box-shadow: var(--shadow-inner);
 }
 
 .stat-item {
@@ -341,15 +337,14 @@
     font-size: var(--font-size-sm);
     font-weight: var(--font-weight-medium);
     color: var(--color-text-secondary);
-    background-color: rgba(255, 255, 255, 0.03);
+    background-color: var(--color-bg-tertiary);
     border: 1px solid var(--color-border);
     border-radius: var(--radius-md);
     cursor: pointer;
     transition:
         background-color var(--transition-fast),
         border-color var(--transition-fast),
-        color var(--transition-fast),
-        transform var(--transition-fast);
+        color var(--transition-fast);
 }
 
 .payload-tab-btn:hover {
@@ -363,13 +358,9 @@
     border-color: var(--color-accent);
 }
 
-.payload-tab-btn:active {
-    transform: translateY(1px);
-}
-
 .payload-content {
     position: relative;
-    background-color: rgba(255, 255, 255, 0.03);
+    background-color: var(--color-bg-tertiary);
     border: 1px solid var(--color-border);
     border-radius: var(--radius-lg);
     overflow: hidden;
@@ -380,7 +371,7 @@
     align-items: center;
     justify-content: space-between;
     padding: var(--spacing-2) var(--spacing-3);
-    background-color: rgba(255, 255, 255, 0.025);
+    background-color: var(--color-bg-secondary);
     border-bottom: 1px solid var(--color-border);
 }
 
@@ -388,8 +379,8 @@
     font-size: var(--font-size-xs);
     font-weight: var(--font-weight-medium);
     color: var(--color-text-secondary);
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
+    text-transform: none;
+    letter-spacing: 0;
 }
 
 .payload-code {
@@ -508,12 +499,12 @@
     .stats-area {
         grid-template-columns: repeat(2, 1fr);
     }
-    
+
     .output-text {
         padding: var(--spacing-4);
         max-height: 400px;
     }
-    
+
     .output-image {
         max-height: 400px;
     }
@@ -523,20 +514,20 @@
     .stats-area {
         grid-template-columns: 1fr;
     }
-    
+
     .output-actions {
         flex-direction: column;
     }
-    
+
     .download-btn {
         width: 100%;
         justify-content: center;
     }
-    
+
     .payload-tabs {
         flex-direction: column;
     }
-    
+
     .payload-tab-btn {
         width: 100%;
         text-align: center;

@@ -12,12 +12,12 @@
 /* ========== Tab List ========== */
 .tab-list {
     display: flex;
-    gap: var(--spacing-1);
-    padding: var(--spacing-2);
-    background-color: rgba(255, 255, 255, 0.032);
-    border-radius: var(--radius-lg);
-    border: 1px solid var(--color-border);
-    box-shadow: var(--shadow-inner);
+    gap: var(--spacing-4);
+    padding: 0;
+    background-color: transparent;
+    border-radius: 0;
+    border: none;
+    border-bottom: 1px solid var(--color-border);
 }
 
 .tab-list-pills {
@@ -48,33 +48,28 @@
     color: var(--color-text-secondary);
     background: transparent;
     border: none;
-    border-radius: var(--radius-md);
+    border-radius: 0;
     cursor: pointer;
     border: 1px solid transparent;
     transition:
         color var(--transition-fast),
         background-color var(--transition-fast),
-        border-color var(--transition-fast),
-        box-shadow var(--transition-fast),
-        transform var(--transition-fast);
+        border-color var(--transition-fast);
     white-space: nowrap;
     position: relative;
 }
 
 .tab-btn:hover {
     color: var(--color-text-primary);
-    background-color: var(--color-glass-hover);
+    background-color: transparent;
 }
 
 .tab-btn.is-active {
     color: var(--color-text-primary);
-    background-color: var(--color-bg-tertiary);
-    border-color: var(--color-border-hover);
-    box-shadow: var(--shadow-sm), var(--shadow-inner);
-}
-
-.tab-btn:active {
-    transform: translateY(1px);
+    background-color: transparent;
+    border-color: transparent;
+    border-bottom-color: var(--color-text-primary);
+    box-shadow: none;
 }
 
 .tab-btn svg {
@@ -104,8 +99,8 @@
 .tab-list-pills .tab-btn.is-active {
     background-color: var(--color-accent-active);
     border-color: var(--color-accent);
-    color: white;
-    box-shadow: var(--shadow-accent), var(--shadow-inner);
+    color: var(--color-bg-primary);
+    box-shadow: none;
 }
 
 /* ========== Tab Underline Variant ========== */
@@ -200,16 +195,15 @@
 }
 
 .generation-tabs .tab-list {
-    background-color: rgba(16, 19, 26, 0.78);
-    padding: var(--spacing-1);
+    background-color: transparent;
+    padding: 0;
     border-color: var(--color-border);
-    backdrop-filter: blur(var(--blur-sm));
-    -webkit-backdrop-filter: blur(var(--blur-sm));
 }
 
 .generation-tabs .tab-btn {
     flex: 1;
     justify-content: center;
+    border-bottom-width: 2px;
 }
 
 .generation-tabs .tab-btn svg {
@@ -219,10 +213,9 @@
 
 /* Tab icons with specific colors when active */
 .generation-tabs .tab-btn[data-tab="text"].is-active {
-    background:
-        linear-gradient(180deg, rgba(255, 255, 255, 0.045), transparent),
-        var(--color-accent-soft);
-    border-color: rgba(91, 141, 239, 0.32);
+    background: transparent;
+    border-color: transparent;
+    border-bottom-color: var(--color-text-primary);
 }
 
 .generation-tabs .tab-btn[data-tab="text"].is-active svg,
@@ -233,24 +226,21 @@
 }
 
 .generation-tabs .tab-btn[data-tab="image"].is-active {
-    background:
-        linear-gradient(180deg, rgba(255, 255, 255, 0.045), transparent),
-        var(--color-accent-soft);
-    border-color: rgba(91, 141, 239, 0.32);
+    background: transparent;
+    border-color: transparent;
+    border-bottom-color: var(--color-text-primary);
 }
 
 .generation-tabs .tab-btn[data-tab="audio"].is-active {
-    background:
-        linear-gradient(180deg, rgba(255, 255, 255, 0.045), transparent),
-        var(--color-accent-soft);
-    border-color: rgba(91, 141, 239, 0.32);
+    background: transparent;
+    border-color: transparent;
+    border-bottom-color: var(--color-text-primary);
 }
 
 .generation-tabs .tab-btn[data-tab="video"].is-active {
-    background:
-        linear-gradient(180deg, rgba(255, 255, 255, 0.045), transparent),
-        var(--color-accent-soft);
-    border-color: rgba(91, 141, 239, 0.32);
+    background: transparent;
+    border-color: transparent;
+    border-bottom-color: var(--color-text-primary);
 }
 
 /* ========== Disabled Tabs ========== */
@@ -303,34 +293,34 @@
         scrollbar-width: none;
         -ms-overflow-style: none;
     }
-    
+
     .tab-list::-webkit-scrollbar {
         display: none;
     }
-    
+
     .tab-btn {
         padding: var(--spacing-2) var(--spacing-3);
         font-size: var(--font-size-xs);
     }
-    
+
     .tab-btn span:not(.tab-badge) {
         display: none;
     }
-    
+
     .tab-btn svg {
         width: 20px;
         height: 20px;
     }
-    
+
     .generation-tabs .tab-btn {
         padding: var(--spacing-3);
         min-width: 74px;
     }
-    
+
     .tabs-vertical {
         flex-direction: column;
     }
-    
+
     .tabs-vertical .tab-list {
         width: 100%;
         flex-direction: row;
@@ -339,10 +329,9 @@
 
 @media (max-width: 480px) {
     .generation-tabs .tab-list {
-        gap: var(--spacing-1);
-        padding: 5px;
+        gap: var(--spacing-2);
     }
-    
+
     .generation-tabs .tab-btn {
         padding: var(--spacing-2);
         min-width: 64px;

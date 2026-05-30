@@ -45,26 +45,24 @@
     padding: 0 var(--spacing-3);
     font-size: var(--font-size-sm);
     color: var(--color-text-primary);
-    background-color: rgba(255, 255, 255, 0.035);
+    background-color: var(--color-bg-tertiary);
     border: 1px solid var(--color-border);
     border-radius: var(--radius-md);
-    box-shadow: var(--shadow-inner);
     transition:
         background-color var(--transition-fast),
-        border-color var(--transition-fast),
-        box-shadow var(--transition-fast);
+        border-color var(--transition-fast);
 }
 
 .form-input:hover {
     border-color: var(--color-border-hover);
-    background-color: rgba(255, 255, 255, 0.052);
+    background-color: var(--color-bg-tertiary);
 }
 
 .form-input:focus {
     outline: none;
     border-color: var(--color-accent);
-    background-color: rgba(255, 255, 255, 0.06);
-    box-shadow: 0 0 0 3px var(--color-accent-muted), var(--shadow-inner);
+    background-color: var(--color-bg-tertiary);
+    box-shadow: 0 0 0 2px var(--color-accent-muted);
 }
 
 .form-input::placeholder {
@@ -174,15 +172,13 @@
     padding: 0 var(--spacing-10) 0 var(--spacing-3);
     font-size: var(--font-size-sm);
     color: var(--color-text-primary);
-    background-color: rgba(255, 255, 255, 0.035);
+    background-color: var(--color-bg-tertiary);
     border: 1px solid var(--color-border);
     border-radius: var(--radius-md);
     cursor: pointer;
-    box-shadow: var(--shadow-inner);
     transition:
         background-color var(--transition-fast),
-        border-color var(--transition-fast),
-        box-shadow var(--transition-fast);
+        border-color var(--transition-fast);
     appearance: none;
     background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%23a0a0b0' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
     background-repeat: no-repeat;
@@ -192,14 +188,14 @@
 
 .form-select:hover {
     border-color: var(--color-border-hover);
-    background-color: rgba(255, 255, 255, 0.052);
+    background-color: var(--color-bg-tertiary);
 }
 
 .form-select:focus {
     outline: none;
     border-color: var(--color-accent);
-    background-color: rgba(255, 255, 255, 0.06);
-    box-shadow: 0 0 0 3px var(--color-accent-muted), var(--shadow-inner);
+    background-color: var(--color-bg-tertiary);
+    box-shadow: 0 0 0 2px var(--color-accent-muted);
 }
 
 .form-select:disabled {
@@ -220,28 +216,26 @@
     font-size: var(--font-size-sm);
     font-family: inherit;
     color: var(--color-text-primary);
-    background-color: rgba(255, 255, 255, 0.035);
+    background-color: var(--color-bg-tertiary);
     border: 1px solid var(--color-border);
     border-radius: var(--radius-md);
     resize: vertical;
-    box-shadow: var(--shadow-inner);
     transition:
         background-color var(--transition-fast),
-        border-color var(--transition-fast),
-        box-shadow var(--transition-fast);
+        border-color var(--transition-fast);
     line-height: var(--line-height-normal);
 }
 
 .form-textarea:hover {
     border-color: var(--color-border-hover);
-    background-color: rgba(255, 255, 255, 0.052);
+    background-color: var(--color-bg-tertiary);
 }
 
 .form-textarea:focus {
     outline: none;
     border-color: var(--color-accent);
-    background-color: rgba(255, 255, 255, 0.06);
-    box-shadow: 0 0 0 3px var(--color-accent-muted), var(--shadow-inner);
+    background-color: var(--color-bg-tertiary);
+    box-shadow: 0 0 0 2px var(--color-accent-muted);
 }
 
 .form-textarea::placeholder {
@@ -300,7 +294,7 @@
 
 .toggle-input:checked + .toggle-switch {
     background-color: var(--color-accent-active);
-    border-color: rgba(255, 255, 255, 0.16);
+    border-color: var(--color-accent-active);
 }
 
 .toggle-input:checked + .toggle-switch::after {
@@ -309,7 +303,7 @@
 }
 
 .toggle-input:focus-visible + .toggle-switch {
-    box-shadow: 0 0 0 3px var(--color-accent-muted);
+    box-shadow: 0 0 0 2px var(--color-accent-muted);
 }
 
 .toggle-input:disabled + .toggle-switch {
@@ -344,14 +338,12 @@
     align-items: center;
     justify-content: space-between;
     padding: var(--spacing-3) var(--spacing-4);
-    background-color: rgba(255, 255, 255, 0.03);
+    background-color: var(--color-bg-tertiary);
     border: 1px solid var(--color-border);
     border-radius: var(--radius-md);
-    box-shadow: var(--shadow-inner);
     transition:
         background-color var(--transition-fast),
-        border-color var(--transition-fast),
-        transform var(--transition-fast);
+        border-color var(--transition-fast);
 }
 
 .toggle-option:hover {
@@ -399,12 +391,11 @@
     border-radius: var(--radius-full);
     cursor: pointer;
     transition: all var(--transition-fast);
-    box-shadow: var(--shadow-accent);
+    box-shadow: var(--shadow-sm);
 }
 
 .form-range::-webkit-slider-thumb:hover {
-    transform: scale(1.1);
-    box-shadow: 0 10px 24px -16px rgba(91, 141, 239, 0.88);
+    background-color: var(--color-accent-hover);
 }
 
 .form-range::-moz-range-thumb {
@@ -485,8 +476,7 @@
     height: 12px;
     color: white;
     opacity: 0;
-    transform: scale(0.5);
-    transition: all var(--transition-fast);
+    transition: opacity var(--transition-fast);
 }
 
 .checkbox-input:checked + .checkbox-box {
@@ -496,7 +486,6 @@
 
 .checkbox-input:checked + .checkbox-box svg {
     opacity: 1;
-    transform: scale(1);
 }
 
 .checkbox-input:focus-visible + .checkbox-box {
@@ -543,8 +532,7 @@
     background-color: white;
     border-radius: var(--radius-full);
     opacity: 0;
-    transform: scale(0);
-    transition: all var(--transition-fast);
+    transition: opacity var(--transition-fast);
 }
 
 .radio-input:checked + .radio-circle {
@@ -554,7 +542,6 @@
 
 .radio-input:checked + .radio-circle::after {
     opacity: 1;
-    transform: scale(1);
 }
 
 .radio-input:focus-visible + .radio-circle {
