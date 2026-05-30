@@ -26,18 +26,14 @@ body {
     font-weight: var(--font-weight-normal);
     line-height: var(--line-height-normal);
     color: var(--color-text-primary);
-    background:
-        radial-gradient(circle at top right, rgba(91, 141, 239, 0.08), transparent 34rem),
-        linear-gradient(180deg, #0c1017 0%, var(--color-bg-primary) 22rem);
+    background: var(--color-bg-primary);
     min-height: 100vh;
     overflow-x: hidden;
-    transition: background var(--transition-slow), color var(--transition-slow);
+    transition: background-color var(--transition-slow), color var(--transition-slow);
 }
 
 [data-theme="light"] body {
-    background:
-        radial-gradient(circle at top right, rgba(91, 141, 239, 0.12), transparent 32rem),
-        linear-gradient(180deg, #ffffff 0%, var(--color-bg-primary) 22rem);
+    background: var(--color-bg-primary);
 }
 
 /* ========== Typography ========== */
@@ -201,8 +197,8 @@ legend {
 }
 
 :focus-visible {
-    outline: 2px solid rgba(91, 141, 239, 0.72);
-    outline-offset: 3px;
+    outline: 2px solid var(--color-text-tertiary);
+    outline-offset: 2px;
 }
 
 /* ========== Selection ========== */

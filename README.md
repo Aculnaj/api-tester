@@ -1,6 +1,6 @@
 # API Tester v2
 
-A modern, web-based API testing tool for AI models with a beautiful glassmorphism UI.
+A modern, web-based API testing tool for AI models with a clean app UI.
 
 ## 🌐 Live Demo
 
@@ -37,7 +37,7 @@ Access the hosted version directly at **https://aculnaj.github.io/api-tester**
 - ElevenLabs
 
 ### UI Features
-- 🎨 Modern glassmorphism design
+- 🎨 Clean responsive design
 - 🌙 Dark/Light/System theme support
 - 📱 Responsive layout (mobile-friendly)
 - 💾 Local storage for settings persistence
@@ -57,7 +57,7 @@ Visit **https://aculnaj.github.io/api-tester** to use the tool directly.
    ```bash
    # Python
    python3 -m http.server 8080
-   
+
    # Node.js
    npx serve
    ```
