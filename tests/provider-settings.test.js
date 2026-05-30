@@ -28,6 +28,14 @@ test('Anthropic provider uses a custom base URL when one is configured', () => {
     assert.equal(baseUrl, 'https://anthropic-compatible.example/v1');
 });
 
+test('Anthropic Compatible provider uses its configured base URL', () => {
+    const Providers = loadProviders();
+
+    const baseUrl = Providers.getBaseUrl('anthropic_compatible', 'https://proxy.example/messages/v1/');
+
+    assert.equal(baseUrl, 'https://proxy.example/messages/v1');
+});
+
 test('base URL field is visible for Anthropic-compatible providers', () => {
     const classList = {
         hidden: false,
@@ -49,6 +57,9 @@ test('base URL field is visible for Anthropic-compatible providers', () => {
     assert.equal(classList.hidden, false);
 
     Forms.updateBaseUrlVisibility('openai_compatible');
+    assert.equal(classList.hidden, false);
+
+    Forms.updateBaseUrlVisibility('anthropic_compatible');
     assert.equal(classList.hidden, false);
 
     Forms.updateBaseUrlVisibility('openai');

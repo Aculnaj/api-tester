@@ -68,6 +68,15 @@ const Providers = {
             supportsModels: true,
             supportedModes: ['text', 'image', 'audio', 'video']
         },
+        anthropic_compatible: {
+            name: 'Anthropic Compatible',
+            baseUrl: '',
+            supportsCustomBaseUrl: true,
+            models: [],
+            supportsStreaming: true,
+            supportsModels: true,
+            supportedModes: ['text']
+        },
         openai: {
             name: 'OpenAI',
             baseUrl: 'https://api.openai.com/v1',
@@ -269,7 +278,7 @@ const Providers = {
             'Content-Type': 'application/json'
         };
 
-        if (providerId === 'anthropic') {
+        if (providerId === 'anthropic' || providerId === 'anthropic_compatible') {
             headers['x-api-key'] = apiKey;
             headers['anthropic-version'] = '2023-06-01';
             headers['anthropic-dangerous-direct-browser-access'] = 'true';
@@ -395,7 +404,7 @@ const Providers = {
         if (stream === true) {
             body.stream = true;
             // Add stream_options for usage info in streaming mode (OpenAI compatible)
-            if (provider !== 'anthropic') {
+            if (provider !== 'anthropic' && provider !== 'anthropic_compatible') {
                 body.stream_options = { include_usage: true };
             }
         } else {
@@ -415,7 +424,7 @@ const Providers = {
         }
 
         // Anthropic requires max_tokens
-        if (provider === 'anthropic' && !body.max_tokens) {
+        if ((provider === 'anthropic' || provider === 'anthropic_compatible') && !body.max_tokens) {
             body.max_tokens = 4096;
         }
 
@@ -428,7 +437,7 @@ const Providers = {
      * @returns {string} Endpoint path
      */
     getChatEndpoint(provider) {
-        if (provider === 'anthropic') {
+        if (provider === 'anthropic' || provider === 'anthropic_compatible') {
             return '/messages';
         }
         return '/chat/completions';

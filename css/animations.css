@@ -106,14 +106,14 @@
     50% { opacity: 0.5; }
 }
 
-/* ========== Glow Animation ========== */
-.glow {
-    animation: glow 2s ease-in-out infinite alternate;
+/* ========== Accent Breathing Animation ========== */
+.accent-breathe {
+    animation: accent-breathe 2.4s ease-in-out infinite alternate;
 }
 
-@keyframes glow {
-    from { box-shadow: 0 0 5px var(--color-accent-glow); }
-    to { box-shadow: 0 0 20px var(--color-accent-glow), 0 0 30px var(--color-accent-glow); }
+@keyframes accent-breathe {
+    from { box-shadow: var(--shadow-inner), 0 10px 28px -26px rgba(91, 141, 239, 0.45); }
+    to { box-shadow: var(--shadow-inner), 0 14px 34px -24px rgba(91, 141, 239, 0.72); }
 }
 
 /* ========== Skeleton Loading ========== */
