@@ -14,9 +14,10 @@
     display: flex;
     gap: var(--spacing-1);
     padding: var(--spacing-2);
-    background-color: var(--color-glass);
+    background-color: rgba(255, 255, 255, 0.032);
     border-radius: var(--radius-lg);
     border: 1px solid var(--color-border);
+    box-shadow: var(--shadow-inner);
 }
 
 .tab-list-pills {
@@ -49,7 +50,13 @@
     border: none;
     border-radius: var(--radius-md);
     cursor: pointer;
-    transition: all var(--transition-fast);
+    border: 1px solid transparent;
+    transition:
+        color var(--transition-fast),
+        background-color var(--transition-fast),
+        border-color var(--transition-fast),
+        box-shadow var(--transition-fast),
+        transform var(--transition-fast);
     white-space: nowrap;
     position: relative;
 }
@@ -61,8 +68,13 @@
 
 .tab-btn.is-active {
     color: var(--color-text-primary);
-    background-color: var(--color-bg-secondary);
-    box-shadow: var(--shadow-sm);
+    background-color: var(--color-bg-tertiary);
+    border-color: var(--color-border-hover);
+    box-shadow: var(--shadow-sm), var(--shadow-inner);
+}
+
+.tab-btn:active {
+    transform: translateY(1px);
 }
 
 .tab-btn svg {
@@ -90,10 +102,10 @@
 }
 
 .tab-list-pills .tab-btn.is-active {
-    background-color: var(--color-accent);
+    background-color: var(--color-accent-active);
     border-color: var(--color-accent);
     color: white;
-    box-shadow: var(--shadow-glow);
+    box-shadow: var(--shadow-accent), var(--shadow-inner);
 }
 
 /* ========== Tab Underline Variant ========== */
@@ -188,8 +200,11 @@
 }
 
 .generation-tabs .tab-list {
-    background-color: var(--color-bg-secondary);
+    background-color: rgba(16, 19, 26, 0.78);
     padding: var(--spacing-1);
+    border-color: var(--color-border);
+    backdrop-filter: blur(var(--blur-sm));
+    -webkit-backdrop-filter: blur(var(--blur-sm));
 }
 
 .generation-tabs .tab-btn {
@@ -204,39 +219,38 @@
 
 /* Tab icons with specific colors when active */
 .generation-tabs .tab-btn[data-tab="text"].is-active {
-    background: linear-gradient(135deg, rgba(99, 102, 241, 0.15), rgba(99, 102, 241, 0.05));
-    border: 1px solid rgba(99, 102, 241, 0.2);
+    background:
+        linear-gradient(180deg, rgba(255, 255, 255, 0.045), transparent),
+        var(--color-accent-soft);
+    border-color: rgba(91, 141, 239, 0.32);
 }
 
-.generation-tabs .tab-btn[data-tab="text"].is-active svg {
+.generation-tabs .tab-btn[data-tab="text"].is-active svg,
+.generation-tabs .tab-btn[data-tab="image"].is-active svg,
+.generation-tabs .tab-btn[data-tab="audio"].is-active svg,
+.generation-tabs .tab-btn[data-tab="video"].is-active svg {
     color: var(--color-accent);
 }
 
 .generation-tabs .tab-btn[data-tab="image"].is-active {
-    background: linear-gradient(135deg, rgba(236, 72, 153, 0.15), rgba(236, 72, 153, 0.05));
-    border: 1px solid rgba(236, 72, 153, 0.2);
-}
-
-.generation-tabs .tab-btn[data-tab="image"].is-active svg {
-    color: #ec4899;
+    background:
+        linear-gradient(180deg, rgba(255, 255, 255, 0.045), transparent),
+        var(--color-accent-soft);
+    border-color: rgba(91, 141, 239, 0.32);
 }
 
 .generation-tabs .tab-btn[data-tab="audio"].is-active {
-    background: linear-gradient(135deg, rgba(34, 197, 94, 0.15), rgba(34, 197, 94, 0.05));
-    border: 1px solid rgba(34, 197, 94, 0.2);
-}
-
-.generation-tabs .tab-btn[data-tab="audio"].is-active svg {
-    color: var(--color-success);
+    background:
+        linear-gradient(180deg, rgba(255, 255, 255, 0.045), transparent),
+        var(--color-accent-soft);
+    border-color: rgba(91, 141, 239, 0.32);
 }
 
 .generation-tabs .tab-btn[data-tab="video"].is-active {
-    background: linear-gradient(135deg, rgba(245, 158, 11, 0.15), rgba(245, 158, 11, 0.05));
-    border: 1px solid rgba(245, 158, 11, 0.2);
-}
-
-.generation-tabs .tab-btn[data-tab="video"].is-active svg {
-    color: var(--color-warning);
+    background:
+        linear-gradient(180deg, rgba(255, 255, 255, 0.045), transparent),
+        var(--color-accent-soft);
+    border-color: rgba(91, 141, 239, 0.32);
 }
 
 /* ========== Disabled Tabs ========== */
@@ -284,6 +298,7 @@
 @media (max-width: 768px) {
     .tab-list {
         overflow-x: auto;
+        max-width: 100%;
         -webkit-overflow-scrolling: touch;
         scrollbar-width: none;
         -ms-overflow-style: none;
@@ -309,6 +324,7 @@
     
     .generation-tabs .tab-btn {
         padding: var(--spacing-3);
+        min-width: 74px;
     }
     
     .tabs-vertical {
@@ -324,9 +340,11 @@
 @media (max-width: 480px) {
     .generation-tabs .tab-list {
         gap: var(--spacing-1);
+        padding: 5px;
     }
     
     .generation-tabs .tab-btn {
         padding: var(--spacing-2);
+        min-width: 64px;
     }
 }

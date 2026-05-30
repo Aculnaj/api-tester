@@ -15,11 +15,17 @@
     font-weight: var(--font-weight-medium);
     line-height: 1;
     color: var(--color-text-primary);
-    background-color: var(--color-glass);
+    background-color: rgba(255, 255, 255, 0.035);
     border: 1px solid var(--color-border);
     border-radius: var(--radius-md);
     cursor: pointer;
-    transition: all var(--transition-fast);
+    box-shadow: var(--shadow-inner);
+    transition:
+        color var(--transition-fast),
+        background-color var(--transition-fast),
+        border-color var(--transition-fast),
+        box-shadow var(--transition-fast),
+        transform var(--transition-fast);
     white-space: nowrap;
     text-decoration: none;
     user-select: none;
@@ -28,10 +34,11 @@
 .btn:hover {
     background-color: var(--color-glass-hover);
     border-color: var(--color-border-hover);
+    box-shadow: var(--shadow-sm), var(--shadow-inner);
 }
 
 .btn:active {
-    transform: translateY(1px);
+    transform: translateY(1px) scale(0.99);
 }
 
 .btn:focus-visible {
@@ -77,12 +84,12 @@
 /* ========== Primary Button ========== */
 .btn-primary {
     color: white;
-    background-color: var(--color-accent);
+    background-color: var(--color-accent-active);
     border-color: var(--color-accent);
 }
 
 .btn-primary:hover {
-    background-color: var(--color-accent-hover);
+    background-color: var(--color-accent);
     border-color: var(--color-accent-hover);
 }
 
@@ -129,7 +136,7 @@
 
 .btn-outline:hover {
     color: white;
-    background-color: var(--color-accent);
+    background-color: var(--color-accent-active);
     border-color: var(--color-accent);
 }
 
@@ -285,20 +292,25 @@
     font-size: var(--font-size-base);
     font-weight: var(--font-weight-semibold);
     color: white;
-    background: linear-gradient(135deg, var(--color-accent), var(--color-accent-hover));
-    border: none;
+    background:
+        linear-gradient(180deg, rgba(255, 255, 255, 0.18), transparent 48%),
+        linear-gradient(135deg, var(--color-accent-active), var(--color-accent));
+    border: 1px solid rgba(255, 255, 255, 0.1);
     border-radius: var(--radius-lg);
-    box-shadow: var(--shadow-md), 0 0 20px var(--color-accent-glow);
-    transition: all var(--transition-base);
+    box-shadow: var(--shadow-accent), var(--shadow-inner);
+    transition:
+        background var(--transition-base),
+        box-shadow var(--transition-base),
+        transform var(--transition-base);
 }
 
 .btn-generate:hover {
-    transform: translateY(-2px);
-    box-shadow: var(--shadow-lg), 0 0 30px var(--color-accent-glow);
+    transform: translateY(-1px);
+    box-shadow: 0 18px 38px -25px rgba(91, 141, 239, 0.86), var(--shadow-inner);
 }
 
 .btn-generate:active {
-    transform: translateY(0);
+    transform: translateY(1px) scale(0.995);
 }
 
 .btn-generate:disabled {
@@ -318,15 +330,17 @@
     font-size: var(--font-size-base);
     font-weight: var(--font-weight-semibold);
     color: white;
-    background: linear-gradient(135deg, var(--color-error), #dc2626);
-    border: none;
+    background:
+        linear-gradient(180deg, rgba(255, 255, 255, 0.14), transparent 50%),
+        linear-gradient(135deg, #bb4d4d, var(--color-error));
+    border: 1px solid rgba(255, 255, 255, 0.1);
     border-radius: var(--radius-lg);
     box-shadow: var(--shadow-md);
 }
 
 .btn-stop:hover {
-    transform: translateY(-2px);
-    box-shadow: var(--shadow-lg), 0 0 20px rgba(239, 68, 68, 0.4);
+    transform: translateY(-1px);
+    box-shadow: 0 18px 38px -25px rgba(225, 99, 99, 0.76), var(--shadow-inner);
 }
 
 /* ========== Theme Toggle Buttons ========== */
@@ -334,9 +348,10 @@
     display: flex;
     gap: var(--spacing-1);
     padding: var(--spacing-1);
-    background-color: var(--color-glass);
+    background-color: rgba(255, 255, 255, 0.035);
     border-radius: var(--radius-md);
     border: 1px solid var(--color-border);
+    box-shadow: var(--shadow-inner);
 }
 
 .theme-toggle-btn {
@@ -350,7 +365,10 @@
     border-radius: var(--radius-sm);
     color: var(--color-text-secondary);
     cursor: pointer;
-    transition: all var(--transition-fast);
+    transition:
+        color var(--transition-fast),
+        background-color var(--transition-fast),
+        transform var(--transition-fast);
 }
 
 .theme-toggle-btn:hover {
@@ -361,6 +379,7 @@
 .theme-toggle-btn.is-active {
     color: var(--color-accent);
     background-color: var(--color-accent-muted);
+    box-shadow: var(--shadow-inner);
 }
 
 .theme-toggle-btn svg {
@@ -483,5 +502,14 @@
     .btn-generate {
         height: 44px;
         padding: 0 var(--spacing-6);
+    }
+
+    .theme-toggle-group {
+        gap: 0;
+    }
+
+    .theme-toggle-btn {
+        width: 30px;
+        height: 30px;
     }
 }

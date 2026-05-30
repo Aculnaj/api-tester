@@ -45,20 +45,26 @@
     padding: 0 var(--spacing-3);
     font-size: var(--font-size-sm);
     color: var(--color-text-primary);
-    background-color: var(--color-bg-tertiary);
+    background-color: rgba(255, 255, 255, 0.035);
     border: 1px solid var(--color-border);
     border-radius: var(--radius-md);
-    transition: all var(--transition-fast);
+    box-shadow: var(--shadow-inner);
+    transition:
+        background-color var(--transition-fast),
+        border-color var(--transition-fast),
+        box-shadow var(--transition-fast);
 }
 
 .form-input:hover {
     border-color: var(--color-border-hover);
+    background-color: rgba(255, 255, 255, 0.052);
 }
 
 .form-input:focus {
     outline: none;
     border-color: var(--color-accent);
-    box-shadow: 0 0 0 3px var(--color-accent-muted);
+    background-color: rgba(255, 255, 255, 0.06);
+    box-shadow: 0 0 0 3px var(--color-accent-muted), var(--shadow-inner);
 }
 
 .form-input::placeholder {
@@ -168,11 +174,15 @@
     padding: 0 var(--spacing-10) 0 var(--spacing-3);
     font-size: var(--font-size-sm);
     color: var(--color-text-primary);
-    background-color: var(--color-bg-tertiary);
+    background-color: rgba(255, 255, 255, 0.035);
     border: 1px solid var(--color-border);
     border-radius: var(--radius-md);
     cursor: pointer;
-    transition: all var(--transition-fast);
+    box-shadow: var(--shadow-inner);
+    transition:
+        background-color var(--transition-fast),
+        border-color var(--transition-fast),
+        box-shadow var(--transition-fast);
     appearance: none;
     background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%23a0a0b0' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
     background-repeat: no-repeat;
@@ -182,12 +192,14 @@
 
 .form-select:hover {
     border-color: var(--color-border-hover);
+    background-color: rgba(255, 255, 255, 0.052);
 }
 
 .form-select:focus {
     outline: none;
     border-color: var(--color-accent);
-    box-shadow: 0 0 0 3px var(--color-accent-muted);
+    background-color: rgba(255, 255, 255, 0.06);
+    box-shadow: 0 0 0 3px var(--color-accent-muted), var(--shadow-inner);
 }
 
 .form-select:disabled {
@@ -208,22 +220,28 @@
     font-size: var(--font-size-sm);
     font-family: inherit;
     color: var(--color-text-primary);
-    background-color: var(--color-bg-tertiary);
+    background-color: rgba(255, 255, 255, 0.035);
     border: 1px solid var(--color-border);
     border-radius: var(--radius-md);
     resize: vertical;
-    transition: all var(--transition-fast);
+    box-shadow: var(--shadow-inner);
+    transition:
+        background-color var(--transition-fast),
+        border-color var(--transition-fast),
+        box-shadow var(--transition-fast);
     line-height: var(--line-height-normal);
 }
 
 .form-textarea:hover {
     border-color: var(--color-border-hover);
+    background-color: rgba(255, 255, 255, 0.052);
 }
 
 .form-textarea:focus {
     outline: none;
     border-color: var(--color-accent);
-    box-shadow: 0 0 0 3px var(--color-accent-muted);
+    background-color: rgba(255, 255, 255, 0.06);
+    box-shadow: 0 0 0 3px var(--color-accent-muted), var(--shadow-inner);
 }
 
 .form-textarea::placeholder {
@@ -260,7 +278,8 @@
     position: relative;
     width: 44px;
     height: 24px;
-    background-color: var(--color-glass-active);
+    background-color: rgba(255, 255, 255, 0.11);
+    border: 1px solid var(--color-border);
     border-radius: var(--radius-full);
     transition: all var(--transition-fast);
     flex-shrink: 0;
@@ -271,16 +290,17 @@
     position: absolute;
     top: 2px;
     left: 2px;
-    width: 20px;
-    height: 20px;
-    background-color: var(--color-text-primary);
+    width: 18px;
+    height: 18px;
+    background-color: var(--color-text-secondary);
     border-radius: var(--radius-full);
     transition: all var(--transition-fast);
     box-shadow: var(--shadow-sm);
 }
 
 .toggle-input:checked + .toggle-switch {
-    background-color: var(--color-accent);
+    background-color: var(--color-accent-active);
+    border-color: rgba(255, 255, 255, 0.16);
 }
 
 .toggle-input:checked + .toggle-switch::after {
@@ -324,10 +344,14 @@
     align-items: center;
     justify-content: space-between;
     padding: var(--spacing-3) var(--spacing-4);
-    background-color: var(--color-glass);
+    background-color: rgba(255, 255, 255, 0.03);
     border: 1px solid var(--color-border);
     border-radius: var(--radius-md);
-    transition: all var(--transition-fast);
+    box-shadow: var(--shadow-inner);
+    transition:
+        background-color var(--transition-fast),
+        border-color var(--transition-fast),
+        transform var(--transition-fast);
 }
 
 .toggle-option:hover {
@@ -375,12 +399,12 @@
     border-radius: var(--radius-full);
     cursor: pointer;
     transition: all var(--transition-fast);
-    box-shadow: var(--shadow-md);
+    box-shadow: var(--shadow-accent);
 }
 
 .form-range::-webkit-slider-thumb:hover {
     transform: scale(1.1);
-    box-shadow: var(--shadow-glow);
+    box-shadow: 0 10px 24px -16px rgba(91, 141, 239, 0.88);
 }
 
 .form-range::-moz-range-thumb {
