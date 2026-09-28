@@ -6,6 +6,12 @@
 const Providers = {
     // CORS Proxy URL
     CORS_PROXY_URL: 'https://corsproxy.el1druz0.workers.dev/',
+
+    // localStorage key for the remembered per-origin route decision
+    ROUTES_STORAGE_KEY: 'api-tester:proxy-routes',
+
+    // origin -> 'direct' | 'proxy'; lazily populated from localStorage
+    _routes: null,
     
     // Provider configurations
     configs: {
@@ -244,27 +250,168 @@ const Providers = {
      * Get base URL for provider
      * @param {string} providerId - Provider ID
      * @param {string} customBaseUrl - Custom base URL (for compatible providers)
-     * @param {boolean} corsProxyEnabled - Whether to use CORS proxy (default: false)
      * @returns {string} Base URL
      */
-    getBaseUrl(providerId, customBaseUrl = '', corsProxyEnabled = false) {
-        let baseUrl;
+    getBaseUrl(providerId, customBaseUrl = '') {
         const config = this.configs[providerId];
-        
+
         if (!config) return '';
 
         if (config.supportsCustomBaseUrl && customBaseUrl.trim()) {
-            baseUrl = customBaseUrl.trim().replace(/\/$/, '');
-        } else {
-            baseUrl = config.baseUrl || '';
+            return customBaseUrl.trim().replace(/\/$/, '');
         }
-        
-        // Apply CORS proxy if enabled
-        if (corsProxyEnabled && baseUrl) {
-            return this.CORS_PROXY_URL + baseUrl;
+
+        return config.baseUrl || '';
+    },
+
+    /**
+     * Origin of a URL, used as the key for the remembered route decision
+     * @param {string} url - Absolute request URL
+     * @returns {string|null} Origin, or null if the URL cannot be parsed
+     */
+    routeKey(url) {
+        try {
+            return new URL(url, window.location?.origin).origin;
+        } catch (e) {
+            return null;
         }
-        
-        return baseUrl;
+    },
+
+    /**
+     * Remembered routes, hydrated from localStorage on first use
+     * @returns {Map<string, string>} origin -> 'direct' | 'proxy'
+     */
+    getRoutes() {
+        if (this._routes) return this._routes;
+
+        this._routes = new Map();
+        try {
+            const stored = window.localStorage?.getItem(this.ROUTES_STORAGE_KEY);
+            if (stored) {
+                for (const [origin, route] of Object.entries(JSON.parse(stored))) {
+                    this._routes.set(origin, route);
+                }
+            }
+        } catch (e) {
+            // Storage unavailable (private mode, blocked cookies) - stay in-memory
+        }
+
+        return this._routes;
+    },
+
+    /**
+     * Remember whether an origin works directly or needs the proxy
+     * @param {string} url - Request URL
+     * @param {string} route - 'direct' or 'proxy'
+     */
+    setRoute(url, route) {
+        const key = this.routeKey(url);
+        if (!key) return;
+
+        this.getRoutes().set(key, route);
+        try {
+            window.localStorage?.setItem(
+                this.ROUTES_STORAGE_KEY,
+                JSON.stringify(Object.fromEntries(this.getRoutes()))
+            );
+        } catch (e) {
+            // Persisting is best-effort
+        }
+    },
+
+    /**
+     * Whether a failure is the browser refusing to hand us a response.
+     * CORS blocks and connection errors both surface as an opaque TypeError;
+     * HTTP errors and aborts arrive as a Response and must not be retried.
+     * @param {Error} error - Error thrown by fetch
+     * @returns {boolean} Whether the proxy fallback is worth trying
+     */
+    isBlockedByCors(error) {
+        return error instanceof TypeError;
+    },
+
+    /**
+     * Perform a request through the CORS proxy.
+     *
+     * A proxied call can fail for two very different reasons: the provider
+     * rejected the request, or the proxy never reached the provider at all.
+     * The latter is reported by the proxy as its own {error, message} envelope
+     * (or an HTML error page from the edge) and would otherwise be swallowed
+     * into a bare "500", hiding the only useful diagnostic we have.
+     * @param {string} url - Absolute request URL
+     * @param {Object} options - fetch options
+     * @returns {Promise<Response>} Proxied response
+     * @throws {Error} If the proxy itself could not reach the provider
+     */
+    async fetchProxied(url, options = {}) {
+        const response = await fetch(this.CORS_PROXY_URL + url, options);
+
+        if (response.ok) return response;
+
+        const reason = await this.describeProxyFailure(response);
+        if (!reason) return response;
+
+        throw new Error(
+            `The CORS proxy could not reach ${this.routeKey(url) || url} (${reason}). ` +
+            'The provider blocks direct browser access and is unreachable via the proxy.'
+        );
+    },
+
+    /**
+     * Extract the proxy's own failure reason from a non-OK proxied response.
+     * @param {Response} response - Proxied response
+     * @returns {Promise<string|null>} Reason, or null if the provider answered
+     */
+    async describeProxyFailure(response) {
+        // 4xx means the provider saw the request and rejected it - the caller
+        // reports that error far better than we can, using the real payload.
+        if (response.status < 500) return null;
+
+        let detail = `${response.status} ${response.statusText}`.trim();
+        try {
+            const body = await response.clone().json();
+            if (body?.message) detail = body.message;
+        } catch (e) {
+            // Edge errors arrive as HTML; the status line is all we get.
+        }
+
+        return detail;
+    },
+
+    /**
+     * Fetch with automatic CORS handling: request the provider directly and
+     * retry through the CORS proxy only when the browser blocks the response.
+     * The outcome is remembered per origin, so each provider pays for at most
+     * one failed direct attempt per browser profile.
+     * @param {string} url - Absolute request URL
+     * @param {Object} options - fetch options
+     * @returns {Promise<Response>} Response from whichever route succeeded
+     * @throws {Error} If both the direct and the proxied request fail
+     */
+    async fetchAuto(url, options = {}) {
+        const remembered = this.getRoutes().get(this.routeKey(url));
+
+        if (remembered !== 'proxy') {
+            try {
+                const response = await fetch(url, options);
+                this.setRoute(url, 'direct');
+                return response;
+            } catch (error) {
+                if (!this.isBlockedByCors(error)) throw error;
+            }
+        }
+
+        try {
+            const response = await this.fetchProxied(url, options);
+            this.setRoute(url, 'proxy');
+            return response;
+        } catch (error) {
+            if (!this.isBlockedByCors(error)) throw error;
+            throw new Error(
+                'Request failed both directly and via the CORS proxy. ' +
+                'The API may be blocking browser access, or you may be offline.'
+            );
+        }
     },
 
     /**
@@ -313,16 +460,16 @@ const Providers = {
      * @throws {Error} If fetching models fails
      */
     async fetchModels(settings) {
-        const { provider, baseUrl, apiKey, corsProxyEnabled } = settings;
+        const { provider, baseUrl, apiKey } = settings;
         const config = this.getConfig(provider);
         
         if (!config.supportsModels) {
             return config.models || [];
         }
 
-        const url = `${this.getBaseUrl(provider, baseUrl, corsProxyEnabled)}/models`;
-        
-        const response = await fetch(url, {
+        const url = `${this.getBaseUrl(provider, baseUrl)}/models`;
+
+        const response = await this.fetchAuto(url, {
             method: 'GET',
             headers: this.getHeaders(provider, apiKey)
         });

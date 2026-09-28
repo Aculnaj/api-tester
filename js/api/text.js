@@ -71,7 +71,7 @@ const TextAPI = {
         });
 
         // Get URL and headers
-        const baseUrl = Providers.getBaseUrl(providerSettings.provider, providerSettings.baseUrl, providerSettings.corsProxyEnabled);
+        const baseUrl = Providers.getBaseUrl(providerSettings.provider, providerSettings.baseUrl);
         const endpoint = Providers.getChatEndpoint(providerSettings.provider);
         const url = `${baseUrl}${endpoint}`;
         const headers = Providers.getHeaders(providerSettings.provider, providerSettings.apiKey);
@@ -79,7 +79,7 @@ const TextAPI = {
         this.stats.startTime = performance.now();
 
         try {
-            const response = await fetch(url, {
+            const response = await Providers.fetchAuto(url, {
                 method: 'POST',
                 headers,
                 body: JSON.stringify(requestBody),

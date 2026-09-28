@@ -12,6 +12,20 @@
  * 2. Create a new worker
  * 3. Paste this code
  * 4. Deploy
+ *
+ * WARNING: the deployed worker at corsproxy.el1druz0.workers.dev is NOT this
+ * file. It additionally rate-limits callers, which this version lacks - the
+ * live worker answers bursts with 429 {"error":"Slow down"} even though no
+ * redeploy has happened. Publishing this file as-is would silently drop that
+ * protection and can get the worker throttled by Cloudflare instead.
+ * Reconcile the rate limiting here before deploying.
+ *
+ * Verified behaviour of the deployed worker (2026-09-27):
+ * - forwards requests and injects the CORS headers below correctly
+ * - passes provider rejections through untouched (e.g. OpenAI 401)
+ * - returns {"error":"Proxy error","message":"Network connection lost."} (500)
+ *   when the target refuses the connection from Cloudflare's edge, e.g.
+ *   inference.baseten.co, which is therefore unusable through any such proxy
  */
 
 export default {

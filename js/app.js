@@ -127,30 +127,12 @@ const App = {
                 }
                 this.updateTabsForProvider(provider);
                 this.updateGetKeyLinkVisibility(provider);
-                this.updateCorsProxyForProvider(provider);
                 this.saveProviderSettings();
             });
             
             // Initialize tabs and get key link for current provider
             this.updateTabsForProvider(providerSelect.value);
             this.updateGetKeyLinkVisibility(providerSelect.value);
-        }
-    },
-
-    /**
-     * Update CORS proxy toggle based on provider
-     * Automatically enables CORS proxy for providers that require it (e.g., Baseten)
-     * @param {string} provider - Provider ID
-     */
-    updateCorsProxyForProvider(provider) {
-        const corsProxyToggle = document.getElementById('cors-proxy-toggle');
-        if (corsProxyToggle) {
-            // Providers that require CORS proxy
-            const providersRequiringProxy = ['baseten'];
-            
-            if (providersRequiringProxy.includes(provider)) {
-                corsProxyToggle.checked = true;
-            }
         }
     },
 
@@ -201,7 +183,7 @@ const App = {
      */
     setupAutoSave() {
         // Provider settings auto-save
-        const providerInputs = ['provider-select', 'base-url-input', 'api-key-input', 'model-select', 'custom-model-input', 'cors-proxy-toggle'];
+        const providerInputs = ['provider-select', 'base-url-input', 'api-key-input', 'model-select', 'custom-model-input'];
         providerInputs.forEach(id => {
             const el = document.getElementById(id);
             if (el) {
@@ -572,7 +554,7 @@ const App = {
             console.error('Failed to fetch models:', error);
             // Show custom model input on error so user can still enter model name
             this.showCustomModelInput();
-            Toast.error(`Failed to fetch models: ${error.message}`);
+            Toast.error(error.message);
         } finally {
             if (refreshBtn) refreshBtn.classList.remove('is-loading');
         }

@@ -96,7 +96,7 @@ const AudioAPI = {
         };
 
         // Get URL and headers
-        const baseUrl = Providers.getBaseUrl(providerSettings.provider, providerSettings.baseUrl, providerSettings.corsProxyEnabled);
+        const baseUrl = Providers.getBaseUrl(providerSettings.provider, providerSettings.baseUrl);
         const endpoint = Providers.getTTSEndpoint(providerSettings.provider);
         const url = `${baseUrl}${endpoint}`;
         const headers = Providers.getHeaders(providerSettings.provider, providerSettings.apiKey);
@@ -107,7 +107,7 @@ const AudioAPI = {
             // Show loading state
             this.showLoading('Generating audio...');
 
-            const response = await fetch(url, {
+            const response = await Providers.fetchAuto(url, {
                 method: 'POST',
                 headers,
                 body: JSON.stringify(requestBody),
@@ -196,7 +196,7 @@ const AudioAPI = {
         try {
             this.showLoading('Generating audio with Gemini...');
 
-            const response = await fetch(url, {
+            const response = await Providers.fetchAuto(url, {
                 method: 'POST',
                 headers,
                 body: JSON.stringify(requestBody),
@@ -362,7 +362,7 @@ const AudioAPI = {
         formData.append('model', model);
 
         // Get URL and headers (without Content-Type for FormData)
-        const baseUrl = Providers.getBaseUrl(providerSettings.provider, providerSettings.baseUrl, providerSettings.corsProxyEnabled);
+        const baseUrl = Providers.getBaseUrl(providerSettings.provider, providerSettings.baseUrl);
         const endpoint = Providers.getSTTEndpoint(providerSettings.provider);
         const url = `${baseUrl}${endpoint}`;
         
@@ -379,7 +379,7 @@ const AudioAPI = {
             // Show loading state
             this.showLoading('Transcribing audio...');
 
-            const response = await fetch(url, {
+            const response = await Providers.fetchAuto(url, {
                 method: 'POST',
                 headers,
                 body: formData,
@@ -484,7 +484,7 @@ const AudioAPI = {
         try {
             this.showLoading('Transcribing audio with Gemini...');
 
-            const response = await fetch(url, {
+            const response = await Providers.fetchAuto(url, {
                 method: 'POST',
                 headers,
                 body: JSON.stringify(requestBody),

@@ -32,7 +32,7 @@ const ImageAPI = {
         const requestBody = this.buildRequestBody(formValues, providerSettings);
 
         // Get URL and headers
-        const baseUrl = Providers.getBaseUrl(providerSettings.provider, providerSettings.baseUrl, providerSettings.corsProxyEnabled);
+        const baseUrl = Providers.getBaseUrl(providerSettings.provider, providerSettings.baseUrl);
         const endpoint = Providers.getImageEndpoint(providerSettings.provider);
         const url = `${baseUrl}${endpoint}`;
         const headers = Providers.getHeaders(providerSettings.provider, providerSettings.apiKey);
@@ -43,7 +43,7 @@ const ImageAPI = {
             // Show loading state
             this.showLoading();
 
-            const response = await fetch(url, {
+            const response = await Providers.fetchAuto(url, {
                 method: 'POST',
                 headers,
                 body: JSON.stringify(requestBody),

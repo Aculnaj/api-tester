@@ -41,7 +41,7 @@ const VideoAPI = {
         };
 
         // Get URL and headers
-        const baseUrl = Providers.getBaseUrl(providerSettings.provider, providerSettings.baseUrl, providerSettings.corsProxyEnabled);
+        const baseUrl = Providers.getBaseUrl(providerSettings.provider, providerSettings.baseUrl);
         const endpoint = formValues.endpoint || '/videos/generations';
         const url = `${baseUrl}${endpoint}`;
         const headers = Providers.getHeaders(providerSettings.provider, providerSettings.apiKey);
@@ -52,7 +52,7 @@ const VideoAPI = {
             // Show loading state
             this.showLoading('Initiating video generation...');
 
-            const response = await fetch(url, {
+            const response = await Providers.fetchAuto(url, {
                 method: 'POST',
                 headers,
                 body: JSON.stringify(requestBody),
@@ -163,7 +163,7 @@ const VideoAPI = {
 
             // Start video generation (predictLongRunning)
             const url = `${baseUrl}/models/${veoModel}:predictLongRunning`;
-            const response = await fetch(url, {
+            const response = await Providers.fetchAuto(url, {
                 method: 'POST',
                 headers,
                 body: JSON.stringify(requestBody),
@@ -247,7 +247,7 @@ const VideoAPI = {
 
                     // Check operation status
                     const statusUrl = `${baseUrl}/${operationName}`;
-                    const response = await fetch(statusUrl, {
+                    const response = await Providers.fetchAuto(statusUrl, {
                         method: 'GET',
                         headers: {
                             'x-goog-api-key': apiKey
@@ -348,7 +348,7 @@ const VideoAPI = {
 
                     // Check status
                     const statusUrl = `${baseUrl}/videos/${jobId}`;
-                    const response = await fetch(statusUrl, {
+                    const response = await Providers.fetchAuto(statusUrl, {
                         method: 'GET',
                         headers
                     });
