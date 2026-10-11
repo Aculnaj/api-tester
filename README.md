@@ -44,6 +44,9 @@ Access the hosted version directly at **https://aculnaj.github.io/api-tester**
 - 📋 Configuration save/export/import
 - 📊 Real-time statistics (tokens/sec, latency)
 - 🔄 Streaming response support
+- 🛡️ Automatic CORS handling: requests go direct, fall back to a CORS proxy
+  when the browser blocks them, and transient provider gateway errors (502/503/504)
+  are retried before failing
 
 ## 🚀 Usage
 

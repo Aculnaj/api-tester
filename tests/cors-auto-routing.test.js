@@ -29,6 +29,7 @@ function loadProviders({ fetchImpl, storedRoutes }) {
         Map,
         TypeError,
         JSON,
+        setTimeout,
         fetch: (url, options) => {
             calls.push(url);
             return fetchImpl(url, options);
@@ -183,10 +184,33 @@ test('a provider rejection through the proxy is passed through for the caller to
     assert.equal(response.status, 401);
 });
 
-test('an HTML edge error through the proxy still names the provider and status', async () => {
+test('a transient gateway error is retried, not reported on the first hit', async () => {
+    let proxied = 0;
+    const { Providers, calls } = loadProviders({
+        fetchImpl: async (url) => {
+            if (url.startsWith('https://corsproxy.')) {
+                proxied++;
+                // The provider's own edge answers 502 for the first attempt
+                // only - exactly the interleaving observed against ejl.cc.cd.
+                if (proxied === 1) return { ok: false, status: 502, statusText: 'Bad Gateway' };
+                return okResponse();
+            }
+            throw new TypeError('Failed to fetch');
+        }
+    });
+
+    const response = await Providers.fetchAuto('https://ejl.cc.cd/v1/models');
+
+    assert.equal(response.ok, true);
+    assert.equal(proxied, 2, 'the 502 must be replayed exactly once');
+});
+
+test('a gateway error that outlasts every retry blames the provider, not the proxy', async () => {
+    let proxied = 0;
     const { Providers } = loadProviders({
         fetchImpl: async (url) => {
             if (url.startsWith('https://corsproxy.')) {
+                proxied++;
                 return {
                     ok: false,
                     status: 502,
@@ -199,9 +223,34 @@ test('an HTML edge error through the proxy still names the provider and status',
     });
 
     await assert.rejects(
-        () => Providers.fetchAuto('https://inference.baseten.co/v1/models'),
-        /CORS proxy could not reach https:\/\/inference\.baseten\.co \(502 Bad Gateway\)/
+        () => Providers.fetchAuto('https://ejl.cc.cd/v1/models'),
+        /provider https:\/\/ejl\.cc\.cd returned 502 on 3 attempts/
     );
+    assert.equal(proxied, 3, 'all attempts must be used before giving up');
+});
+
+test('a proxy-side 500 is not mistaken for a transient provider gateway error', async () => {
+    let proxied = 0;
+    const { Providers } = loadProviders({
+        fetchImpl: async (url) => {
+            if (url.startsWith('https://corsproxy.')) {
+                proxied++;
+                return {
+                    ok: false,
+                    status: 500,
+                    statusText: 'Internal Server Error',
+                    json: async () => ({ error: 'Proxy error', message: 'Network connection lost.' })
+                };
+            }
+            throw new TypeError('Failed to fetch');
+        }
+    });
+
+    await assert.rejects(
+        () => Providers.fetchAuto('https://inference.baseten.co/v1/models'),
+        /CORS proxy could not reach/
+    );
+    assert.equal(proxied, 1, 'a proxy 500 must not be replayed');
 });
 
 test('getBaseUrl never embeds the proxy - routing is decided per request', () => {
