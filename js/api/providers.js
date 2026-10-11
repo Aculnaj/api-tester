@@ -7,6 +7,18 @@ const Providers = {
     // CORS Proxy URL
     CORS_PROXY_URL: 'https://corsproxy.el1druz0.workers.dev/',
 
+    // Gateway statuses the provider's own edge answers without processing the
+    // request. They arrive interleaved with successes under load (measured on
+    // ejl.cc.cd: ~40% of 1MB posts, 0% of small ones), so a single attempt
+    // fails far more often than the provider is actually down. Replaying is
+    // safe precisely because a gateway error means no work was done.
+    TRANSIENT_STATUSES: [502, 503, 504],
+
+    // Extra attempts a transient gateway error gets, and the base backoff
+    // between them (doubled each round).
+    PROXY_RETRIES: 2,
+    PROXY_RETRY_DELAY_MS: 300,
+
     // localStorage key for the remembered per-origin route decision
     ROUTES_STORAGE_KEY: 'api-tester:proxy-routes',
 
@@ -333,20 +345,43 @@ const Providers = {
     /**
      * Perform a request through the CORS proxy.
      *
-     * A proxied call can fail for two very different reasons: the provider
-     * rejected the request, or the proxy never reached the provider at all.
-     * The latter is reported by the proxy as its own {error, message} envelope
-     * (or an HTML error page from the edge) and would otherwise be swallowed
-     * into a bare "500", hiding the only useful diagnostic we have.
+     * A proxied call can fail for three different reasons: the provider
+     * rejected the request, the provider's own edge returned a transient
+     * gateway error without processing it, or the proxy never reached the
+     * provider at all. Only the first is the caller's business; the second is
+     * retried here, because replaying a request the edge never handled is
+     * safe, and the third is reported with the proxy's own reason instead of
+     * being swallowed into a bare "500".
      * @param {string} url - Absolute request URL
      * @param {Object} options - fetch options
      * @returns {Promise<Response>} Proxied response
-     * @throws {Error} If the proxy itself could not reach the provider
+     * @throws {Error} If the provider keeps answering a transient gateway
+     *   error, or the proxy itself could not reach the provider
      */
     async fetchProxied(url, options = {}) {
-        const response = await fetch(this.CORS_PROXY_URL + url, options);
+        let response;
 
-        if (response.ok) return response;
+        for (let attempt = 0; ; attempt++) {
+            response = await fetch(this.CORS_PROXY_URL + url, options);
+
+            if (response.ok) return response;
+
+            // A gateway error means the provider never saw the request, so it
+            // can be replayed. Anything else (4xx rejection, a real 5xx the
+            // provider produced) is the provider's answer and is returned.
+            const transient = this.TRANSIENT_STATUSES.includes(response.status);
+            if (!transient || attempt >= this.PROXY_RETRIES) break;
+
+            await this.delay(this.PROXY_RETRY_DELAY_MS * 2 ** attempt);
+        }
+
+        if (this.TRANSIENT_STATUSES.includes(response.status)) {
+            throw new Error(
+                `The provider ${this.routeKey(url) || url} returned ${response.status} ` +
+                `on ${this.PROXY_RETRIES + 1} attempts. This is the provider's own ` +
+                'gateway failing, not the proxy or the request; retry shortly.'
+            );
+        }
 
         const reason = await this.describeProxyFailure(response);
         if (!reason) return response;
@@ -355,6 +390,15 @@ const Providers = {
             `The CORS proxy could not reach ${this.routeKey(url) || url} (${reason}). ` +
             'The provider blocks direct browser access and is unreachable via the proxy.'
         );
+    },
+
+    /**
+     * Sleep for a backoff between retries
+     * @param {number} ms - Milliseconds to wait
+     * @returns {Promise<void>}
+     */
+    delay(ms) {
+        return new Promise(resolve => setTimeout(resolve, ms));
     },
 
     /**
