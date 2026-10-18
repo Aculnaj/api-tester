@@ -130,7 +130,8 @@ const Storage = {
             baseUrl: '',
             apiKey: '',
             model: 'custom',
-            customModel: ''
+            customModel: '',
+            corsProxyEnabled: false
         });
     },
 
