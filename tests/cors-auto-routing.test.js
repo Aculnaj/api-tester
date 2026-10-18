@@ -10,7 +10,7 @@ const rootDir = path.resolve(__dirname, '..');
  * Load providers.js against a fake browser: a scripted fetch, a localStorage
  * stub, and a location origin. Returns the Providers object plus the call log.
  */
-function loadProviders({ fetchImpl, storedRoutes }) {
+function loadProviders({ fetchImpl, storedRoutes, corsProxyEnabled }) {
     const store = new Map();
     if (storedRoutes) store.set('api-tester:proxy-routes', JSON.stringify(storedRoutes));
 
@@ -22,6 +22,14 @@ function loadProviders({ fetchImpl, storedRoutes }) {
             setItem: (key, value) => store.set(key, value)
         }
     };
+
+    // Only present when a test exercises the manual CORS proxy toggle; the
+    // real page always provides it via storage.js.
+    if (corsProxyEnabled !== undefined) {
+        window.Storage = {
+            getProviderSettings: () => ({ corsProxyEnabled })
+        };
+    }
 
     const sandbox = {
         window,
@@ -260,4 +268,32 @@ test('getBaseUrl never embeds the proxy - routing is decided per request', () =>
         Providers.getBaseUrl('aetherapi'),
         'https://api.aetherapi.dev/v1'
     );
+});
+
+test('the manual CORS proxy toggle forces the proxy without a direct attempt', async () => {
+    const { Providers, calls } = loadProviders({
+        corsProxyEnabled: true,
+        fetchImpl: async (url) => {
+            assert.ok(url.startsWith('https://corsproxy.'), `unexpected direct call to ${url}`);
+            return okResponse();
+        }
+    });
+
+    const response = await Providers.fetchAuto('https://api.aetherapi.dev/v1/models');
+
+    assert.equal(response.ok, true);
+    assert.deepEqual(calls, [
+        'https://corsproxy.el1druz0.workers.dev/https://api.aetherapi.dev/v1/models'
+    ]);
+});
+
+test('a forced proxy call does not remember the route, so the toggle stays reversible', async () => {
+    const { Providers, store } = loadProviders({
+        corsProxyEnabled: true,
+        fetchImpl: async () => okResponse()
+    });
+
+    await Providers.fetchAuto('https://api.aetherapi.dev/v1/models');
+
+    assert.equal(store.has('api-tester:proxy-routes'), false);
 });

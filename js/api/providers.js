@@ -423,19 +423,38 @@ const Providers = {
     },
 
     /**
+     * Whether the user forced the CORS proxy on via the settings toggle.
+     * The toggle is the manual escape hatch for providers whose block the
+     * automatic routing cannot observe; when it is on, every request goes
+     * through the proxy without a doomed direct attempt first.
+     * @returns {boolean} Whether the proxy should be used unconditionally
+     */
+    isCorsProxyForced() {
+        try {
+            return window.Storage?.getProviderSettings?.()?.corsProxyEnabled === true;
+        } catch (e) {
+            return false;
+        }
+    },
+
+    /**
      * Fetch with automatic CORS handling: request the provider directly and
      * retry through the CORS proxy only when the browser blocks the response.
      * The outcome is remembered per origin, so each provider pays for at most
      * one failed direct attempt per browser profile.
+     *
+     * When the manual CORS proxy toggle is on, the direct attempt is skipped
+     * and the proxy is used unconditionally; that decision is not remembered,
+     * so turning the toggle back off restores automatic routing.
      * @param {string} url - Absolute request URL
      * @param {Object} options - fetch options
      * @returns {Promise<Response>} Response from whichever route succeeded
      * @throws {Error} If both the direct and the proxied request fail
      */
     async fetchAuto(url, options = {}) {
-        const remembered = this.getRoutes().get(this.routeKey(url));
+        const forced = this.isCorsProxyForced();
 
-        if (remembered !== 'proxy') {
+        if (!forced && this.getRoutes().get(this.routeKey(url)) !== 'proxy') {
             try {
                 const response = await fetch(url, options);
                 this.setRoute(url, 'direct');
@@ -447,7 +466,7 @@ const Providers = {
 
         try {
             const response = await this.fetchProxied(url, options);
-            this.setRoute(url, 'proxy');
+            if (!forced) this.setRoute(url, 'proxy');
             return response;
         } catch (error) {
             if (!this.isBlockedByCors(error)) throw error;

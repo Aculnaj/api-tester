@@ -183,7 +183,7 @@ const App = {
      */
     setupAutoSave() {
         // Provider settings auto-save
-        const providerInputs = ['provider-select', 'base-url-input', 'api-key-input', 'model-select', 'custom-model-input'];
+        const providerInputs = ['provider-select', 'base-url-input', 'api-key-input', 'model-select', 'custom-model-input', 'cors-proxy-toggle'];
         providerInputs.forEach(id => {
             const el = document.getElementById(id);
             if (el) {
